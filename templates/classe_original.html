@@ -1,0 +1,228 @@
+{% extends 'base.html' %} {% block content %}
+
+<div class="row">
+  <div class="col-12">
+    <h1 class="text-center">Registro de Classes</h1>
+  </div>
+</div>
+
+<div
+  id="classe"
+  class="row mt-2 d-flex justify-content-around bg-body-secondary rounded-3"
+>
+  {% csrf_token %}
+  <!--   <label class="btn btn-outline-success  m-3" for="success-outlined" title="Pesquisar"><i class="bi bi-search"></i>-->
+
+  <div class="col-sm-2 p-3">
+    <input
+      type="number"
+      id="serie"
+      placeholder="Série"
+      class="form-control formulario"
+      aria-describedby="basic-addon1"
+    />
+  </div>
+  <div class="col-sm-2 p-3">
+    <input
+      type="text"
+      id="turma"
+      placeholder="Turma"
+      class="form-control formulario"
+      aria-describedby="basic-addon1"
+    />
+  </div>
+  <div class="col-sm-2 p-3">
+    <select
+      type="text"
+      id="periodo"
+      placeholder="Periodo"
+      class="form-control formulario"
+      aria-describedby="basic-addon1"
+    >
+      {% for periodo in periodos %}
+      <option value="{{periodo.0}}">{{periodo.1}}</option>
+
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="col-sm-2">
+    <button id="gravar" class="btn btn-outline-dark m-3" title="Classe">
+      Gravar
+    </button>
+  </div>
+  <div class="col-sm-2">
+    <button
+      id="abrirQuadro"
+      class="btn btn-outline-dark m-3"
+      data-bs-toggle="modal"
+      data-bs-target="#criarQuadroClasseModal"
+      title="Quadro"
+    >
+      Quadro
+    </button>
+  </div>
+</div>
+
+<div class="row mt-3">
+  <div class="col-12">
+    <table
+      id="tabela"
+      class="table table-hover table-responsive table-bordered table-success"
+    >
+      <thead class="text-center">
+       
+        <th>Turma</th>
+        <th>Período</th>
+        <th>Atualizar</th>
+      
+        <th>Visualizar</th>
+      </thead>
+      <tbody id="corpoTabela">
+        <!-- Tabela dinâmica aparece aqui -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal Atualizar Registro-->
+<div
+  class="modal fade"
+  id="atualizarModal"
+  tabindex="-1"
+  aria-labelledby="atualizarModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="atualizarModalLabel">
+          Deseja alterar essa classe?
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <div id="dadosClasse" class="row">
+          <!-- Dados do Registro Aqui -->
+        </div>
+      </div>
+      <div class="modal-footer mt-2">
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
+          Cancelar
+        </button>
+        <button
+          id="simAtualizar"
+          type="button"
+          class="btn btn-primary"
+          data-bs-dismiss="modal"
+        >
+          Atualizar
+        </button>
+        <button
+          id="simDeletar"
+          type="button"
+          class="btn btn-warning"
+          data-bs-dismiss="modal"
+        >
+          Deletar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Fim Modal Atualizar Registro-->
+
+
+
+<!-- Modal Visualizar Matrículas-->
+<div
+  class="modal fade"
+  id="visualizarClasseModal"
+  tabindex="-1"
+  aria-labelledby="visualizarModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="visualizarModalLabel">
+          Visualização da Classe
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+
+      <div class="modal-body">
+        <div id="alunosClasse">
+          <!--Tabela aparece aqui-->
+        </div>
+      </div>
+      <div class="modal-footer mt-2"></div>
+    </div>
+  </div>
+</div>
+<!-- Fim Modal Atualizar Registro-->
+
+<!-- Modal Criar Quadro de Classes-->
+<div
+  class="modal fade"
+  id="criarQuadroClasseModal"
+  tabindex="-1"
+  aria-labelledby="visualizarModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="criarQuadroModalLabel">
+          Criação do Quadro de Classes
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+
+      <div class="modal-body">
+        <div id="quadroClasse">
+          <!-- Quadro aqui-->
+        </div>
+      </div>
+      <div class="modal-footer mt-2">
+        <button
+          id="gerarTurmas"
+          type="button"
+          class="btn btn-warning"
+          data-bs-dismiss="modal"
+        >
+          Gerar Turmas
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Fim Modal Atualizar Registro-->
+
+{% endblock content %} {% load static %} {% block script %}
+<script
+  type="text/javascript"
+  src="{% static 'appClasse/js/classe.js' %}"
+></script>
+
+
+
+
+
+
+{% endblock script %}

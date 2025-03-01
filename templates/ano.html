@@ -1,0 +1,223 @@
+{% extends 'base.html' %} {% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="text-center">Cadastro dos Anos Letivos</h1>
+    </div>
+</div>
+
+<div id="aluno" class="row mt-2 bg-body-secondary rounded-3">
+    {% csrf_token %}
+    <!--   <label class="btn btn-outline-success  m-3" for="success-outlined" title="Pesquisar"><i class="bi bi-search"></i>-->
+
+    <div class="col-sm-6 p-3">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <span class="input-group-text bg-dark text-white" id="basic-addon1"><i class="bi bi-search"></i></span>
+            </div>
+            <input type="number" name="descAno" maxlength="100" class="form-control formulario" placeholder="Ano"
+                aria-describedby="basic-addon1" required="" id="descAno">
+        </div>
+    </div>
+
+    <div class="col-sm-4 d-flex justify-content-center">
+        <button id="gravar" class="btn btn-outline-dark m-3" title="Registrar Ano">
+            Gravar
+        </button>
+        <button id="buscar" class="btn btn-outline-dark m-3" title="Buscar Ano">
+            Buscar
+        </button>
+
+    </div>
+
+</div>
+
+
+<div class="row mt-3">
+    <div class="col-12">
+        <table class="table table-hover table-responsive table-bordered table-success">
+            <thead></thead>
+            <th class="text-center">Ano</th>
+            <th class="text-center">Situação</th>
+            <th class="text-center">Excluir</th>
+
+            </thead>
+            <tbody id="corpoTabela">
+                <!-- Tabela dinâmica aparece aqui -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(() => {
+
+        function sendGravar(ano) {
+            $.get({
+                url: "{% url 'gravarano' %}",
+                data: {
+                    ano: ano
+                },
+                success: (response) => {
+                    $("#mensagens").html(response);
+                    setTimeout(function () {
+                        $("#mensagem").css("display", "none");
+                    }, 3000);
+                    sendListarAnos();
+
+                },
+                fail: (response) => {
+
+                }
+            });
+
+        }
+
+        function sendExcluirAno(ano) {
+            $.get({
+                url: "{% url 'excluirano' %}",
+                data: {
+                    ano: ano
+                },
+                success: (response) => {
+                    $("#mensagens").html(response);
+                    setTimeout(function () {
+                        $("#mensagem").css("display", "none");
+                    }, 3000);
+                    if ($("#descAno").val() != '') {
+                        sendBuscarAno($("#descAno").val());
+                    }
+                    else {
+                        sendListarAnos();
+                    }
+
+                },
+                fail: (response) => {
+
+                }
+            });
+        }
+
+        function recarregarElementos() {
+            $(".excluir").off().on("click", function () {
+                sendExcluirAno($(this).val());
+            });
+
+            $(".status").off().on("click", function () {
+                sendFecharAbrirAno($(this).val());
+            });
+
+            $("#gravar").off().on("click", function () {
+                sendGravar($("#descAno").val());
+            });
+
+            $("#buscar").off().on("click", function () {
+                sendBuscarAno($("#descAno").val());
+            });
+
+            $(".selecionarAno").on('click', function () {
+                if (localStorage.getItem("anoConfig") != $(this).val()) {
+                    localStorage.setItem("ultimaClasse", 0);
+                }
+                localStorage.setItem("anoConfig", $(this).val());
+
+                $("#ano").html(localStorage.getItem("anoConfig"));
+                sendSelecionarAno(localStorage.getItem("anoConfig"));
+                $(".selecionarAno").removeClass("text-warning");
+                $(".selecionarAno").removeClass("bg-dark");
+
+                $(this).addClass("text-warning");
+                $(this).addClass("bg-dark");
+
+
+            });
+            $("#"+localStorage.getItem("anoConfig")).addClass("text-warning");
+            $("#"+localStorage.getItem("anoConfig")).addClass("bg-dark");
+
+
+        }
+
+        function sendListarAnos() {
+            $.get({
+                url: "{% url 'listarano' %}",
+                data: {},
+                success: (response) => {
+                    $("#corpoTabela").html(response);
+
+                    recarregarElementos();
+                   
+
+
+                },
+                fail: (response) => {
+
+                }
+
+            });
+        }
+
+        function sendBuscarAno(ano) {
+            $.get({
+                url: "{% url 'buscarano' %}",
+                data: {
+                    ano: ano
+                },
+                success: (response) => {
+
+                    $("#corpoTabela").html(response);
+                    recarregarElementos();
+
+                },
+                fail: (response) => {
+
+                }
+            });
+
+        }
+
+        function sendFecharAbrirAno(ano) {
+            $.get({
+                url: "{% url 'fecharabrirano' %}",
+                data: {
+                    ano: ano
+                },
+                success: (response) => {
+
+                    if ($("#descAno").val() != '') {
+                        sendBuscarAno($("#descAno").val());
+                    }
+                    else {
+                        sendListarAnos();
+                    }
+                },
+                fail: (response) => {
+
+                }
+            });
+        }
+
+        function sendSelecionarAno(ano) {
+            $.get({
+                url: "{% url 'selecionarano' %}",
+                data: {
+                    ano: ano
+                },
+                success: (response) => {
+                    
+                    localStorage.setItem("idAno", response);
+
+                },
+                fail: (response) => {
+                    alert(response);
+                }
+            })
+
+        }
+
+
+
+        sendListarAnos();
+
+    });
+</script>
+
+{% endblock content %}

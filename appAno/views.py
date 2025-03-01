@@ -1,0 +1,127 @@
+from django.shortcuts import render, HttpResponse
+from .models import Ano
+from appMatricula.models import Matricula
+from appAluno.models import Aluno
+from utilitarios.utilitarios import criarMensagem
+
+# Create your views here.
+def inicial_ano(request):
+    return render(request,"ano.html")
+
+
+def gravar_ano(request):
+    ano = Ano(ano=request.GET.get('ano'))
+    try:
+        ano.save()
+        return criarMensagem("Ano salvo com sucesso","success")
+    except Exception as err:
+        return criarMensagem(f"Erro ao salvar ano ({err})!", "danger")
+
+
+def excluir_ano(request):
+    ano = Ano.objects.filter(pk=request.GET.get('ano'))[0]
+    try:
+        ano.delete()
+        return criarMensagem("Ano deletado com sucesso", "success")
+    except:
+        return criarMensagem(f"Erro ao excluir ano ({ano})!","danger")
+
+
+def buscar_ano(request):
+    try:
+        ano_recebido = request.GET.get("ano")
+        if ano_recebido == "":
+            ano_recebido = 0
+        ano = Ano.objects.filter(ano=ano_recebido)
+        if ano:
+        
+            return HttpResponse(f"""<tr><td class='text-center'> <button type='button' class='btn btn-outline-dark btn-lg selecionarAno'
+                 value={ano[0].ano} > {ano[0].ano} </button></td>
+                  <td class='text-center'><button type='button' class='btn btn-outline-dark btn-lg status'
+                 value={ano[0].id} > 
+                          {retornarStatusAno(ano[0].id)}
+                        </button></td></td>
+                 <td class='text-center'> <button type='button' class='btn btn-outline-dark btn-lg excluir'
+                 value={ano[0].id} > 
+                          <i class="bi bi-trash3-fill"></i>
+                        </button></td>
+                
+                </tr>""")
+        else:
+            return criarMensagem("Nenhum resultado!","info")
+
+    except:
+        return criarMensagem("Algum erro aconteceu!","danger")
+    
+
+def listar_ano(request):
+    anos = Ano.objects.all()[:10]
+    linhas = ''
+    for a in anos:
+        linhas += f"""<tr><td class='text-center'><button type='button' class='btn btn-outline-dark btn-lg selecionarAno'
+            id={a.ano}
+          value={a.ano} > {a.ano} </button></td>
+           <td class='text-center'><button type='button' class='btn btn-outline-dark btn-lg status'
+          value={a.id}> 
+                          {retornarStatusAno(a.id)}
+                        </button></td>
+        <td class='text-center'> <button type='button' class='btn btn-outline-dark btn-lg excluir'
+          value={a.id}> 
+                          <i class="bi bi-trash3-fill"></i>
+                        </button></td>
+       
+        </tr>"""
+    
+    return HttpResponse(linhas) 
+    
+
+def retornarStatusAno(ano):
+    ano = Ano.objects.get(pk=ano)
+    if ano.fechado:
+        return '<i class="bi bi-lock-fill"></i>'
+    else:
+        return '<i class="bi bi-unlock-fill"></i>'
+
+
+def fechar_abrir_ano(request):
+    ano = Ano.objects.get(pk=request.GET.get('ano'))
+    matriculas = Matricula.objects.filter(ano=ano)
+
+    ano.fechado = not ano.fechado
+    ano.save()
+    for matricula in matriculas:
+        aluno = Aluno.objects.get(pk=matricula.aluno.rm)
+        if ano.fechado and matricula.situacao == 'C':
+            matricula.situacao = 'P'
+            aluno.status = 0
+        else:
+            if matricula.situacao == 'P':
+                matricula.situacao = 'C'
+                aluno.status = 2
+            else:
+                if matricula.situacao == 'R':
+                    matriculas_cursando = Matricula.objects.filter(aluno=aluno).filter(situacao='C')
+                    matriculas_cursando.delete()
+                    matricula.situacao = 'C'
+                    aluno.status = 2
+        aluno.save()
+        matricula.save()
+
+    return HttpResponse(ano.fechado)
+    
+
+
+
+
+def status_ano(request):
+    ano = Ano.objects.get(pk=request.GET.get('ano'))
+    return HttpResponse(ano.fechado)
+
+
+def selecionar_ano(request):
+    ano = Ano.objects.filter(ano=request.GET.get('ano'))[0]
+    return HttpResponse(ano.id)
+   
+
+
+
