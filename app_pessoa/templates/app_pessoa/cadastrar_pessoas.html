@@ -1,0 +1,101 @@
+{% extends 'template/menu.html' %}
+{% load crispy_forms_tags %}
+{% load bootstrap4 %}
+{% bootstrap_css %}
+
+{% block content %}
+
+
+{{ form.media }}
+<div class="container mt-5 d-flex justify-content-center">
+    <div class="col-md-8 bg-light p-4 rounded shadow">
+        <h2 class="text-center mb-4">Cadastro de Funcionário</h2>
+        
+        <form method="POST" class="was-validated">
+            {% csrf_token %}
+
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="mb-3 {% if request.resolver_match.url_name == 'atualizarpessoa' %} {% endif %}">
+                        {{ form.id|as_crispy_field }}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form.nome|as_crispy_field }}
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        {{ form.cpf|as_crispy_field }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        {{ form.dt_nasc|as_crispy_field }}
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        {{ form.admissao|as_crispy_field }}
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        {{ form.saida|as_crispy_field }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form.cargo|as_crispy_field }}
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        {{ form.efetivo|as_crispy_field }}
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        {{ form.ativo|as_crispy_field }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <button class="btn btn-outline-dark btn-lg">Gravar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+{% endblock content %}
+
+
+{% block script %}
+
+<script>
+        $(document).ready(function () {
+           // alert($("#id_nome").val());
+           // alert($("#id_id").val());
+            //localStorage.setItem("nome",);
+            //localStorage.setItem("matricula",);
+            
+
+        });
+    
+
+</script>
+
+
+{% endblock script %}
+
+
+

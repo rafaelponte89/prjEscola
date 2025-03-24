@@ -1,0 +1,145 @@
+{% extends 'template/menu.html' %}
+{% load crispy_forms_tags %}
+{% load bootstrap4 %}
+{% bootstrap_css %}
+
+
+{% block content %}
+
+
+
+<input type="text" id="nome" name="nome" placeholder="Nome do Profissional" class="textinput form-control mb-3" />
+
+<table class="table table-hover">
+    <thead class="text-center">
+        <tr>
+            <th scope="col">Matrícula</th>
+            <th scope="col">Nome</th>
+            <th scope="col">Cargo</th>
+            <th scope="col">Selecionar</th>
+
+
+        </tr>
+    </thead>
+    <tbody class="text-center" id="resultado">
+        <!-- Pesquisa aqui-->
+    </tbody>
+</table>
+
+
+
+{% endblock content %}
+
+{% block script %}
+<script>
+    $(document).ready(function () {
+
+        $("#nome").focus();
+
+        function lancar_pontuacao() {
+            $.get({
+                url: "{% url 'pesquisarpessoas' %}",
+                data: {},
+                success: (response) => {
+
+                },
+            });
+
+        }
+
+        function selecionarPessoa(matricula) {
+            $.get({
+                url: "{% url 'selecionarpessoa' %}",
+                data: {
+                    matricula: matricula,
+                },
+                success: (response) => {
+                    $("#nomepes").html(response);
+                    $(".disponivel").css('display', 'none');
+                    localStorage.setItem('matricula', $("#matpes").text());
+                    let nome = $("#nomepes").text().split('|');
+                    localStorage.setItem('nome', nome[1]);
+
+                    $(".lancarpontuacao").css("display", "block");
+                    $(".lancarfalta").css("display", "block");
+                    $(".verfichacem").css("display", "block");
+                    $(".atualizarpessoa").css("display", "block");
+                    $(".limparselecao").css("display", "block");
+                    $("#nomepes").css("display", "block");
+
+                    $(".limparselecao").off().click(function () {
+                        $(".disponivel").css("display","block");
+                        $(".lancarpontuacao").css("display","none");
+                        $(".lancarfalta").css("display","none");
+                        $(".verfichacem").css("display","none");
+                        $(".atualizarpessoa").css("display","none");
+                        $(".limparselecao").css("display","none");
+                        $("#nomepes").css("display","none");
+
+                        localStorage.removeItem("nome");
+                        localStorage.removeItem("matricula");
+                        window.location.href = '/fichacem/pessoas/telapesquisar';
+ 
+                    });
+
+
+                },
+                fail: (response) => {
+                    alert("Erro na Seleção");
+                },
+            });
+        }
+
+        function pesquisar_nome(nome) {
+
+            $.get({
+                url: "{% url 'pesquisarpessoas' %}",
+                data: { nome: nome },
+                success: (response) => {
+                    $("#resultado").html(response);
+
+                    
+
+                    $(".lancarpontuacao").off().click(function () {
+                        window.location.href = `${$("#matpes").val()}/pontuacoes`;
+
+                    });
+
+
+                    $(".lancarfalta").off().click(function () {
+                        window.location.href = `${$("#matpes").val()}/faltas`;
+
+                    });
+
+                    $(".verfichacem").off().click(function () {
+                        window.location.href = `${$("#matpes").val()}/fichas`;
+
+                    });
+
+                    $(".atualizarpessoa").off().click(function () {
+                        window.location.href = `atualizarpessoa/${$("#matpes").val()}`;
+
+                    });
+
+                    $(".selpes").off().click(function () {
+                        selecionarPessoa($(this).val());
+                    });
+
+
+
+
+                },
+            });
+
+        }
+
+
+
+        $("#nome").keyup(() => {
+            pesquisar_nome($("#nome").val());
+        })
+
+    });
+
+</script>
+{% endblock script %}
