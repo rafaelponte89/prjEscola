@@ -5,4 +5,4 @@ from django.shortcuts import render
 
 def central(request):
 
-    return render(request, 'central.html')
+    return render(request, 'app_central/central.html')

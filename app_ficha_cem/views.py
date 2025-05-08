@@ -1,17 +1,15 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import Faltas, Faltas_Pessoas, Pontuacoes, Cargos
 from .forms import formularioLF, formularioPontuacao
-from django.views import View
 from django.contrib import messages
 from app_pessoa.models import Pessoas
+from django.db.models import Sum
+from .forms import FaltaPesquisaForm
 
 # Create your views here.
-
-from io import BytesIO
-from django.template.loader import get_template
 from datetime import datetime, timedelta
 from django.http import HttpResponse
-import reportlab
+
 from django.template.defaulttags import register
 # determina se o ano é bissexto
 def bissexto(ano):
@@ -160,7 +158,6 @@ def criar_estrutura_meses():
 
     estrutura_meses_nome = {}
    
-
     dias = []
     # construção dos meses
     for i in range(1,13):
@@ -172,6 +169,7 @@ def criar_estrutura_meses():
         dias = []
 
     return estrutura_meses_nome
+
 # configurar meses de acordo com a data de admissao de uma pessoa
 def configurar_meses_v4(ano, pessoa_id):
     '''A versão atual do método leva em consideração data de admissão e saída para fazer a devida configuração'''
@@ -557,6 +555,46 @@ def faltas_por_mes(meses):
                     faltas_por_mes[k][i] += 1
     return faltas_por_mes
 
+
+def relatorio_faltas(request, pessoa_id):
+    pessoa = get_object_or_404(Pessoas, id=pessoa_id)
+    form = FaltaPesquisaForm(request.GET or None)
+    resultados = []
+    totais_por_tipo = []
+    total_geral = 0
+
+    if form.is_valid():
+        data_inicio = form.cleaned_data['data_inicio']
+        data_fim = form.cleaned_data['data_fim']
+        falta = form.cleaned_data['falta']
+
+        faltas = Faltas_Pessoas.objects.filter(
+            pessoa=pessoa,
+            data__range=(data_inicio, data_fim)
+        )
+        if falta:
+            faltas = faltas.filter(falta=falta)
+
+        resultados = faltas.select_related('pessoa', 'falta').order_by('data')
+
+        totais_por_tipo = (
+            Faltas_Pessoas.objects
+            .filter(pessoa=pessoa, data__range=(data_inicio, data_fim))
+            .values('falta__descricao')
+            .annotate(total_dias=Sum('qtd_dias'))
+            .order_by('falta__descricao')
+        )
+
+        total_geral = resultados.aggregate(soma=Sum('qtd_dias'))['soma'] or 0
+
+    return render(request, 'template/relatorio.html', {
+        'form': form,
+        'pessoa': pessoa,
+        'resultados': resultados,
+        'totais_por_tipo': totais_por_tipo,
+        'total_geral': total_geral,
+    })
+
 def consultar_pontuacao(pessoa_id, ano,num=0):
     pontuacao = Pontuacoes.objects.filter(pessoa=pessoa_id).filter(ano=ano-num)
     
@@ -803,18 +841,10 @@ def buscar_informacoes_ficha_v3(pessoa_id, ano):
 
     linha = 0
     eventos_por_mes = []
-    intermediaria = []
     
     for k in faltas_mes_a_mes:
-        linha +=1
-        if k in ['janeiro','marco','maio','julho','agosto','outubro','dezembro']:
-            eventos_por_mes.append(list(faltas_mes_a_mes[k].values()))
-        elif k in ['abril','junho','setembro','novembro']:
-            intermediaria = list(faltas_mes_a_mes[k].values())
-            eventos_por_mes.append(intermediaria)
-        else:
-            intermediaria = list(faltas_mes_a_mes[k].values())
-            eventos_por_mes.append(intermediaria)
+        eventos_por_mes.append(list(faltas_mes_a_mes[k].values()))
+    
 
     # pega chaves de um mes qualquer que será a linha de eventos
     cabecalho_tp_faltas = list(faltas_mes_a_mes['janeiro'].keys())
@@ -894,7 +924,6 @@ def checar_existencia_pontuacao(ano, pessoa):
     q2 = Pontuacoes.objects.filter(pessoa=pessoa)
     q3 = Pontuacoes.objects.filter(ano=ano)
     pontuacao = q2.intersection(q3)
-
 
     if pontuacao.count():
         status = False
@@ -1012,17 +1041,235 @@ def gerar_pontuacao_anual_v2(ano,pessoa):
     
     return funcao, cargo, ue
 
-
+# insere a chave dentro da lista 16/04/2025
+def inserir_chave(dicionario, chave):
+    for k,v in dicionario[chave].items():
+        v.insert(0,k)
+        
 def pdf_v3(request, pessoa_id, ano):
-    import io
+    from io import BytesIO
     from reportlab.lib import colors
     from reportlab.lib.pagesizes import A4, landscape
     from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Image
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
     contexto = buscar_informacoes_ficha_v2(pessoa_id,ano)
    
-    buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), rightMargin=30,leftMargin=30, topMargin=30,bottomMargin=18)
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, 
+                            pagesize=landscape(A4), 
+                            rightMargin=30, 
+                            leftMargin=30, 
+                            topMargin=30,
+                            bottomMargin=18)
+   
+   
+
+    # cria informações para a primeira linha da tabela
+    mes_dias = ["Mês/Dia"]
+    for i in range(1,32):
+        mes_dias.append(i)
+ 
+    # insere a chave dentro da lista dos meses na posição 0. Ex ['janeiro','C','C'...]
+    inserir_chave(contexto, "meses")
+
+    # insere no dicionario faltas na posição 0 a sigla da falta Ex 'contexto['FJ']'=['FJ','FALTA JUSTIFICADA',10]
+    inserir_chave(contexto, "tp_faltas")
+
+   
+    # cria lista com os valores não a chave
+    data_tp_falta = [tp for tp in contexto['tp_faltas'].values()]
+    
+    # cria lista com os valores dos meses 
+    data_frequencia = [m for m in contexto['meses'].values()]
+
+    # dentro dessa lista insere a lista mes_dias
+    data_frequencia.insert(0, mes_dias)
+
+    faltas_mes_a_mes = contexto['falta_por_mes']
+    linha = 0
+    eventos_por_mes = []
+    
+    # dicionarios aninhados com os meses dentro dos meses os tipos de eventos e a quantidade 17/04/2025
+    for k in faltas_mes_a_mes:
+        eventos_por_mes.append(list(faltas_mes_a_mes[k].values()))
+
+    # pega chaves de um mes qualquer que será a linha de eventos
+    eventos_por_mes.insert(0,list(contexto['falta_por_mes']['janeiro'].keys()))
+    
+    # extend a tabela frequencia com informação dos eventos
+    for i in range(0,len(data_frequencia)):
+        data_frequencia[i].extend(eventos_por_mes[i])
+    
+    
+  
+    brancos = len(contexto['tp_faltas'])
+    brancos += 33
+    linha = [' '] * brancos
+    linha2 = [' '] * brancos
+    
+    data_frequencia.insert(1,linha)
+    data_frequencia.insert(0,linha2)
+
+    data_frequencia[0].extend(['Tempos'])
+    data_frequencia[1].extend(['Função','Cargo','Unidade'])
+    data_frequencia[2].extend([contexto['funcao_a'],contexto['cargo_a'],contexto['ue_a']])
+    
+    
+    # transforma valores do dicionario em listas
+    cargo_anual = list(contexto['cargo'].values())
+    funcao_anual = list(contexto['funcao'].values())
+    ue_anual = list(contexto['ue'].values())
+    
+
+    # data_frequencia.extend(cargo)
+    inicio_linha = 3
+    for i in range(12):
+        data_frequencia[inicio_linha].extend([funcao_anual[i],cargo_anual[i],ue_anual[i]])
+        inicio_linha += 1
+   
+    # aprender melhores tamanhos para configurar
+    tamanho_fonte = 9
+    qtd_eventos = len(contexto['tp_faltas'])
+    fator_d = round(tamanho_fonte  / qtd_eventos, 3) 
+    fator_i = round(tamanho_fonte  / qtd_eventos) 
+    fator_d = '0.' + str(fator_d).split('.')[1]
+    fator_d = float(fator_d)
+    if   qtd_eventos > fator_i:
+        tamanho_fonte = round(fator_d * tamanho_fonte )**2 * fator_i
+    else:
+        tamanho_fonte = 12
+    
+    
+
+    print('Fator',fator_d)
+    print('Fator',fator_i)
+
+
+    # cria estilo 
+    style_table_corpo = TableStyle([('GRID',(0,0),(-1,-1), 0.5, colors.black),
+                            ('LEFTPADDING',(0,0),(-1,-1),2),
+                            ('TOPPADDING',(0,0),(-1,-1),2),
+                            ('BOTTOMPADDING',(0,0),(-1,-1),2),
+                            ('RIGHTPADDING',(0,0),(-1,-1),2),
+                            ('ALIGN',(0,0),(-1,-1),'CENTER'),
+                            ('FONTSIZE',(0,0), (-1,-1),tamanho_fonte), 
+                            ('SPAN',(-3,0),(-1,0)),
+                            ('SPAN',(1,2),(31,2))          
+                            ], spaceBefore=20)
+
+    # cria tabela com as informações de data_faltas
+    t_frequencia = Table(data_frequencia, hAlign='CENTER',)
+
+    
+    # aplica estilo diferente conforme a condição, ou seja, as faltas ficam com cor de background
+    for row, values in enumerate(data_frequencia):
+       for column, value in enumerate(values):
+        #    print(column, value)
+           if value in contexto['tp_faltas']:
+               style_table_corpo.add('BACKGROUND',(column,row),(column,row),colors.lightblue)
+
+    t_frequencia.setStyle(style_table_corpo)
+
+    t_tipos = Table(data_tp_falta, style=[('GRID',(0,0),(-1,-1), 0.5, colors.black),
+                            ('ALIGN',(0,0),(-1,-1),'CENTER'),
+                            ('FONTSIZE',(0,0), (-1,-1),7.5),
+                            ('LEFTPADDING',(0,0),(-1,-1),1),
+                            ('TOPPADDING',(0,0),(-1,-1),1),
+                            ('BOTTOMPADDING',(0,0),(-1,-1),1),
+                            ('RIGHTPADDING',(0,0),(-1,-1),1),
+                            ], hAlign='LEFT')
+
+    styles = getSampleStyleSheet()
+    
+    styleH = ParagraphStyle('Cabeçalho',
+                            fontSize=20,
+                            parent=styles['Heading1'],
+                            alignment=1,
+                            spaceAfter=14)
+    
+    styleB = ParagraphStyle('Corpo',
+                        spaceAfter=14
+                    ) 
+    
+    styleAss = ParagraphStyle('Assinatura',
+                        alignment=1,
+            
+                    ) 
+
+    styleAssTrac =  ParagraphStyle('AssinaturaTrac',
+                        alignment=1,
+                        spaceBefore=20
+            
+                    ) 
+
+    stylePessoa = ParagraphStyle('Pessoa',
+                        # alignment=0,
+                        spaceAfter=4
+                        
+                    ) 
+    elementos = []
+    # elements.append(Paragraph('<para><img src="https://www.orlandia.sp.gov.br/novo/wp-content/uploads/2017/01/brasaoorlandia.png" width="40" height="40"/> </para>'))
+    elementos.append(Paragraph(f"<strong>Ficha Frequência - Ano</strong>:{contexto['ano']}", styleH))
+    # elements.append(Paragraph(f"<strong>Nome</strong>: {contexto['pessoa'].nome}  RM: {contexto['pessoa'].id}", styleB))
+    
+    saida = '' if contexto['pessoa'].saida == None else  contexto['pessoa'].saida.strftime('%d/%m/%Y')
+
+    data_pessoa = [
+        [Paragraph(f"<strong>Nome: </strong>{contexto['pessoa'].nome}",stylePessoa),Paragraph(f"<strong>Matrícula: </strong>{contexto['pessoa'].id}", stylePessoa),
+        Paragraph(f"<strong>Cargo: </strong>{contexto['des_cargo']}", stylePessoa), Paragraph(f"<strong>Disciplina: </strong>{contexto['disciplina']}", stylePessoa)],
+        [Paragraph(f"<strong>CPF: </strong>{contexto['pessoa'].cpf}", stylePessoa),Paragraph(f"<strong>Data de Admissão: </strong>{contexto['pessoa'].admissao.strftime('%d/%m/%Y')}", stylePessoa),
+        Paragraph(f"<strong>Data de Saída: </strong>{saida}", stylePessoa),
+        Paragraph(f"<strong>Efetivo: </strong>{contexto['pessoa'].efetivo}", stylePessoa)]
+    ]
+
+    tb_pessoa = Table(data_pessoa,style=([('GRID',(0,0),(-1,-1), 0.5, colors.white),
+                            ('LEFTPADDING',(0,0),(-1,-1),2),
+                            ('TOPPADDING',(0,0),(-1,-1),2),
+                            ('BOTTOMPADDING',(0,0),(-1,-1),2),
+                            ('RIGHTPADDING',(0,0),(-1,-1),0),
+                            ('ALIGN',(0,0),(-1,-1),'CENTER'),
+                            ]), hAlign='CENTER')
+
+    #Send the data and build the file
+    elementos.append(tb_pessoa)
+    elementos.append(t_frequencia)
+
+    elementos.append(Paragraph(f"", styleB))
+    
+    elementos.append(Paragraph('____________________________', styleAssTrac))
+    elementos.append(Paragraph('', styleAss))
+    elementos.append(Paragraph('', styleAss))
+    elementos.append(Paragraph('', styleAss))
+    
+    elementos.append(t_tipos)
+    doc.build(elementos)
+
+    nome = contexto["pessoa"].nome.replace(' ', '_')
+    data_hora = datetime.now().strftime('_%d_%m_%Y_%H_%M_%S')
+    nome_arquivo = f"{nome}{data_hora}.pdf"
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'inline; filename={nome_arquivo}.pdf'
+    response.write(buffer.getvalue())
+    buffer.close()
+
+    return response
+
+def pdf_v_original(request, pessoa_id, ano):
+    from io import BytesIO
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Image
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    contexto = buscar_informacoes_ficha_v2(pessoa_id,ano)
+   
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, 
+                            pagesize=landscape(A4), 
+                            rightMargin=30, 
+                            leftMargin=30, 
+                            topMargin=30,
+                            bottomMargin=18)
    
     elements = []
 
@@ -1035,6 +1282,8 @@ def pdf_v3(request, pessoa_id, ano):
     # insere a chave dentro da lista dos meses na posição 0. Ex ['janeiro','C','C'...]
     for k,v in contexto['meses'].items():
         v.insert(0,k)
+
+    print("contexto[meses]", contexto)
 
     # insere no dicionario faltas na posição 0 a sigla da falta Ex 'contexto['FJ']'=['FJ','FALTA JUSTIFICADA',10]
     for k,v in contexto['tp_faltas'].items():
@@ -1203,6 +1452,7 @@ def pdf_v3(request, pessoa_id, ano):
   
     
     saida = '' if contexto['pessoa'].saida == None else  contexto['pessoa'].saida.strftime('%d/%m/%Y')
+
 
     data_pessoa = [
         [Paragraph(f"<strong>Nome: </strong>{contexto['pessoa'].nome}",stylePessoa),Paragraph(f"<strong>Matrícula: </strong>{contexto['pessoa'].id}", stylePessoa),

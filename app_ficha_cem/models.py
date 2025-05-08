@@ -3,6 +3,7 @@ from django.utils.timezone import now
 from app_falta.models import Faltas
 from app_pessoa.models import Pessoas
 from app_cargo.models import Cargos
+from django import forms
 
 # Create your models here.
 
@@ -21,6 +22,9 @@ class Faltas_Pessoas(models.Model):
 
     def __str__(self):
         return f'{self.pessoa}, {self.falta.tipo}, {self.data}'
+
+
+
 
 # em desenvolvimento salvar pontuações
 class Pontuacoes(models.Model):

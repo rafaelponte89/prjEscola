@@ -15,7 +15,7 @@ def faltas(request):
             return redirect('listarfaltas')
     else:
         form = formularioTF()
-    return render(request,'cadastrar_tipo_falta.html',{'form':form, 'faltas':faltas})
+    return render(request,'app_falta/cadastrar_tipo_falta.html',{'form':form, 'faltas':faltas})
 
 def atualizar_faltas(request, falta_id):
     faltas = Faltas.objects.all()
@@ -32,4 +32,4 @@ def atualizar_faltas(request, falta_id):
         form = formularioTF(instance=falta)
 
     
-    return render(request,'cadastrar_tipo_falta.html',{'form':form, 'faltas':faltas})
+    return render(request,'app_falta/cadastrar_tipo_falta.html',{'form':form, 'faltas':faltas})

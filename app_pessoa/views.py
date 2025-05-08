@@ -18,7 +18,7 @@ def atualizar_pessoa(request, pessoa_id):
             return redirect('atualizarpessoa', form.cleaned_data['id'])
     else:
         form = formularioPessoa(instance=pessoa)
-    return render(request,'cadastrar_pessoas.html',{'form':form,'pessoa':pessoa})
+    return render(request,'app_pessoa/cadastrar_pessoas.html',{'form':form,'pessoa':pessoa})
 
 # listar e incluir pessoas
 def cadastrar_pessoas(request):
@@ -35,12 +35,12 @@ def cadastrar_pessoas(request):
     else:
 
         form = formularioPessoa()
-    return render(request,'cadastrar_pessoas.html',{'form':form, 'pessoas':pessoas})
+    return render(request,'app_pessoa/cadastrar_pessoas.html',{'form':form, 'pessoas':pessoas})
 
 
 def tela_pesquisar_pessoas(request):
 
-    return render(request,"pesquisar_pessoas.html")
+    return render(request,"app_pessoa/pesquisar_pessoas.html")
 
 def selecionar_pessoa(request):
     matricula = request.GET.get('matricula')

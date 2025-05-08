@@ -65,6 +65,8 @@
                     $(".verfichacem").css("display", "block");
                     $(".atualizarpessoa").css("display", "block");
                     $(".limparselecao").css("display", "block");
+                    $(".filtrarpessoa").css("display", "block");
+
                     $("#nomepes").css("display", "block");
 
                     $(".limparselecao").off().click(function () {
@@ -73,8 +75,11 @@
                         $(".lancarfalta").css("display","none");
                         $(".verfichacem").css("display","none");
                         $(".atualizarpessoa").css("display","none");
+                        $(".filtrarpessoa").css("display", "none");
+
                         $(".limparselecao").css("display","none");
                         $("#nomepes").css("display","none");
+
 
                         localStorage.removeItem("nome");
                         localStorage.removeItem("matricula");

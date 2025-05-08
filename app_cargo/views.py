@@ -13,7 +13,7 @@ def cargos(request):
             return redirect('listarcargos')
     else:
         form = formularioCargo()
-    return render(request,'cadastrar_cargo.html',{'form':form, 'cargos':cargos})
+    return render(request,'app_cargo/cadastrar_cargo.html',{'form':form, 'cargos':cargos})
 
 def atualizar_cargos(request, cargo_id):
     cargos = Cargos.objects.all()
@@ -30,7 +30,7 @@ def atualizar_cargos(request, cargo_id):
         form = formularioCargo(instance=cargo)
 
     
-    return render(request,'cadastrar_cargo.html',{'form':form, 'cargos':cargos})
+    return render(request,'app_cargo/cadastrar_cargo.html',{'form':form, 'cargos':cargos})
 
 
 

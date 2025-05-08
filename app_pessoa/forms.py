@@ -9,13 +9,10 @@ from bootstrap_datepicker_plus.widgets import DatePickerInput
 class formularioPessoa(forms.ModelForm):
     cargos = Cargos.objects.all()
 
-
-
     id = forms.CharField(max_length=6, required=True)
 
     nome = forms.CharField(max_length=150, required=True)
-
-        
+  
     dt_nasc =  forms.DateField(widget=DatePickerInput(), label="Data de Nascimento")
 
     cpf = forms.CharField(max_length=11, required=True, label='CPF')
