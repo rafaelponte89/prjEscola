@@ -126,6 +126,11 @@
 
                     });
 
+                    $(".filtrarpessoa").off().click(function () {
+                        window.location.href = `/fichacem/relatorio-faltas/${$("#matpes").val()}`;
+
+                    });
+
                     $(".selpes").off().click(function () {
                         selecionarPessoa($(this).val());
                     });
