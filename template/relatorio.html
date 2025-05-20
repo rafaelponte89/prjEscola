@@ -3,6 +3,10 @@
 {% load bootstrap4 %}
 {% bootstrap_css %}
 
+{% block css %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+{% endblock css %}
 {% block content %}
 
 {{form.media}}
@@ -41,12 +45,15 @@
                         </div>
                     </div>
 
-                    <div class="col-md-4 mb-1">
+
+
+                </div>
+                <div class="row justify-content-center">
+                    <div class="col-md-12 mb-1">
                         <div class="form-group">
                             {{ form.falta|as_crispy_field }}
                         </div>
                     </div>
-
                 </div>
                 <!-- Botão de Envio -->
                 <div class="row justify-content-center">
@@ -69,7 +76,7 @@
 
 <div class="container">
     {% if resultados %}
-   <!-- <h2>Faltas Encontradas:</h2> -->
+    <!-- <h2>Faltas Encontradas:</h2> -->
     <table class="table table-hover mt-2">
         <thead>
             <tr>
@@ -139,4 +146,22 @@
 <p>Nenhum resultado encontrado.</p>
 {% endif %}
 
+
+
 {% endblock content %}
+
+{% block script %}
+<!-- JS do Select2 -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<!-- Inicialização -->
+<script>
+    $(document).ready(function () {
+        $('.select2').select2({
+            width: '100%',
+            placeholder: "Selecione os tipos de falta",
+            allowClear: true
+        });
+    });
+</script>
+{% endblock script %}

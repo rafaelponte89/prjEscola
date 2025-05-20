@@ -2,7 +2,9 @@ from django import forms
 from .models import Pessoas, Faltas_Pessoas, Pontuacoes, Cargos
 from bootstrap_datepicker_plus.widgets import DatePickerInput
 from django.utils.timezone import now
-from .models import Pessoas, Faltas
+from .models import Pessoas, Faltas, FiltroSalvo
+from django.forms import SelectMultiple
+
 
 
 # formulário lançamento de faltas
@@ -31,7 +33,6 @@ class formularioPontuacao(forms.ModelForm):
     
     ue = forms.IntegerField(min_value=0)
 
-   
     pessoa = forms.ModelChoiceField(queryset=Pessoas.objects.all(),
                                       widget=forms.HiddenInput())
 
@@ -41,13 +42,43 @@ class formularioPontuacao(forms.ModelForm):
         fields = ['ano','funcao','cargo','ue','pessoa']
 
 
-# implementação nova 08/05/2025
+# implementação nova 12/05/2025
 class FaltaPesquisaForm(forms.Form):
-    data_inicio = forms.DateField(
-        label="Data Inicial", widget=forms.DateInput(attrs={'type': 'date'}))
-    data_fim = forms.DateField(
-        label="Data Final", widget=forms.DateInput(attrs={'type': 'date'}))
-    falta = forms.ModelChoiceField(
-        label="Tipo de Falta", queryset=Faltas.objects.all(),
-        required=False, empty_label="Todos os Tipos"
+    data_inicio = forms.DateField(required=True, widget=forms.DateInput(attrs={'type': 'date'}))
+    data_fim = forms.DateField(required=True, widget=forms.DateInput(attrs={'type': 'date'}))
+    falta = forms.ModelMultipleChoiceField(
+        queryset=Faltas.objects.all().order_by('descricao'),
+        required=False,
+        widget=SelectMultiple(attrs={'class': 'select2 form-control'})
     )
+
+
+
+class FaltaPesquisaFormGeral(forms.Form):
+    data_inicio = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=True)
+    data_fim = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=True)
+    cargo = forms.ModelMultipleChoiceField(
+        queryset=Cargos.objects.all().order_by('cargo'),
+        required=False,
+        widget=SelectMultiple(attrs={'class': 'select2 form-control'})
+    )
+    falta = forms.ModelMultipleChoiceField(
+        queryset=Faltas.objects.all().order_by('descricao'),
+        required=False,
+        widget=SelectMultiple(attrs={'class': 'select2 form-control'})
+    )
+
+    EFETIVO_CHOICES = (
+        ('ambos', 'Ambos'),
+        ('sim', 'Sim'),
+        ('nao', 'Não'),
+    )
+    efetivo = forms.ChoiceField(choices=EFETIVO_CHOICES, required=False)
+
+    ATIVO_CHOICES = (
+        ('ambos', 'Ambos'),
+        ('sim', 'Sim'),
+        ('nao', 'Não'),
+    )
+    ativo = forms.ChoiceField(choices=ATIVO_CHOICES, required=False)
+

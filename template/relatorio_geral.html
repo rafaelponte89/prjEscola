@@ -1,0 +1,284 @@
+{% extends 'template/menu.html'%}
+{% load crispy_forms_tags %}
+{% load bootstrap4 %}
+{% bootstrap_css %}
+
+{% block css %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+{% endblock css %}
+{% block content %}
+
+{{form.media}}
+<!--<form method="get">
+    {{ form.as_p }}
+    <button type="submit">Pesquisar</button>
+</form>-->
+
+{{form.media}}
+<div class="container mt-2 d-flex justify-content-center">
+    <div class="col-md-8 bg-light p-4 rounded shadow">
+        <form method="get" class="was-validated mb-2" style="background-color: #f8f9fa;">
+
+            <div class="container mt-2">
+                <div class="row justify-content-center">
+                    <!-- Título do Formulário -->
+                    <div class="col-md-8 text-center mb-1">
+                        <h3>Filtro</h3>
+                        <p>Preencha os filtros para pesquisar.</p>
+                    </div>
+                </div>
+
+
+
+
+
+                <div class="row justify-content-center">
+                    <!-- Formulário com fundo cinza e cantos arredondados -->
+                    <!-- Campo data inicial -->
+                    <div class="col-md-4 mb-1">
+                        <div class="form-group">
+                            {{ form.data_inicio|as_crispy_field }}
+                        </div>
+                    </div>
+
+                    <!-- Campo data final -->
+                    <div class="col-md-4 mb-1">
+                        <div class="form-group">
+                            {{ form.data_fim|as_crispy_field }}
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="row justify-content-center">
+                    <div class="col-md-6 mb-1">
+                        <div class="form-group">
+                            {{ form.ativo|as_crispy_field }}
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-1">
+                        <div class="form-group">
+                            {{ form.efetivo|as_crispy_field }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row justify-content-center">
+                    <div class="col-md-12 mb-1">
+                        <div class="form-group">
+                            {{ form.cargo|as_crispy_field }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row justify-content-center">
+                    <div class="col-md-12 mb-1">
+                        <div class="form-group">
+                            {{ form.falta|as_crispy_field }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botão de Envio -->
+                <div class="row justify-content-center">
+                    <div class="col-md-6 text-center">
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-outline-dark btn-lg">Pesquisar</button>
+                            <!-- Botão que abre o modal -->
+                            <button id="botaoGrafico" type="button" class="btn btn-outline-dark btn-lg">
+                                Gráfico
+                            </button>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </form>
+    </div>
+</div>
+
+
+<!--
+<div class="container">
+    {% if resultados %}
+    <table class="table table-hover mt-2">
+        <thead>
+            <tr>
+                <th scope="col" class="text-center">Data da Falta</th>
+                <th scope="col" class="text-center">Descrição da Falta</th>
+                <th scope="col" class="text-center">Quantidade de Dias</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            {% for falta in resultados %}
+            <tr>
+                <td class="text-center">{{ falta.data }}</td>
+                <td class="text-center"> {{ falta.falta.descricao }}</td>
+                <td class="text-center"> ({{ falta.qtd_dias }} dia{{ falta.qtd_dias|pluralize }})</td>
+            </tr>
+            {% endfor %}
+
+            <tr class="text-info">
+                <td colspan="2" class="text-center">
+                    <h3>Total</h3>
+                </td>
+                <td class="text-center">
+                    <h3>{{ total_geral }}</h3>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+        {% endif %}
+
+</div>
+-->
+
+
+
+<div class="container">
+    {% if resultados %}
+    <div class="table-responsive">
+        <table class="table table-hover mt-2">
+            <thead>
+                <tr>
+                    <th scope="col" class="text-center">Tipo da Falta</th>
+                    <th scope="col" class="text-center">Quantidade de Dias</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                {% for item in totais_por_tipo %}
+                <tr>
+                    <td class="text-center">{{ item.falta__descricao }}</td>
+                    <td class="text-center"> {{ item.total_dias }} dia{{ item.total_dias|pluralize }}</td>
+                </tr>
+                {% endfor %}
+                <tr class="text-info">
+                    <td class="text-center">
+                        <h3>Total</h3>
+                    </td>
+                    <td class="text-center">
+                        <h3>{{ total_geral }}</h3>
+                    </td>
+                </tr>
+
+
+            </tbody>
+        </table>
+    </div>
+    {% elif form.is_bound %}
+    <p>Nenhum resultado encontrado.</p>
+    {% endif %}
+
+</div>
+
+<!-- Modal -->
+<div id="modalGrafico" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; 
+    background-color:rgba(0,0,0,0.6); z-index:1000; justify-content:center; align-items:center;">
+
+    <div style="background:white; padding:20px; border-radius:10px; max-width:90%; max-height:90%; position:relative;">
+        <span onclick="fecharModal()"
+            style="position:absolute; top:10px; right:15px; cursor:pointer; font-size:24px;">&times;</span>
+        <h3>Gráfico de Faltas</h3>
+        <canvas id="graficoFaltas" width="400" height="300"></canvas>
+    </div>
+</div>
+
+
+<!--
+<form method="get" action="{% url 'relatorio_faltas_geral' %}">
+    {% for key, value in request.GET.items %}
+    <input type="hidden" name="{{ key }}" value="{{ value }}">
+    {% endfor %}
+    <button type="submit">Exportar PDF</button>
+</form>
+-->
+{{ totais_por_tipo|json_script:"dados_faltas" }}
+
+<canvas id="graficoFaltas" width="0" height="0"></canvas>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const totais = JSON.parse(document.getElementById('dados_faltas').textContent);
+
+    const labels = totais.map(item => item.falta__descricao);
+    const data = totais.map(item => item.total_dias);
+    const cores = gerarCoresAleatorias(data.length);
+
+    let grafico = null;
+
+
+
+    function abrirModal() {
+        document.getElementById("modalGrafico").style.display = "flex";
+
+        // Garante que o gráfico seja criado apenas uma vez
+        if (!grafico) {
+            const ctx = document.getElementById('graficoFaltas').getContext('2d');
+            grafico = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Total de Dias de Falta',
+                        data: data,
+                        backgroundColor: cores,
+                        borderColor: cores.map(c => c.replace('0.6', '1')),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+    }
+
+    function fecharModal() {
+        document.getElementById("modalGrafico").style.display = "none";
+    }
+
+    document.getElementById('botaoGrafico').addEventListener('click', function (event) {
+        event.preventDefault();  // Impede comportamento padrão
+        abrirModal();            // Função que abre o modal com o gráfico
+    });
+
+    function gerarCoresAleatorias(qtd) {
+        const cores = [];
+        for (let i = 0; i < qtd; i++) {
+            const cor = `rgba(${Math.floor(Math.random() * 255)}, 
+                        ${Math.floor(Math.random() * 255)}, 
+                        ${Math.floor(Math.random() * 255)}, 0.6)`;
+            cores.push(cor);
+        }
+        return cores;
+    }
+</script>
+
+
+
+
+
+{% endblock content %}
+
+{% block script %}
+<!-- JS do Select2 -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<!-- Inicialização -->
+<script>
+    $(document).ready(function () {
+        $('.select2').select2({
+            width: '100%',
+            placeholder: "Selecione os tipos de falta",
+            allowClear: true
+        });
+    });
+</script>
+{% endblock script %}

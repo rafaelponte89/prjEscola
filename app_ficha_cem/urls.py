@@ -1,6 +1,8 @@
 from .views import gerar_ficha, abrir_ano, \
       listar_ficha, encerrar_ano_v2, pessoas_faltas, pdf_v3, lancar_pontuacoes, atualizar_pontuacoes,  \
-      excluir_pontuacoes, coletivo, lancar_evento_coletivo, excluir_pessoas_faltas, relatorio_faltas
+      excluir_pontuacoes, coletivo, lancar_evento_coletivo, excluir_pessoas_faltas, relatorio_faltas, \
+      relatorio_faltas_geral
+
 from django.urls.conf import path,include
 urlpatterns = [
     path('pessoas/',include('app_pessoa.urls')),
@@ -19,5 +21,6 @@ urlpatterns = [
     path('faltas/', include('app_falta.urls')),
     path('cargos/',include('app_cargo.urls')),   
     path('relatorio-faltas/<str:pessoa_id>/', relatorio_faltas, name='relatorio_faltas'),
+    path('relatorio-faltas/', relatorio_faltas_geral, name='relatorio_faltas_geral'),
     #path('relatorio-faltas/pdf/', views.relatorio_faltas_pdf, name='relatorio_faltas_pdf'),
 ]

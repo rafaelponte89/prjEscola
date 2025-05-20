@@ -44,6 +44,16 @@ class Pontuacoes(models.Model):
     def __str__(self):
         return self.ano
 
+# 20/05/2025 Salvar Filtros
+class FiltroSalvo(models.Model):
+    nome = models.CharField(max_length=100)
+    data_inicio = models.DateField()
+    data_fim = models.DateField()
+    efetivo = models.CharField(max_length=10, choices=(('ambos', 'Ambos'), ('sim', 'Sim'), ('nao', 'Não')))
+    ativo = models.CharField(max_length=10, choices=(('ambos', 'Ambos'), ('sim', 'Sim'), ('nao', 'Não')))
+    cargos = models.ManyToManyField(Cargos, blank=True)
+    faltas = models.ManyToManyField(Faltas, blank=True)
 
-
+    def __str__(self):
+        return self.nome
    

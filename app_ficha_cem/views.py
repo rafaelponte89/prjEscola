@@ -1,10 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Faltas, Faltas_Pessoas, Pontuacoes, Cargos
+from .models import Faltas, Faltas_Pessoas, Pontuacoes, Cargos, FiltroSalvo
 from .forms import formularioLF, formularioPontuacao
 from django.contrib import messages
 from app_pessoa.models import Pessoas
+
 from django.db.models import Sum
-from .forms import FaltaPesquisaForm
+from .forms import FaltaPesquisaForm, FaltaPesquisaFormGeral
 
 # Create your views here.
 from datetime import datetime, timedelta
@@ -555,6 +556,63 @@ def faltas_por_mes(meses):
                     faltas_por_mes[k][i] += 1
     return faltas_por_mes
 
+from django.db.models import Sum
+
+
+def relatorio_faltas_geral(request):
+    form = FaltaPesquisaFormGeral(request.GET or None)
+    resultados = []
+    totais_por_tipo = []
+    total_geral = 0
+
+    if form.is_valid():
+        data_inicio = form.cleaned_data['data_inicio']
+        data_fim = form.cleaned_data['data_fim']
+        faltas_selecionadas = form.cleaned_data['falta']
+        cargos_selecionados = form.cleaned_data['cargo']
+        efetivo = form.cleaned_data['efetivo']
+        ativo = form.cleaned_data['ativo']
+
+        faltas = Faltas_Pessoas.objects.select_related('pessoa', 'falta').filter(
+            data__range=(data_inicio, data_fim)
+        )
+
+        if faltas_selecionadas:
+            faltas = faltas.filter(falta__in=faltas_selecionadas)
+
+        if cargos_selecionados:
+            faltas = faltas.filter(pessoa__cargo__in=cargos_selecionados)
+
+        if efetivo == 'sim':
+            faltas = faltas.filter(pessoa__efetivo=True)
+        elif efetivo == 'nao':
+            faltas = faltas.filter(pessoa__efetivo=False)
+
+        if ativo == 'sim':
+            faltas = faltas.filter(pessoa__ativo=True)
+        elif ativo == 'nao':
+            faltas = faltas.filter(pessoa__ativo=False)
+
+        resultados = faltas.order_by('data')
+
+        totais_por_tipo = (
+            faltas.values('falta__descricao')
+            .annotate(total_dias=Sum('qtd_dias'))
+            .order_by('falta__descricao')
+        )
+
+        total_geral = faltas.aggregate(soma=Sum('qtd_dias'))['soma'] or 0
+
+    return render(request, 'template/relatorio_geral.html', {
+        'form': form,
+        'resultados': resultados,
+        'totais_por_tipo': list(totais_por_tipo),
+        'total_geral': total_geral,
+    })
+
+
+
+
 
 def relatorio_faltas(request, pessoa_id):
     pessoa = get_object_or_404(Pessoas, id=pessoa_id)
@@ -566,20 +624,26 @@ def relatorio_faltas(request, pessoa_id):
     if form.is_valid():
         data_inicio = form.cleaned_data['data_inicio']
         data_fim = form.cleaned_data['data_fim']
-        falta = form.cleaned_data['falta']
+        faltas_selecionadas = form.cleaned_data['falta']
 
         faltas = Faltas_Pessoas.objects.filter(
             pessoa=pessoa,
             data__range=(data_inicio, data_fim)
         )
-        if falta:
-            faltas = faltas.filter(falta=falta)
+        if faltas_selecionadas:
+            faltas = faltas.filter(falta__in=faltas_selecionadas)
 
         resultados = faltas.select_related('pessoa', 'falta').order_by('data')
 
+        totais_query = Faltas_Pessoas.objects.filter(
+            pessoa=pessoa,
+            data__range=(data_inicio, data_fim)
+        )
+        if faltas_selecionadas:
+            totais_query = totais_query.filter(falta__in=faltas_selecionadas)
+
         totais_por_tipo = (
-            Faltas_Pessoas.objects
-            .filter(pessoa=pessoa, data__range=(data_inicio, data_fim))
+            totais_query
             .values('falta__descricao')
             .annotate(total_dias=Sum('qtd_dias'))
             .order_by('falta__descricao')
@@ -594,6 +658,7 @@ def relatorio_faltas(request, pessoa_id):
         'totais_por_tipo': totais_por_tipo,
         'total_geral': total_geral,
     })
+
 
 def consultar_pontuacao(pessoa_id, ano,num=0):
     pontuacao = Pontuacoes.objects.filter(pessoa=pessoa_id).filter(ano=ano-num)
