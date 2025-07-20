@@ -82,3 +82,28 @@ class FaltaPesquisaFormGeral(forms.Form):
     )
     ativo = forms.ChoiceField(choices=ATIVO_CHOICES, required=False)
 
+
+class FiltroRelatorioDescritivoForm(forms.Form):
+    EFETIVO_CHOICES = (
+        ('ambos', 'Ambos'),
+        ('sim', 'Sim'),
+        ('nao', 'Não'),
+    )
+    ATIVO_CHOICES = (
+        ('sim', 'Sim'),
+        ('nao', 'Não'),
+    )
+
+    PUBLICO_CHOICES = (
+        ('sim', 'Sim'),
+        ('nao', 'Não'),
+    )
+
+    data_inicial = forms.DateField(label="Data inicial", widget=forms.DateInput(attrs={'type': 'date'}))
+    data_final = forms.DateField(label="Data final", widget=forms.DateInput(attrs={'type': 'date'}))
+    efetivo = forms.ChoiceField(choices=EFETIVO_CHOICES, required=False)
+    
+    ativo = forms.ChoiceField(choices=ATIVO_CHOICES, required=False)
+    func_publico =  forms.ChoiceField(choices=PUBLICO_CHOICES, required=False, label="Funcionário Público")
+
+

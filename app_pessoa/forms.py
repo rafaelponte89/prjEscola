@@ -25,10 +25,12 @@ class formularioPessoa(forms.ModelForm):
 
     ativo = forms.ChoiceField(choices=Pessoas.ATIVO, widget= forms.RadioSelect)
 
+    func_publico = forms.ChoiceField(choices=Pessoas.PUBLICO, widget=forms.RadioSelect, label="F. Público")
+
 
     class Meta:
         model = Pessoas
-        fields = ['id','nome','dt_nasc','cpf','admissao','saida','efetivo','cargo','ativo']
+        fields = ['id','nome','dt_nasc','cpf','admissao','saida','efetivo','cargo','ativo','func_publico']
         widget = {
             "dt_nasc": DatePickerInput(),
             "admissao": DatePickerInput(),

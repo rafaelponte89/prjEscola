@@ -11,6 +11,11 @@ class Pessoas(models.Model):
         (True,'Sim'),
         (False,'Não')
     )
+
+    PUBLICO = (
+        (True, 'Sim'),
+        (False, 'Não')
+    )
     
     id = models.CharField(max_length=6, primary_key=True)
     nome = models.CharField(max_length=150)
@@ -21,4 +26,5 @@ class Pessoas(models.Model):
     efetivo = models.BooleanField(choices=EFETIVO, default=False)
     cargo = models.ForeignKey(Cargos, on_delete=models.CASCADE, related_name="pessoas_cargos")
     ativo = models.BooleanField(choices=ATIVO, default=True)
+    func_publico = models.BooleanField(choices=PUBLICO, default=True)
    

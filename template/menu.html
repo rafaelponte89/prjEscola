@@ -34,6 +34,29 @@
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
             /* Sombra para destacar */
         }
+
+
+        #mensagens {
+            position: fixed;
+            top: 50%;
+            /* meio da tela verticalmente */
+            left: 50%;
+            /* meio da tela horizontalmente */
+            transform: translate(-50%, -50%);
+            z-index: 1050;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            /* espaço entre as mensagens */
+            width: 400px;
+            /* largura fixa para as mensagens */
+        }
+
+        #mensagens .alert {
+            width: 100%;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
     </style>
     {% endblock css %}
     <title>Base</title>
@@ -141,6 +164,20 @@
                         </span></a>
                 </li>
 
+
+                <li class="nav-item dropdown disponivel">
+                    <a class="nav-link dropdown-toggle {% if request.resolver_match.url_name == 'relatorio_faltas_geral' or request.resolver_match.url_name == 'relatorio_faltas_descritivo' %}active{% endif %}"
+                        href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true"
+                        aria-expanded="false">Filtros <span class="material-icons">
+                            <i class="fa fa-filter" aria-hidden="true"></i>
+
+                        </span></a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" href="{% url 'relatorio_faltas_geral' %}">Faltas</a>
+                        <a class="dropdown-item " href="{% url 'relatorio_faltas_descritivo' %}">Descritivo</a>
+                    </div>
+                </li>
+                <!--
                 <li class="nav-item disponivel">
                     <a class="nav-link {% if request.resolver_match.url_name == 'relatorio_faltas_geral' %} active {% endif %}"
                         href="{% url 'relatorio_faltas_geral' %}">Filtros <span class="material-icons">
@@ -148,7 +185,7 @@
 
                         </span></a>
                 </li>
-
+            -->
                 <li class="nav-item">
 
                     <button class='btn btn-info lancarfalta m-1'><span class="material-icons">
@@ -188,7 +225,7 @@
                 <li class="nav-item">
 
                     <button class='btn btn-info filtrarpessoa m-1'><span class="material-icons">
-                        <i class="fa fa-filter" aria-hidden="true"></i>
+                            <i class="fa fa-filter" aria-hidden="true"></i>
                         </span></button>
 
 
@@ -216,10 +253,9 @@
 
     </nav>
     {% if messages %}
-    <div id="mensagens">
+    <div id="mensagens" role="alert" aria-live="assertive" aria-atomic="true">
         {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} alert-dismissible fade show custom-alert centralizado" role="alert"
-            aria-live="assertive">
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
             <strong>{{ message }}</strong>
             <button type="button" class="close" data-dismiss="alert" aria-label="Fechar" title="Fechar alerta">
                 <span aria-hidden="true">&times;</span>
@@ -229,9 +265,7 @@
     </div>
     {% endif %}
 
-
-
-
+    
 
     <div class="container mt-5">
         <br>

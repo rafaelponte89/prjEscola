@@ -101,11 +101,11 @@ WSGI_APPLICATION = 'prjEscola.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'bd/db_teste.sqlite3',
+        'NAME': BASE_DIR / 'bd/db_.sqlite3',
     },
     'colaboradores': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'bd/db_pessoas.sqlite3',
+        'NAME': BASE_DIR / 'bd/db_colaboradores.sqlite3',
     }
 }
 

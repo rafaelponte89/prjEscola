@@ -29,10 +29,6 @@
                     </div>
                 </div>
 
-
-
-
-
                 <div class="row justify-content-center">
                     <!-- Formulário com fundo cinza e cantos arredondados -->
                     <!-- Campo data inicial -->
@@ -99,44 +95,6 @@
         </form>
     </div>
 </div>
-
-
-<!--
-<div class="container">
-    {% if resultados %}
-    <table class="table table-hover mt-2">
-        <thead>
-            <tr>
-                <th scope="col" class="text-center">Data da Falta</th>
-                <th scope="col" class="text-center">Descrição da Falta</th>
-                <th scope="col" class="text-center">Quantidade de Dias</th>
-            </tr>
-        </thead>
-        <tbody>
-
-            {% for falta in resultados %}
-            <tr>
-                <td class="text-center">{{ falta.data }}</td>
-                <td class="text-center"> {{ falta.falta.descricao }}</td>
-                <td class="text-center"> ({{ falta.qtd_dias }} dia{{ falta.qtd_dias|pluralize }})</td>
-            </tr>
-            {% endfor %}
-
-            <tr class="text-info">
-                <td colspan="2" class="text-center">
-                    <h3>Total</h3>
-                </td>
-                <td class="text-center">
-                    <h3>{{ total_geral }}</h3>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-        {% endif %}
-
-</div>
--->
-
 
 
 <div class="container">

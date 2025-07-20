@@ -1,17 +1,24 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Faltas, Faltas_Pessoas, Pontuacoes, Cargos, FiltroSalvo
-from .forms import formularioLF, formularioPontuacao
+from .models import Faltas, Faltas_Pessoas, Pontuacoes, Cargos
+from .forms import formularioLF, formularioPontuacao, FiltroRelatorioDescritivoForm
 from django.contrib import messages
 from app_pessoa.models import Pessoas
 
 from django.db.models import Sum
 from .forms import FaltaPesquisaForm, FaltaPesquisaFormGeral
-
+from datetime import date
 # Create your views here.
 from datetime import datetime, timedelta
 from django.http import HttpResponse
 
 from django.template.defaulttags import register
+from django.template.loader import get_template
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import cm
+from reportlab.lib import colors
+from io import BytesIO
+
 # determina se o ano é bissexto
 def bissexto(ano):
 
@@ -23,16 +30,8 @@ def bissexto(ano):
                 return False
             return True
 
-# retorna a quantidade de dias de um determinado ano
-def retornar_dias(ano):
-    dias    = 365
 
-    if bissexto(ano):
-        dias = 366
-    
-    return dias
-
-def retornar_mes_num(mes_nome, ano):
+def retornar_meses(ano=0):
     meses = {
         'janeiro':[1,31],
         'fevereiro':[2,29 if bissexto(ano) else 28],
@@ -47,27 +46,29 @@ def retornar_mes_num(mes_nome, ano):
         'novembro':[11,30],
         'dezembro':[12,31]
     }
-    num_mes = meses[mes_nome]
 
-    return num_mes
+    return meses
 
-def retornar_mes_nome(mes_num):
+
+def retornar_nome_mes(num_mes):
     meses = {
-        1:['janeiro',31],
-        2:['fevereiro',28],
-        3:['marco',31],
-        4:['abril',30],
-        5:['maio',31],
-        6:['junho',30],
-        7:['julho',31],
-        8:['agosto',31],
-        9:['setembro',30],
-        10:['outubro',31],
-        11:['novembro',30],
-        12:['dezembro',31]
+        1: 'janeiro',
+        2: 'fevereiro',
+        3: 'marco',
+        4: 'abril',
+        5: 'maio',
+        6: 'junho',
+        7: 'julho',
+        8: 'agosto',
+        9: 'setembro',
+        10: 'outubro',
+        11: 'novembro',
+        12: 'dezembro'
     }
-    nome_mes = meses[mes_num]
-    return nome_mes
+     
+    return meses[num_mes]
+    
+
 
 # função recursiva que determina se a data é útil (excluindo sábado e domingo) para o tipo P, senão retorna própria data
 def data_util(data, tp='P'):
@@ -79,168 +80,44 @@ def data_util(data, tp='P'):
         return data_util(data)
     return data
 
-
-# configurar meses de acordo com a data de admissao de uma pessoa
-def configurar_meses_v2(ano, pessoa_id):
-    pessoa = Pessoas.objects.get(pk=pessoa_id)
-    mes_adm_n = pessoa.admissao.month
-    dia_adm = pessoa.admissao.day - 1
-    ano_adm = pessoa.admissao.year
-    meses = {}
-    dias = []
-
-    # construção dos meses
-    for i in range(1,13):
-        mes = retornar_mes_nome(i)[0]
-        qtd_dias = retornar_mes_nome(i)[1]
-
-        if mes == 'fevereiro' and bissexto(ano):
-            qtd_dias = 29
-        
-        for i in range(qtd_dias):
-            dias.append(' ')
-    
-        meses[mes] = dias
-        dias = []
-    
-    # dicionario de meses conforme data de admissao
-    if ano == ano_adm:
-        for m, dias in meses.items():
-            for dia in range(len(dias)):
-                if mes_adm_n == retornar_mes_num(m)[0]:
-                    if dia_adm <= dia:
-                        meses[m][dia] = 'C'
-                elif mes_adm_n <= retornar_mes_num(m)[0]:
-                    meses[m][dia] = 'C'
-                else:
-                    meses[m][dia] = ' '
-    else:
-        if ano >= ano_adm:
-            for m, dias in meses.items():
-                for dia in range(len(dias)):
-                    meses[m][dia] = 'C'
-   
-    return meses
-
-# configurar meses de acordo com a data de admissao de uma pessoa
-def configurar_meses_v3(ano, pessoa_id):
-    pessoa = Pessoas.objects.get(pk=pessoa_id)
-    mes_adm = pessoa.admissao.month
-    dia_adm = pessoa.admissao.day - 1
-    ano_adm = pessoa.admissao.year
-
-    meses = criar_estrutura_meses() 
-
-    # dicionario de meses conforme data de admissao
-    if ano == ano_adm:
-        for m, dias in meses.items():
-            qtd_dias = retornar_mes_num(m)[1]
-            if m == 'fevereiro' and bissexto(ano):
-                qtd_dias = 29
-        
-            for dia in range(qtd_dias):
-                if mes_adm == retornar_mes_num(m)[0]:
-                    if dia_adm <= dia:
-                        meses[m][dia] = 'C'
-                elif mes_adm <= retornar_mes_num(m)[0]:
-                    meses[m][dia] = 'C'
-    else:
-        if ano >= ano_adm:
-            for m, dias in meses.items():
-                qtd_dias = retornar_mes_num(m)[1]
-                if m == 'fevereiro' and bissexto(ano):
-                    qtd_dias = 29
-                for dia in range(qtd_dias):
-                    meses[m][dia] = 'C'
-    
-    return meses
-
 def criar_estrutura_meses():
-
     estrutura_meses_nome = {}
-   
     dias = []
     # construção dos meses
-    for i in range(1,13):
-        mes = retornar_mes_nome(i)[0]
+    meses = retornar_meses()
+    for k in meses.keys():
         for j in range(31):
             dias.append('-')
-        estrutura_meses_nome[mes] = dias
+        estrutura_meses_nome[k] = dias
         
         dias = []
 
     return estrutura_meses_nome
 
-# configurar meses de acordo com a data de admissao de uma pessoa
+
+# refatorada 17/07/2025
 def configurar_meses_v4(ano, pessoa_id):
     '''A versão atual do método leva em consideração data de admissão e saída para fazer a devida configuração'''
     pessoa = Pessoas.objects.get(pk=pessoa_id)
-    mes_adm = pessoa.admissao.month
-    dia_adm = pessoa.admissao.day - 1
-    ano_adm = pessoa.admissao.year
-
-    mes_saida = 0
-    dia_saida = 0
-    ano_saida = 0
-    if pessoa.saida != None:
-        mes_saida = pessoa.saida.month
-        dia_saida = pessoa.saida.day
-        ano_saida = pessoa.saida.year
-
-    meses = criar_estrutura_meses()
-
-    #dicionario de meses conforme data de admissao
-    if ano_adm == ano and ano_saida == ano:
-        for mes in meses:
-                qtd_dias = retornar_mes_num(mes,ano)[1]
-                if mes_adm == retornar_mes_num(mes,ano)[0]:
-                    for dia in range(qtd_dias):
-                        if dia >= dia_adm:
-                            meses[mes][dia] = 'C'
-                else:
-                    if mes_adm < retornar_mes_num(mes,ano)[0] and mes_saida > retornar_mes_num(mes,ano)[0]:
-                        for dia in range(qtd_dias):
-                            meses[mes][dia] = 'C'
-                    else:
-                        if mes_saida == retornar_mes_num(mes,ano)[0]:
-                            for dia in range(qtd_dias):
-                                if dia < dia_saida:
-                                    meses[mes][dia] = 'C'
-
-    else:
-        if ano == ano_adm:
-            for mes in meses:
-                qtd_dias = retornar_mes_num(mes,ano)[1]
-                if mes_adm == retornar_mes_num(mes,ano)[0]:
-                    for dia in range(qtd_dias):
-                        if dia >= dia_adm:
-                            meses[mes][dia] = 'C'
-                else:
-                    if mes_adm < retornar_mes_num(mes,ano)[0]:
-                        for dia in range(qtd_dias):
-                            meses[mes][dia] = 'C'
-            
-        elif ano == ano_saida:
-            for mes in meses:
-                qtd_dias = retornar_mes_num(mes,ano)[1]
-                if mes_saida == retornar_mes_num(mes,ano)[0]:
-                    for dia in range(qtd_dias):
-                        if dia < dia_saida:
-                            meses[mes][dia] = 'C'
-                else:
-                    if mes_saida > retornar_mes_num(mes,ano)[0]:
-                        for dia in range(qtd_dias):
-                            meses[mes][dia] = 'C'
-            
-        else:
-           if ano_adm != ano and ano_saida != ano:
-                for mes in meses:
-                    qtd_dias = retornar_mes_num(mes,ano)[1]
-
-                    for dia in range(qtd_dias):
-                        meses[mes][dia] = 'C'
-  
     
+    data_inicial = pessoa.admissao
+    data_final = pessoa.saida or date.max
+    
+    meses = criar_estrutura_meses()
+    mes_info = retornar_meses(ano)
+    
+
+    for nome_mes, (numero, qtd_dias) in mes_info.items():
+        for dia in range(qtd_dias):
+            try:
+                data_atual = date(ano,numero,dia + 1)
+            except ValueError:
+                continue
+
+            if  data_inicial <= data_atual < data_final:
+                meses[nome_mes][dia] = 'C'
+
+   
     return meses
 
 
@@ -276,36 +153,28 @@ def verificar_status_ano(ano, pessoa_id):
 # faz a pesquisa e incremento para verificar se existe falta lançada naquela data, impedindo lançamento em data
 # que já exista falta computada
 def lancar_falta(data_lanc, qtd_dias, pessoa_id):
-    # pontuacao = Pontuacoes.objects.filter(pessoa=pessoa_id).filter(ano=data_lanc.year)
-    conflito = True
-    # ano_fechado = True
-   
-   
-    q1 = Faltas_Pessoas.objects.filter(data__year=data_lanc.year)
-    q2 = Faltas_Pessoas.objects.filter(pessoa_id=pessoa_id)
-    faltas_pessoa = q1.intersection(q2)
-    datas = []
-    for fp in faltas_pessoa:
-        data = fp.data
-        for dias in range(0,fp.qtd_dias):
-            data = datetime(data.year, data.month, data.day)
-            datas.append(data)
-            data += timedelta(days=1)
-                
+    # Normaliza a data de lançamento para meia-noite (sem hora)
     data_lanc = datetime(data_lanc.year, data_lanc.month, data_lanc.day)
-    datas_lanc = []
 
-    for dias in range(0,qtd_dias):
-        datas_lanc.append(data_lanc)
-        data_lanc += timedelta(days=1)
+    # Cria o conjunto de datas a serem lançadas
+    datas_lanc = {data_lanc + timedelta(days=i) for i in range(qtd_dias)}
 
-        
-    for lancamento in datas_lanc:
-        if lancamento in datas:
-            conflito = False
-            break
-            
-    # return conflito, ano_fechado
+    # Consulta apenas as faltas da pessoa no mesmo ano da data de lançamento
+    faltas = Faltas_Pessoas.objects.filter(
+        pessoa_id=pessoa_id,
+        data__year=data_lanc.year
+    )
+
+    # Cria um conjunto com todas as datas já lançadas
+    datas_existentes = set()
+    for falta in faltas:
+        inicio = datetime(falta.data.year, falta.data.month, falta.data.day)
+        for i in range(falta.qtd_dias):
+            datas_existentes.add(inicio + timedelta(days=i))
+
+    # Verifica se há interseção entre as datas
+    conflito = datas_lanc.isdisjoint(datas_existentes)
+
     return conflito
 
 
@@ -558,7 +427,7 @@ def faltas_por_mes(meses):
 
 from django.db.models import Sum
 
-
+############################# Filtros #########################
 def relatorio_faltas_geral(request):
     form = FaltaPesquisaFormGeral(request.GET or None)
     resultados = []
@@ -610,10 +479,6 @@ def relatorio_faltas_geral(request):
         'total_geral': total_geral,
     })
 
-
-
-
-
 def relatorio_faltas(request, pessoa_id):
     pessoa = get_object_or_404(Pessoas, id=pessoa_id)
     form = FaltaPesquisaForm(request.GET or None)
@@ -626,30 +491,26 @@ def relatorio_faltas(request, pessoa_id):
         data_fim = form.cleaned_data['data_fim']
         faltas_selecionadas = form.cleaned_data['falta']
 
-        faltas = Faltas_Pessoas.objects.filter(
-            pessoa=pessoa,
-            data__range=(data_inicio, data_fim)
-        )
-        if faltas_selecionadas:
-            faltas = faltas.filter(falta__in=faltas_selecionadas)
+        filtros_comuns = {
+            'pessoa': pessoa,
+            'data__range': (data_inicio, data_fim),
+        }
 
-        resultados = faltas.select_related('pessoa', 'falta').order_by('data')
-
-        totais_query = Faltas_Pessoas.objects.filter(
-            pessoa=pessoa,
-            data__range=(data_inicio, data_fim)
-        )
         if faltas_selecionadas:
-            totais_query = totais_query.filter(falta__in=faltas_selecionadas)
+            filtros_comuns['falta__in'] = faltas_selecionadas
+
+        faltas_queryset = Faltas_Pessoas.objects.filter(**filtros_comuns)
+
+        resultados = faltas_queryset.select_related('pessoa', 'falta').order_by('data')
 
         totais_por_tipo = (
-            totais_query
+            faltas_queryset
             .values('falta__descricao')
             .annotate(total_dias=Sum('qtd_dias'))
             .order_by('falta__descricao')
         )
 
-        total_geral = resultados.aggregate(soma=Sum('qtd_dias'))['soma'] or 0
+        total_geral = faltas_queryset.aggregate(soma=Sum('qtd_dias'))['soma'] or 0
 
     return render(request, 'template/relatorio.html', {
         'form': form,
@@ -659,6 +520,234 @@ def relatorio_faltas(request, pessoa_id):
         'total_geral': total_geral,
     })
 
+
+
+def relatorio_faltas_descritivo(request):
+    form = FiltroRelatorioDescritivoForm(request.GET or None)
+    dados_agrupados = {}
+    total_funcionarios = 0
+
+    if form.is_valid():
+        data_inicial = form.cleaned_data['data_inicial']
+        data_final = form.cleaned_data['data_final']
+        efetivo = form.cleaned_data['efetivo']
+        publico = form.cleaned_data['func_publico']
+        print(efetivo)
+        
+        if efetivo == 'sim':
+            efetivo = True
+        elif efetivo == 'nao':
+            efetivo = False
+       
+
+        if publico == 'sim':
+            publico = True
+        else:
+            publico  = False
+
+        print(efetivo)
+
+        if efetivo == 'ambos':
+            registros = (Faltas_Pessoas.objects
+                     .filter(data__range=(data_inicial, data_final))
+                     .select_related('pessoa', 'falta')
+                     .filter(pessoa__func_publico = publico)
+                     .order_by('pessoa__nome','falta__descricao','data'))
+        
+        else:
+        
+            registros = (Faltas_Pessoas.objects
+                     .filter(data__range=(data_inicial, data_final))
+                     .select_related('pessoa', 'falta')
+                     .filter(pessoa__efetivo = efetivo)
+                     .filter(pessoa__func_publico = publico)
+                     .order_by('pessoa__nome','falta__descricao','data'))
+        
+        for registro in registros:
+            pessoa = registro.pessoa
+            if pessoa.id not in dados_agrupados:
+                dados_agrupados[pessoa.id] = {
+                    'matricula': pessoa.id,
+                    'nome': pessoa.nome,
+                    'faltas': []
+                }
+            dados_agrupados[pessoa.id]['faltas'].append({
+                'data': registro.data,
+                'tipo': registro.falta.descricao,
+                'qtd_dias': registro.qtd_dias
+            })
+        
+        total_funcionarios = len(dados_agrupados)
+
+    return render(request, 'template/relatorio_faltas_descritivo.html', {
+        'form': form,
+        'dados': dados_agrupados,
+        'total_funcionarios': total_funcionarios
+    })
+
+
+def relatorio_faltas_descritivo_pdf(request):
+
+    
+    data_inicio_str = request.GET.get('data_inicio')
+    data_fim_str = request.GET.get('data_fim')
+    efetivo = request.GET.get('efetivo')
+    publico = request.GET.get('publico')
+    titulo = ""
+
+    if not data_inicio_str or not data_fim_str:
+        return HttpResponse("Informe a data inicial e final.", status=400)
+
+    try:
+        data_inicio = datetime.strptime(data_inicio_str, '%Y-%m-%d')
+        data_fim = datetime.strptime(data_fim_str, '%Y-%m-%d')
+    except ValueError:
+        return HttpResponse("Formato de data inválido. Use YYYY-MM-DD.", status=400)
+
+    if efetivo == 'sim':
+        efetivo = True
+        titulo = "Efetivos"
+
+    elif efetivo == 'nao':
+        efetivo = False
+        titulo = "Contratados"
+
+    if publico == 'sim':
+        publico = True
+
+
+    else:
+        publico  = False
+        titulo = "Outros Funcionários"
+
+    if efetivo == 'ambos':
+        faltas_qs = (Faltas_Pessoas.objects
+                     .filter(data__range=(data_inicio, data_fim))
+                     .select_related('pessoa', 'falta')
+                     .filter(pessoa__func_publico = publico)
+                     .order_by('pessoa__nome','falta__descricao','data'))
+        titulo = "Efetivos e Contratados"
+        
+    else:
+        
+        faltas_qs = (Faltas_Pessoas.objects
+                     .filter(data__range=(data_inicio, data_fim))
+                     .select_related('pessoa', 'falta')
+                     .filter(pessoa__efetivo = efetivo)
+                     .filter(pessoa__func_publico = publico)
+                     .order_by('pessoa__nome','falta__descricao','data'))
+ 
+
+    pessoas_com_falta = {}
+    for falta in faltas_qs:
+        pessoa_id = falta.pessoa.id
+        if pessoa_id not in pessoas_com_falta:
+
+            pessoas_com_falta[pessoa_id] = {
+                'matricula': falta.pessoa.id,
+                'nome': falta.pessoa.nome,
+                'cargo': falta.pessoa.cargo,
+                'efetivo': "Efetivo" if falta.pessoa.efetivo else  "Contratado",
+                'faltas': []
+            }
+        pessoas_com_falta[pessoa_id]['faltas'].append(falta)
+
+    buffer = BytesIO()
+    p = canvas.Canvas(buffer, pagesize=A4)
+    width, height = A4
+    margem_x = 2 * cm
+    y = height - 2 * cm
+
+    def desenhar_cabecalho():
+        p.setFont("Helvetica-Bold", 14)
+        p.drawCentredString(width / 2, y, f"Relatório de Faltas - {titulo}")
+        y_text = y - 1 * cm
+        p.setFont("Helvetica", 10)
+        p.drawCentredString(width / 2, y_text, f"Período: {data_inicio.strftime('%d/%m/%Y')} até {data_fim.strftime('%d/%m/%Y')}")
+        return y_text - 1 * cm
+
+    def nova_pagina():
+        nonlocal y
+        p.showPage()
+        y = height - 2 * cm
+        y = desenhar_cabecalho()
+        return y
+
+    # Desenha o cabeçalho inicial
+    y = desenhar_cabecalho()
+
+    total_funcionarios = len(pessoas_com_falta)
+    p.setFont("Helvetica", 9)
+
+    for pessoa_data in pessoas_com_falta.values():
+        if y <= 3 * cm:
+            y = nova_pagina()
+
+        # Cabeçalho de pessoa
+        p.setFont("Helvetica-Bold", 10)
+        p.setFillColor(colors.darkblue)
+        p.drawString(margem_x, y, f"{pessoa_data['matricula']} - {pessoa_data['nome']} ({pessoa_data['cargo']} : {pessoa_data['efetivo']})")
+        p.setFillColor(colors.black)
+        y -= 0.8 * cm
+
+        # Tabela de faltas
+        p.setFont("Helvetica", 9)
+        header = ["Data", "Tipo", "Dias"]
+        col_widths = [3.5 * cm, 8 * cm, 2 * cm]
+        p.setFillColor(colors.grey)
+        p.rect(margem_x, y, sum(col_widths), 0.5 * cm, fill=True, stroke=False)
+        p.setFillColor(colors.white)
+        p.drawString(margem_x + 0.2 * cm, y + 0.15 * cm, header[0])
+        p.drawString(margem_x + col_widths[0] + 0.2 * cm, y + 0.15 * cm, header[1])
+        p.drawString(margem_x + col_widths[0] + col_widths[1] + 0.2 * cm, y + 0.15 * cm, header[2])
+        y -= 0.5 * cm
+
+        alternar = False
+        for falta in pessoa_data['faltas']:
+            if y <= 3 * cm:
+                y = nova_pagina()
+                p.setFont("Helvetica-Bold", 10)
+                p.drawString(margem_x, y, f"{pessoa_data['matricula']} - {pessoa_data['nome']} ({pessoa_data['cargo']} : {pessoa_data['efetivo']})")
+                y -= 0.8 * cm
+
+                # Redesenhar cabeçalho da tabela na nova página
+                p.setFont("Helvetica", 9)
+                p.setFillColor(colors.grey)
+                p.rect(margem_x, y, sum(col_widths), 0.5 * cm, fill=True, stroke=False)
+                p.setFillColor(colors.white)
+                p.drawString(margem_x + 0.2 * cm, y + 0.15 * cm, header[0])
+                p.drawString(margem_x + col_widths[0] + 0.2 * cm, y + 0.15 * cm, header[1])
+                p.drawString(margem_x + col_widths[0] + col_widths[1] + 0.2 * cm, y + 0.15 * cm, header[2])
+                y -= 0.5 * cm
+
+            cor_fundo = colors.whitesmoke if alternar else colors.lightgrey
+            p.setFillColor(cor_fundo)
+            p.rect(margem_x, y, sum(col_widths), 0.4 * cm, fill=True, stroke=False)
+            p.setFillColor(colors.black)
+            p.setFont("Helvetica", 9)
+            p.drawString(margem_x + 0.2 * cm, y + 0.1 * cm, falta.data.strftime('%d/%m/%Y'))
+            p.drawString(margem_x + col_widths[0] + 0.2 * cm, y + 0.1 * cm, falta.falta.descricao)
+            p.drawString(margem_x + col_widths[0] + col_widths[1] + 0.2 * cm, y + 0.1 * cm, str(falta.qtd_dias))
+            y -= 0.4 * cm
+            alternar = not alternar
+
+        y -= 0.4 * cm
+
+    if y <= 3 * cm:
+        y = nova_pagina()
+
+    # Total no final
+    p.setFont("Helvetica-Bold", 11)
+    p.drawString(margem_x, y, f"Total de funcionários com faltas: {total_funcionarios}")
+
+    p.save()
+    buffer.seek(0)
+
+    response = HttpResponse(buffer, content_type='application/pdf')
+    response['Content-Disposition'] = 'inline; filename="relatorio_faltas.pdf"'
+    return response
+
+###### Fim Filtros ###########
 
 def consultar_pontuacao(pessoa_id, ano,num=0):
     pontuacao = Pontuacoes.objects.filter(pessoa=pessoa_id).filter(ano=ano-num)
@@ -817,49 +906,11 @@ def buscar_informacoes_ficha_v2(pessoa_id, ano):
     return contexto
 
 
-# criação 25/12/2022
-def buscar_informacoes_ficha_v3(pessoa_id, ano):
-    anos, pessoa = listar_anos(pessoa_id)
-    pessoa = Pessoas.objects.get(pk=pessoa_id)
-    meses = configurar_meses_v4(ano,pessoa_id)
-    funcao, cargo, ue  = gerar_pontuacao_anual_v2(ano,pessoa)
-    funcao_a, cargo_a, ue_a = consultar_pontuacao(pessoa_id, ano, 1)
-    ano_a = ano - 1
-    meses_pontuacao = transformar_em_um_dicionario(funcao,cargo,ue)
-    
-
-    ano_st = consultar_anos_status(pessoa.id)
-    ano_status = ano_st[0][ano]
-
-    dias = []
-    for dia in range(1,32):
-        dias.append(dia)
-   
+# preencher tipos_faltas
+def retornar_preenchimento_tipos_falta(ano, pessoa_id, meses):
     faltas = Faltas_Pessoas.objects.all().order_by('data').filter(data__year=ano).filter(pessoa=pessoa_id)
-    admissao = pessoa.admissao
-    saida = pessoa.saida
-
-    conta = 0
-    for l in str(pessoa.cargo):
-        if l == '-':
-            conta +=1
-
-    if conta > 1:
-        cargo_disciplina = str(pessoa.cargo).replace('-','')
-        cargo_disciplina = cargo_disciplina + ' - N/A'
-        cargo_disciplina = tuple(cargo_disciplina.split('-'))
-    elif conta == 0:
-        cargo_disciplina = str(pessoa.cargo) + ' - N/A'
-        cargo_disciplina = tuple(cargo_disciplina.split('-'))
-    else:
-        cargo_disciplina = tuple(str(pessoa.cargo).split('-'))
-
-    des_cargo, disciplina = cargo_disciplina
- 
     tipo_faltas=contar_tipos_faltas(faltas)
-   
     data = ''
-
     for falta in faltas:
        
         data = falta.data
@@ -874,33 +925,43 @@ def buscar_informacoes_ficha_v3(pessoa_id, ano):
 
             mes = data.month
             dia = data.day - 1
-            
-            if mes == 1:
-                meses['janeiro'][dia] = falta.falta.tipo
-            elif mes == 2:
-                meses['fevereiro'][dia] = falta.falta.tipo
-            elif mes == 3:
-                meses['marco'][dia] = falta.falta.tipo
-            elif mes == 4:
-                meses['abril'][dia] = falta.falta.tipo
-            elif mes == 5:
-                meses['maio'][dia] = falta.falta.tipo
-            elif mes == 6:
-                meses['junho'][dia] = falta.falta.tipo
-            elif mes == 7:
-                meses['julho'][dia] = falta.falta.tipo
-            elif mes == 8:
-                meses['agosto'][dia] = falta.falta.tipo
-            elif mes == 9:
-                meses['setembro'][dia] = falta.falta.tipo
-            elif mes == 10:
-                meses['outubro'][dia] = falta.falta.tipo
-            elif mes == 11:
-                meses['novembro'][dia] = falta.falta.tipo
-            elif mes == 12:
-                meses['dezembro'][dia] = falta.falta.tipo
+        
+            # preenche onde acontece a falta
+            meses[retornar_nome_mes(mes)][dia] = falta.falta.tipo
+    
+    return tipo_faltas
 
+def formatar_cargo_disciplina(pessoa):
 
+    cargo = str(pessoa.cargo)
+    if '-' in cargo:
+        cargo_disciplina = tuple(cargo.split('-'))
+    else:
+        cargo_disciplina = cargo + '-N/A'
+        cargo_disciplina = tuple(cargo_disciplina.split('-'))
+
+    return cargo_disciplina
+
+# criação 25/12/2022
+def buscar_informacoes_ficha_v3(pessoa_id, ano):
+    anos, pessoa = listar_anos(pessoa_id)
+    pessoa = Pessoas.objects.get(pk=pessoa_id)
+    meses = configurar_meses_v4(ano,pessoa_id)
+    funcao, cargo, ue  = gerar_pontuacao_anual_v2(ano,pessoa)
+    funcao_a, cargo_a, ue_a = consultar_pontuacao(pessoa_id, ano, 1)
+    ano_a = ano - 1
+    meses_pontuacao = transformar_em_um_dicionario(funcao,cargo,ue)
+    ano_st = consultar_anos_status(pessoa.id)
+    ano_status = ano_st[0][ano]
+    
+    dias = []
+    for dia in range(1,32):
+        dias.append(dia)
+   
+    admissao = pessoa.admissao
+    saida = pessoa.saida
+    des_cargo, disciplina = formatar_cargo_disciplina(pessoa)
+    tipo_faltas = retornar_preenchimento_tipos_falta(ano, pessoa_id, meses)
     faltas_mes_a_mes = faltas_por_mes_v2(meses)  
 
 
@@ -1047,59 +1108,15 @@ def gerar_pontuacao_atribuicao(ano,pessoa, tipo='c'):
              
     return cargo, funcao, ue
 
-def gerar_pontuacao_anual(ano,pessoa, tipo='c'):
-    '''a - ano anterior, c - ano corrente '''
-
-    data_bas_ini = datetime.strptime(f'{ano}-01-01','%Y-%m-%d',).date()
-    data_bas_fim = datetime.strptime(f'{ano}-12-31','%Y-%m-%d').date()
-
-    if pessoa.admissao > data_bas_ini:
-        data_bas_ini = pessoa.admissao
-
-    dias = contar_dias(data_bas_ini, data_bas_fim)
-    
-    q1 = Pontuacoes.objects.filter(ano=ano-1) # ano anterior
-    q2 = Pontuacoes.objects.filter(pessoa=pessoa)
-
-    pontuacao_anterior = q1.intersection(q2)
-    
-    # ano anterior
-    if tipo == 'a':
-        if len(pontuacao_anterior) == 0:
-            cargo = 0
-            funcao = 0
-            ue = 0
-           
-        else:
-            cargo = pontuacao_anterior[0].cargo
-            funcao = pontuacao_anterior[0].funcao
-            ue = pontuacao_anterior[0].ue
- 
-    else:
-        # ano corrente
-        if  pontuacao_anterior.count() == 0 :
-            cargo = dias
-            funcao = dias
-            ue = dias
-        else:
-            cargo = pontuacao_anterior[0].cargo + dias
-            funcao = pontuacao_anterior[0].funcao + dias
-            ue = pontuacao_anterior[0].ue + dias
-             
-    return cargo, funcao, ue
 
 def gerar_pontuacao_anual_v2(ano,pessoa):
-    pontuacao = Pontuacoes.objects.filter(pessoa=pessoa).filter(ano=ano-1)
-    acumulado_funcao, acumulado_cargo, acumulado_ue = 0,0,0
-    if pontuacao.count():
-        acumulado_funcao = pontuacao[0].funcao
-        acumulado_cargo = pontuacao[0].cargo
-        acumulado_ue = pontuacao[0].ue
-    else:
-        acumulado_funcao = 0
-        acumulado_cargo = 0
-        acumulado_ue = 0
+    pontuacao = Pontuacoes.objects.filter(pessoa=pessoa).filter(ano=ano-1).first()
+    acumulado_funcao, acumulado_cargo, acumulado_ue = 0, 0, 0
+    
+    if pontuacao:
+        acumulado_funcao, acumulado_cargo, acumulado_ue = pontuacao.funcao, pontuacao.cargo, pontuacao.ue
         
+      
     funcao = acumular_dias(ano,pessoa.id,acumulado_funcao)
     cargo = acumular_dias(ano,pessoa.id,acumulado_cargo)
     ue = acumular_dias(ano,pessoa.id,acumulado_ue)
@@ -1117,7 +1134,11 @@ def pdf_v3(request, pessoa_id, ano):
     from reportlab.lib.pagesizes import A4, landscape
     from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Image
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-    contexto = buscar_informacoes_ficha_v2(pessoa_id,ano)
+    
+   
+    
+    contexto = buscar_informacoes_ficha_v2(pessoa_id, ano)
+
    
     buffer = BytesIO()
     doc = SimpleDocTemplate(buffer, 
@@ -1673,16 +1694,6 @@ def abrir_ano(request, pessoa_id, ano):
     if ano == min_ano:
         abrir_todos = True
 
-    # anos_status = {}
-   
-    # for a in anos:
-    #     status  = checar_existencia_pontuacao(a,pessoa)
-    #     if status:
-    #         status = 'Aberto'
-    #     else:
-    #         status = 'Fechado'
-    #     anos_status[a] = status
-
     
     if request.method == 'GET':
         
@@ -1757,10 +1768,7 @@ def acumular_dias(ano,pessoa_id,acumulado=0):
     meses = configurar_meses_v4(ano,pessoa_id)
     
     dias_acumulados_por_mes = {}
-    # for k in meses.keys():
-    #     mes = retornar_mes_num(k)      
-    #     acumulo += mes[1]
-    #     dicio_acumulo[k] = acumulo
+    
     dias = 0
     for k,v in meses.items():
         for d in v:
@@ -1781,60 +1789,67 @@ def coletivo(request):
 
     return render(request,'template/coletivo.html')
 
+
 # Verificar 26/12/2022
 def lancar_evento_coletivo(request):
-    pessoas = Pessoas.objects.all()
     cargos = Cargos.objects.all()
     
     if request.method == 'POST':
         #Captura os valores do formulário
         cargos_selecionados = request.POST.getlist('cargos')
-
+        pessoas = Pessoas.objects.filter(cargo__id__in=cargos_selecionados)
+        lancamento_a_criar = []
+        conflitos, fechamentos = 0, 0
+        
 
         # instância do formulário para pegar dados
         form = formularioLF(request.POST)
         
         # pegar valores do formulário
         qtd_dias = int(form.data['qtd_dias'])
-        data_lancamento = form['data'].value()
+        data_lancamento = datetime.strptime(form['data'].value(), '%Y-%m-%d').date()
         falta = Faltas.objects.get(pk=form['falta'].value())
-
-        data_lancamento = datetime.strptime(data_lancamento, '%Y-%m-%d').date()
 
         # criar intervalos de lançamentos na memória e dividir por ano (ano é chave)
         dia_mes_ano = gerar_lancamento_em_memoria(data_lancamento,qtd_dias)
-        log_id = []
+
         # verifica se os dados preenchidos são válidos
         # verifica se existe faltas naquele intervalo
         for pessoa in pessoas:
+            if data_lancamento <= pessoa.admissao:
+                continue
+
             conflito= lancar_falta(data_lancamento, qtd_dias ,pessoa.id)
             ano_fechado = verificar_status_ano(data_lancamento.year, pessoa.id)
             
-         
-            if data_lancamento > pessoa.admissao and  str(pessoa.cargo.id) in cargos_selecionados:
+
+            if ano_fechado:
+                fechamentos += 1
+                continue 
+
+            if not conflito:
+                conflitos += 1
+                continue
+
+            # navega entre os valores de cada chave que é ano
+            for datas in dia_mes_ano.values():
+                qtd_dias = len(datas) # quantos dias existem dentro da chave ano
+                data_lancamento = datas[0] # pega o primeiro dia do lançamento e depois o primeiro dia do ano seguinte
+                # cria objeto com os novos dados
+                novoLancamento= Faltas_Pessoas(pessoa=pessoa,data=data_lancamento,qtd_dias=qtd_dias,falta=falta)
+                # adiciona os objetos a uma lista
+                lancamento_a_criar.append(novoLancamento)
                 
-                if conflito:
-                    if not ano_fechado:
-                        # navega entre as chaves (ano)
-                        for k in dia_mes_ano.keys():
-                            qtd_dias = len(dia_mes_ano[k]) # quantos dias existem dentro da chave ano
-                            data_lancamento = dia_mes_ano[k][0] # pega o primeiro dia do lançamento e depois o primeiro dia do ano
+               
+        # Salva objetos de uma só vez no banco
+        Faltas_Pessoas.objects.bulk_create(lancamento_a_criar)
 
-                            # cria objeto com os novos dados
-                            novoObj = Faltas_Pessoas(pessoa=pessoa,data=data_lancamento,qtd_dias=qtd_dias,falta=falta)
-                            
-                            # salva o objeto
-                            novoObj.save()
-                            
-                            messages.success(request,f"Evento Coletivo registrado! {pessoa.nome}")
-
-                    else:
-                        messages.error(request,f"Ano {data_lancamento.year} Fechado! Abrir se deseja efetuar lançamentos!",'danger')
-
-                else:
-                    messages.error(request,"Não foi possível registrar a falta! Pode existir conflito de datas!",'danger')
-
-    form = formularioLF()
+        messages.success(request, f"Lançamentos efetuados com sucesso: {len(lancamento_a_criar)}","success")
+        messages.error(request, f"Lançamentos com conflitos de datas: {conflitos}","danger")
+        messages.warning(request, f"Lançamentos com o ano fechado: {fechamentos}","warning")
+              
+    else:          
+        form = formularioLF()
 
     return render(request,'template/lancar_evento_coletivo.html', {'form':form, 'cargos': cargos})
 

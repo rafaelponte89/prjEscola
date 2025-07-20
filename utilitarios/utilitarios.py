@@ -167,7 +167,8 @@ def converter_data(data):
                 aluno.data_nascimento = data_convertida
                 aluno.save()
     except:
-        pass
+        print('Não foi possível salvar!!!')
+    
 # Create your views here.
 def criar_log(mensagem, texto):
     with open('log_backup.txt','a') as bkp_log:

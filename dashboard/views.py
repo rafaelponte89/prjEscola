@@ -1,8 +1,8 @@
 from django.shortcuts import render
-from appClasse.models import Classe
 from appAno.models import Ano
 from appMatricula.models import Matricula
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse
+from django.db.models import Count, Q
 
 # Create your views here.
 
@@ -11,17 +11,20 @@ def dashboard(request):
 
     return render(request, 'dashboard.html',)
 
-def filtrar_cursando_promovido(ano):
-    excluir = ['REMA','BXTR','NFC']
-    manha =  Matricula.objects.filter(classe__periodo='M').exclude(situacao=excluir).filter(ano=ano).count()
-    tarde =  Matricula.objects.filter(classe__periodo='T').exclude(situacao=excluir).filter(ano=ano).count()
-    integral =  Matricula.objects.filter(classe__periodo='I').exclude(situacao=excluir).filter(ano=ano).count()
-    return manha, tarde, integral
+def contar_por_periodo_aggregate(ano, situacoes_validas=['C', 'P']):
+    contagens = Matricula.objects.filter(ano=ano, situacao__in=situacoes_validas).aggregate(
+        manha=Count('id', filter=Q(classe__periodo='M')),
+        tarde=Count('id', filter=Q(classe__periodo='T')),
+        integral=Count('id', filter=Q(classe__periodo='I')),
+    )
+  
+    return contagens['manha'], contagens['tarde'], contagens['integral']
+
 def visualizar_alunos_periodo(request):
 
     ano = Ano.objects.get(pk=request.GET.get('ano'))
    
-    manha, tarde, integral = filtrar_cursando_promovido(ano)
+    manha, tarde, integral = contar_por_periodo_aggregate(ano)
     print(manha, tarde)
     dados = {
         'Manhã': manha,

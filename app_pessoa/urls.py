@@ -6,6 +6,6 @@ urlpatterns = [
     path('cadastrarpessoas', cadastrar_pessoas, name="cadastrarpessoas"),
     path('telapesquisar',tela_pesquisar_pessoas, name="telapesquisarpessoas"),
     path('pesquisar/',pesquisar_pessoas, name="pesquisarpessoas"),
-    path('atualizarpessoa/<int:pessoa_id>', atualizar_pessoa, name="atualizarpessoa"),
+    path('atualizarpessoa/<str:pessoa_id>', atualizar_pessoa, name="atualizarpessoa"),
     path('selecao/pessoa', selecionar_pessoa, name='selecionarpessoa')
 ]
