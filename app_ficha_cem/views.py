@@ -908,7 +908,7 @@ def buscar_informacoes_ficha_v2(pessoa_id, ano):
 
 # preencher tipos_faltas
 def retornar_preenchimento_tipos_falta(ano, pessoa_id, meses):
-    faltas = Faltas_Pessoas.objects.all().order_by('data').filter(data__year=ano).filter(pessoa=pessoa_id)
+    faltas = Faltas_Pessoas.objects.filter(data__year=ano).filter(pessoa=pessoa_id).order_by('data')
     tipo_faltas=contar_tipos_faltas(faltas)
     data = ''
     for falta in faltas:
@@ -1580,7 +1580,7 @@ def pdf_v_original(request, pessoa_id, ano):
 def atualizar_pontuacoes(request, pontuacao_id, pessoa_id):
 
     pontuacao = Pontuacoes.objects.get(pk=pontuacao_id)
-    pontuacoes = Pontuacoes.objects.all().filter(pessoa=pessoa_id)
+    pontuacoes = Pontuacoes.objects.filter(pessoa=pessoa_id)
     pessoa = Pessoas.objects.get(pk=pessoa_id)
 
     if request.method == 'POST':
@@ -1616,10 +1616,15 @@ def consultar_anos_status(pessoa):
 
     return anos_status,anos
 
+def criar_salvar_pontuacao(ano, funcao, cargo, ue, pessoa):
+    pontuacao = Pontuacoes(ano=ano,funcao=funcao,cargo=cargo,ue=ue,pessoa=pessoa)
+    pontuacao.save()
+
+
 def encerrar_ano_v2(request, pessoa_id, ano):
     
-    q1 = Pontuacoes.objects.all().filter(pessoa=pessoa_id).filter(ano=ano)
-    q2= Pontuacoes.objects.all().filter(pessoa=pessoa_id).filter(ano=ano-1)
+    pontuacao_ano_corrente = Pontuacoes.objects.filter(pessoa=pessoa_id).filter(ano=ano)
+    pontuacao_ano_anterior= Pontuacoes.objects.filter(pessoa=pessoa_id).filter(ano=ano-1)
 
     pessoa = Pessoas.objects.get(pk=pessoa_id)
     dicionario =   gerar_pontuacao_anual_v2(ano,pessoa)
@@ -1631,96 +1636,69 @@ def encerrar_ano_v2(request, pessoa_id, ano):
     # anos, pessoa = listar_anos(pessoa.id)
     anos_status, anos = consultar_anos_status(pessoa.id)
     min_ano = min(anos)
-    max_ano = max(anos)
-
-    template = ''
-    if 'encerrar' in request.get_full_path():
-        template = 'ficha'
-        argumento = ano
-    else:
-        template = 'listarficha'
-        argumento = pessoa_id
-    # anos_status = {}
-   
-    # for a in anos:
-    #     status  = checar_existencia_pontuacao(a,pessoa)
-    #     if status:
-    #         status = 'Aberto'
-    #     else:
-    #         status = 'Fechado'
-    #     anos_status[a] = status
-    
+     
    
     if request.method == 'GET':
 
-        if  q1.count() == 0 and  min_ano == ano and pessoa.efetivo == True:
-            pontuacao = Pontuacoes(ano=ano,funcao=funcao,cargo=cargo,ue=ue,pessoa=pessoa)
-            pontuacao.save()
+        if  not pontuacao_ano_corrente.exists() and  min_ano == ano and pessoa.efetivo == True:
+            criar_salvar_pontuacao(ano, funcao, cargo, ue, pessoa)
+            messages.success(request,f"Ano {ano} fechado com sucesso!")
 
-            messages.success(request,f"Ano {ano} fechado com sucesso!")
         
-        elif q2.count() != 0 :
-            pontuacao = Pontuacoes(ano=ano,funcao=funcao,cargo=cargo,ue=ue,pessoa=pessoa)
-            pontuacao.save()
-            
+        elif pontuacao_ano_anterior.exists():
+            criar_salvar_pontuacao(ano, funcao, cargo, ue, pessoa)
             messages.success(request,f"Ano {ano} fechado com sucesso!")
-            
-        elif q1.count() == 0 and pessoa.efetivo == False:
-            pontuacao = Pontuacoes(ano=ano,funcao=funcao,cargo=cargo,ue=ue,pessoa=pessoa)
-            pontuacao.save()
-            
-            messages.success(request,f"Ano {ano} fechado com sucesso!") 
+
+        elif not pontuacao_ano_corrente.exists() and  not pessoa.efetivo :
+            criar_salvar_pontuacao(ano, funcao, cargo, ue, pessoa)
+            messages.success(request,f"Ano {ano} fechado com sucesso!")
+
 
         else:
             messages.info(request,f"Ano anterior {ano - 1} aberto!")
-
-        print(request.META)
         return redirect('listarficha',pessoa_id)
-       
-        # return redirect('encerrarano',pessoa_id,ano)     
+          
 
     return render(request,'template/listar_ficha.html',{'anos':anos_status, 'pessoa':pessoa})
 
+def deletar_pontuacao_ano(pessoa, ano):
+    if not ano:
+        return
+    Pontuacoes.objects.filter(pessoa=pessoa).filter(ano__in=ano).delete()
+   
 def abrir_ano(request, pessoa_id, ano):
 
     pessoa = Pessoas.objects.get(pk=pessoa_id)
     # anos, pessoa = listar_anos(pessoa_id)
     anos_status, anos = consultar_anos_status(pessoa.id)
-    abrir_todos = False
-    q2= Pontuacoes.objects.all().filter(pessoa=pessoa_id).filter(ano=ano+1)
-    min_ano = min(anos)
-    max_ano = max(anos)
+    pontuacao_existe= Pontuacoes.objects.filter(pessoa=pessoa_id).filter(ano=ano+1).exists()
+    min_ano, max_ano = min(anos), max(anos)
+    abrir_todos = (ano == min_ano and pessoa.efetivo)
 
-    if ano == min_ano:
-        abrir_todos = True
-
-    
     if request.method == 'GET':
         
-        if abrir_todos and pessoa.efetivo:
-            for i in anos:
-                
-                q1 = Pontuacoes.objects.all().filter(pessoa=pessoa_id).filter(ano=i)
-                q1.delete() 
-                 
+        if abrir_todos:
+            
+            deletar_pontuacao_ano(pessoa, anos)
+        
             messages.success(request,f"Aberto do ano {min_ano} ao {max_ano}")
+
         else:
-            if q2.count() > 0 and pessoa.efetivo:
+
+            if pontuacao_existe and pessoa.efetivo:
                 messages.info(request,f"Não pode abrir {ano} existe ano posterior Fechado!")
+
             else:
-                q1 = Pontuacoes.objects.all().filter(pessoa=pessoa_id).filter(ano=ano)
-                q1.delete()    
+                deletar_pontuacao_ano(pessoa, [ano])  
                 messages.success(request,f"Ano {ano} Aberto!")
           
         return redirect('listarficha',pessoa_id)     
    
-
-    
     return render(request,'template/listar_ficha.html',{'anos':anos_status, 'pessoa':pessoa})
 
 def excluir_pontuacoes(request, pessoa_id, pontuacao_id):
     pontuacao = Pontuacoes.objects.get(pk=pontuacao_id)
-    pontuacoes = Pontuacoes.objects.all().filter(pessoa=pessoa_id).order_by('ano')
+    pontuacoes = Pontuacoes.objects.filter(pessoa=pessoa_id).order_by('ano')
     pessoa = Pessoas.objects.get(pk=pessoa_id)
 
     if request.method == 'GET':
@@ -1759,7 +1737,6 @@ def lancar_pontuacoes(request, pessoa_id):
     else:
         form = formularioPontuacao(initial={'pessoa':pessoa})
         
-    
     
     return render(request,'template/lancar_pontuacao.html',{'form':form,'pessoa':pessoa,'pontuacoes':pontuacoes})
 
@@ -1822,7 +1799,6 @@ def lancar_evento_coletivo(request):
             conflito= lancar_falta(data_lancamento, qtd_dias ,pessoa.id)
             ano_fechado = verificar_status_ano(data_lancamento.year, pessoa.id)
             
-
             if ano_fechado:
                 fechamentos += 1
                 continue 
