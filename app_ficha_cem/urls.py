@@ -1,7 +1,8 @@
 from .views import gerar_ficha, abrir_ano, \
       listar_ficha, encerrar_ano_v2, pessoas_faltas, pdf_v3, lancar_pontuacoes, atualizar_pontuacoes,  \
       excluir_pontuacoes, coletivo, lancar_evento_coletivo, excluir_pessoas_faltas, relatorio_faltas, \
-      relatorio_faltas_geral, relatorio_faltas_descritivo, relatorio_faltas_descritivo_pdf
+      relatorio_faltas_geral, relatorio_faltas_descritivo, relatorio_faltas_descritivo_pdf, \
+      gerar_requerimento_abono_pdf
 
 from django.urls.conf import path,include
 urlpatterns = [
@@ -15,14 +16,16 @@ urlpatterns = [
     path('pessoas/<str:pessoa_id>/fichas/<int:ano>', gerar_ficha, name='ficha'),
     path('pessoas/<str:pessoa_id>/fichas/encerrar/<int:ano>', encerrar_ano_v2, name='encerrarano' ),
     path('pessoas/<str:pessoa_id>/fichas/abrir/<int:ano>', abrir_ano, name='abrirano' ),
-    path('pessoas/<int:pessoa_id>/fichaspdf/<int:ano>/', pdf_v3, name='baixarpdf'),
+    path('pessoas/<str:pessoa_id>/fichaspdf/<int:ano>/', pdf_v3, name='baixarpdf'),
     path('coletivo', coletivo, name='coletivo'),
     path('coletivo/evento', lancar_evento_coletivo, name='eventocoletivo'),
     path('faltas/', include('app_falta.urls')),
     path('cargos/',include('app_cargo.urls')),   
     path('relatorio-faltas/<str:pessoa_id>/', relatorio_faltas, name='relatorio_faltas'),
     path('relatorio-faltas/', relatorio_faltas_geral, name='relatorio_faltas_geral'),
-     path('relatorio-faltas-descritivo/', relatorio_faltas_descritivo, name='relatorio_faltas_descritivo'),
+    path('relatorio-faltas-descritivo/', relatorio_faltas_descritivo, name='relatorio_faltas_descritivo'),
     path('relatorio-faltas-descritivo/pdf/', relatorio_faltas_descritivo_pdf, name='relatorio_faltas_descritivo_pdf'),
     #path('relatorio-faltas/pdf/', views.relatorio_faltas_pdf, name='relatorio_faltas_pdf'),
+    path('relatorio-faltas-requerimento/<str:servidor_id>/pdf/<int:ano>', gerar_requerimento_abono_pdf, name='gerar_requerimento_abono_pdf'),
+
 ]

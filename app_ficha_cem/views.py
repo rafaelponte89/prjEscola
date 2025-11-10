@@ -17,6 +17,12 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import cm
 from reportlab.lib import colors
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+
+
+from django.db.models import Q
+
 from io import BytesIO
 
 # determina se o ano é bissexto
@@ -349,7 +355,7 @@ def faltas_a_descontar(ano,pessoa, tolerancia=6):
     datas = []
    
     for fp in atrib:
-        if fp.falta.tipo in ['J','AM']:
+        if fp.falta.tipo in ['J','AM','AO']:
             data = datetime(fp.data.year, fp.data.month, fp.data.day)
             
             for dias in range(1,fp.qtd_dias):
@@ -428,6 +434,157 @@ def faltas_por_mes(meses):
 from django.db.models import Sum
 
 ############################# Filtros #########################
+
+# 
+def gerar_requerimento_abono_pdf(request, servidor_id, ano):
+    servidor = get_object_or_404(Pessoas, pk=servidor_id)
+    faltas = Faltas_Pessoas.objects.filter(pessoa=servidor, data__year=ano)
+
+    faltas_justificadas = []
+    faltas_injustificadas = []
+    faltas_abonadas = []
+    licencas_saude = []
+
+    for falta in faltas:
+        dias = getattr(falta, 'qtd_dias', 1)
+        tipo = falta.falta.tipo  # AM, AO, FJ, I, AB, etc.
+
+        # Se tiver mais de 3 dias e for do tipo justificável, vai para Licença Saúde
+        if dias > 3 and tipo in ['AM', 'AO', 'J']:
+            licencas_saude.append(falta)
+        else:
+            if tipo in ['AM', 'AO', 'FJ','LM', 'LN']:
+                faltas_justificadas.append(falta)
+            elif tipo == 'I':
+                faltas_injustificadas.append(falta)
+            elif tipo == 'AB':
+                faltas_abonadas.append(falta)
+
+    categorias = {
+        'FALTAS JUSTIFICADAS': faltas_justificadas,
+        'FALTAS INJUSTIFICADAS': faltas_injustificadas,
+        'FALTAS ABONADAS': faltas_abonadas,
+        'LICENÇAS SAÚDE': licencas_saude,
+    }
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'inline; filename="Relatorio_{servidor.nome}.pdf"'
+
+    doc = SimpleDocTemplate(
+        response,
+        pagesize=A4,
+        leftMargin=1.5 * cm,
+        rightMargin=1.5 * cm,
+        topMargin=1.2 * cm,
+        bottomMargin=1.2 * cm,
+    )
+
+    elements = []
+
+    # --- Estilos com Helvetica (Arial-like) ---
+    estilo_centro = ParagraphStyle(name='centro', alignment=1, fontName='Helvetica', fontSize=11)
+    estilo_negrito = ParagraphStyle(name='negrito', alignment=1, fontName='Helvetica-Bold', fontSize=12, spaceBefore=6, spaceAfter=6)
+    estilo_normal = ParagraphStyle(name='normal', fontName='Helvetica', fontSize=11)
+    estilo_cabecalho = ParagraphStyle(name='cabecalho', fontName='Helvetica', fontSize=10, alignment=1, leading=12)
+    estilo_celula_texto = ParagraphStyle(name='celula_texto', fontName='Helvetica', fontSize=10, alignment=0, leading=12)
+    estilo_celula_centro = ParagraphStyle(name='celula_centro', fontName='Helvetica', fontSize=10, alignment=1, leading=12)
+
+    # Cabeçalho
+    elements.append(Paragraph("<b>Prefeitura Municipal de Orlândia</b>", estilo_negrito))
+    elements.append(Paragraph("REQUERIMENTO ÚNICO ANUAL DE ABONO / JUSTIFICAÇÃO DE FALTAS", estilo_centro))
+    elements.append(Paragraph(f"<b>Ano {ano}</b>", estilo_centro))
+    elements.append(Spacer(1, 12))
+
+    if "PEB" in servidor.cargo.cargo:
+        funcionario = "PROFESSOR(A)"
+    else:
+        funcionario = "FUNCIONÁRIO(A)"
+
+    # Tabela de dados do servidor
+    tabela_dados = [
+        ["UNIDADE ESCOLAR:", "EMEB Profª Victória Olivito Nonino"],
+        [f"NOME DO(A) {funcionario}:", servidor.nome],
+        ["CARGO / FUNÇÃO:", servidor.cargo],
+        ["MATRÍCULA:", servidor.id],
+    ]
+    largura_total = 15.5 * cm
+    colunas_info = [5.5 * cm, largura_total - 5.5 * cm]
+    table_info = Table(tabela_dados, colWidths=colunas_info)
+    table_info.setStyle(TableStyle([
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+    ]))
+    elements.append(table_info)
+    elements.append(Spacer(1, 14))
+
+    # Tabelas das categorias
+    for titulo, lista in categorias.items():
+        elements.append(Paragraph(f"<b>{titulo}</b>", estilo_negrito))
+        elements.append(Spacer(1, 6))
+
+        if lista:
+            header = [
+                Paragraph("<b>Nº</b>", estilo_celula_centro),
+                Paragraph("<b>Data da Falta</b>", estilo_celula_centro),
+                Paragraph("<b>Assinatura do Requerente</b>", estilo_cabecalho),
+                Paragraph("<b>Desp. Def./Indef.</b>", estilo_cabecalho),
+                Paragraph("<b>Superior Imediato</b>", estilo_celula_centro),
+            ]
+            dados = [header]
+            colunas = [1.2 * cm, 3 * cm, 6.5 * cm, 2.5 * cm, 2.3 * cm]
+
+            for i, falta in enumerate(lista, 1):
+                # Determina o período da falta usando qtd_dias
+                if getattr(falta, 'qtd_dias', 1) > 1:
+                    data_fim = falta.data + timedelta(days=falta.qtd_dias - 1)
+                    data_texto = f"{falta.data.strftime('%d/%m/%Y')} a {data_fim.strftime('%d/%m/%Y')}"
+                else:
+                    data_texto = falta.data.strftime("%d/%m/%Y")
+
+                row = [
+                    Paragraph(f"{i}ª", estilo_celula_centro),
+                    Paragraph(data_texto, estilo_celula_centro),
+                    Paragraph("", estilo_celula_texto),
+                    Paragraph("", estilo_celula_texto),
+                    Paragraph("", estilo_celula_texto),
+                ]
+                dados.append(row)
+            
+        else:
+            dados = [[Paragraph("Sem ocorrências", estilo_celula_centro)]]
+            colunas = [largura_total]
+
+        tabela = Table(dados, colWidths=colunas)
+        estilo = [
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('LEFTPADDING', (0, 0), (-1, -1), 5),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 5),
+        ]
+
+        if not lista:
+            estilo += [
+                ('SPAN', (0, 0), (-1, 0)),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ]
+        else:
+            estilo += [
+                ('ALIGN', (0, 0), (1, -1), 'CENTER'),
+                ('ALIGN', (2, 0), (4, -1), 'LEFT'),
+            ]
+
+        tabela.setStyle(TableStyle(estilo))
+        elements.append(tabela)
+        elements.append(Spacer(1, 16))
+
+    doc.title = f"Abono {servidor.nome}"
+    doc.build(elements)
+    return response
+
 def relatorio_faltas_geral(request):
     form = FaltaPesquisaFormGeral(request.GET or None)
     resultados = []
@@ -584,6 +741,7 @@ def relatorio_faltas_descritivo(request):
         'dados': dados_agrupados,
         'total_funcionarios': total_funcionarios
     })
+
 
 
 def relatorio_faltas_descritivo_pdf(request):

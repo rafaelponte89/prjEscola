@@ -1,0 +1,243 @@
+{% extends 'base_head.html' %}
+{% load static %}
+
+
+{% block css_head_self %}
+<meta name="description" content="Aplicação web para cadastrar alunos" />
+
+<style>
+  .menusup {
+
+    background-color: #343a40 !important;
+    /* bg-dark */
+    padding: 0.7rem !important;
+    /* p-2 (equivalente a 8px) */
+    margin-top: 0.5rem !important;
+    /* mt-2 (equivalente a 8px) */
+    border-radius: 0.55rem !important;
+    /* rounded-3 (equivalente a 12px) */
+    color: #ffc107 !important;
+    /* text-warning */
+    text-decoration: none;
+    font-weight: 600;
+    text-decoration-color: aliceblue;
+
+
+  }
+</style>
+
+<title>Sistema Registro de Matrícula</title>
+
+{% endblock css_head_self %}
+
+{% block content %}
+<div id="Conteudo">
+  <div id="mensagens" class="col-12 fixed-top"></div>
+  <button class="btn btn-large waves-effect waves-light black" id="aumentarLetra">
+    A+
+  </button>
+  <button class="btn btn-large waves-effect waves-light red" id="diminuirLetra">
+    A-
+  </button>
+  <button id="botaoconfiguracoes" class="btn btn-outline-success m-3" title="Configurações" data-bs-toggle="modal"
+    data-bs-target="#configuracoesModal">
+    <i class="bi bi-gear-fill"></i>
+  </button>
+
+
+  <div id="topo" class="row">
+
+    <div class="col-12 text-center">
+
+      <button type="button" class="btn btn-outline-dark m-2 btn-lg" id="anoAnterior">
+        <i class="bi bi-caret-left-square-fill"></i>
+      </button>
+
+      <strong class="bg-dark p-2 mt-2 rounded-3">
+        <i id="ano" class="bi bi-calendar text-warning m-lg-5" style="font-size: 27px"></i>
+      </strong>
+
+      <button type="button" class="btn btn-outline-dark m-2 btn-lg" id="anoPosterior">
+        <i class="bi bi-caret-right-square-fill"></i>
+      </button>
+
+    </div>
+  </div>
+
+  <div class="container">
+    <div id="menu" class="row">
+      <ul class="nav">
+        <li class="m-2">
+          <a class="p-2 {% if request.resolver_match.url_name == 'inicial' %} menusup {% endif %}"
+            href="{% url 'inicial' %}" id="aluno">Alunos</a>
+        </li>
+        <li class="m-2">
+          <a class="p-2 {% if request.resolver_match.url_name == 'classe' %} menusup {% endif %}"
+            href="{% url 'classe' %}" id="classe">Classes </a>
+        </li>
+        <li class="m-2">
+          <a class="p-2 {% if request.resolver_match.url_name == 'matricula' %} menusup {% endif %}"
+            href="{% url 'matricula' %}" id="matricula">
+            Matriculas
+          </a>
+        </li>
+        <li class="m-2">
+          <a class="p-2 {% if request.resolver_match.url_name == 'ano' %} menusup {% endif %}" href="{% url 'ano' %}"
+            id="anoLetivo">Anos</a>
+        </li>
+        <li class="m-2">
+          <a class="p-2 {% if request.resolver_match.url_name == 'dashboard' %} menusup {% endif %}"
+            href="{% url 'dashboard' %}" id="dashboard">
+            Dashboard
+          </a>
+        </li>
+        <!--
+        <li class="m-2">
+          <a class="p-2 {% if request.resolver_match.url_name == 'dashboard' %} menusup {% endif %}" 
+          href="{% url 'instituicao' %}" id="instituicao">
+            Instituições
+          </a>
+        </li>
+      -->
+      </ul>
+    </div>
+    <div class="row">
+      {% block content_alunos %}
+      {% endblock content_alunos %}
+    </div>
+
+    <!-- Modal Configurações -->
+    <div class="modal fade" id="configuracoesModal" tabindex="" aria-labelledby="configuracoesModalLabel"
+      aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="configuracoesModalLabel">
+              Configurações
+            </h5>
+          </div>
+          <div class="modal-body">
+            <div id="telaconfiguracoes">
+              <!-- Configuracoes -->
+
+              <!--Versão-->
+              <div class="row">
+                <div class="col-12">
+                  <input class="form-check-input" type="checkbox" value="" id="versaoCompleta" />
+                  <label for="versaoCompleta"> Versão Completa </label>
+                </div>
+              </div>
+            </div>
+
+            <!--Filtragem de Nomes-->
+            <div class="row">
+              <h8 class="text-primary">Filtrar Alunos: </h8>
+
+              <div class="col-12">
+                <input class="form-check-input" type="radio" value="" id="todos" name="pesquisaAluno" />
+                <label for="todos"> Todos </label>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-12">
+                <input class="form-check-input" type="radio" value="" id="ativos" name="pesquisaAluno" />
+                <label for="ativos"> Ativos </label>
+              </div>
+            </div>
+
+            <div class="row d-flex">
+              <h8 class="text-primary">Dados do Operador: </h8>
+              <div class="col-12">
+                <input class="form-control" type="text" value="" placeholder="Nome do Operador" id="nomeOperador" />
+
+                <input class="form-control mt-2" type="text" value="" placeholder="Cargo do Operador"
+                  id="cargoOperador" />
+
+                <input class="form-control mt-2" type="text" value="" placeholder="RG do Operador" id="rgOperador" />
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button id="salvarConfig" type="button" class="btn btn-success" data-bs-dismiss="modal">
+              Salvar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Fim Modal Atualizar Registro-->
+
+    <!-- Option 1: Bootstrap Bundle with Popper -->
+     {% block script %}
+
+{% endblock script %}
+
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+
+    <script type="text/javascript" src="{% static 'js/acessibilidade.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/configuracoes.js' %}"></script>
+
+
+
+    <!-- Option 2: Separate Popper and Bootstrap JS -->
+    <!--
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
+    -->
+    <script type="text/javascript">
+      $(document).ready(() => {
+
+
+        function selecionarAno(ano) {
+          $.get({
+            url: "{% url 'selecionarano' %}",
+            data: {
+              ano: ano
+            },
+            success: (response) => {
+              if (localStorage.getItem("anoConfig") != ano) {
+                localStorage.setItem("ultimaClasse", 0);
+              }
+
+              localStorage.setItem("idAno", response);
+              localStorage.setItem("anoConfig", ano);
+              $("#ano").html(ano);
+              location.reload();
+
+            },
+            fail: (response) => {
+              alert("sem anos");
+            }
+          })
+
+        }
+
+        function decrementarAno() {
+          let ano = parseInt(localStorage.getItem("anoConfig"));
+          ano -= 1;
+          selecionarAno(ano);
+        }
+        function incrementarAno() {
+          let ano = parseInt(localStorage.getItem("anoConfig"));
+          ano += 1;
+          selecionarAno(ano);
+        }
+
+        $("#anoAnterior").click(() => {
+          decrementarAno();
+
+        });
+
+        $("#anoPosterior").click(() => {
+          incrementarAno();
+        });
+
+      });
+    </script>
+  </div>
+</div>
+
+
+</html>
+{% endblock content %}
+

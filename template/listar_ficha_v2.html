@@ -9,7 +9,9 @@
             <th scope="col">Anos</th>
             <th scope="col">Visualizar</th>
             <th scope="col">Situação</th>
-            <th scope="col">Baixar PDF</th>
+            <th scope="col">Ficha Cem</th>
+            <th scope="col">Abono</th>
+
 
         </tr>
     </thead>
@@ -42,6 +44,11 @@
             </td>
             <td>
                 <a class="btn btn-info" href="{% url 'baixarpdf' pessoa.id ano %}"><span class="material-icons">
+                        download
+                    </span></a>
+            </td>
+             <td>
+                <a class="btn btn-info" href="{% url 'gerar_requerimento_abono_pdf' pessoa.id ano %}" target="_blank"><span class="material-icons">
                         download
                     </span></a>
             </td>
