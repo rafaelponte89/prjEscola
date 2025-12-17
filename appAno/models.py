@@ -1,5 +1,6 @@
 from django.db import models
 
+
 # Create your models here.
 class Ano (models.Model):
     ano = models.IntegerField(blank=False, null=False, unique=True)

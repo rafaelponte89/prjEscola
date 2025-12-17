@@ -1,7 +1,9 @@
+from datetime import datetime
+
 from django.shortcuts import HttpResponse
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
-from datetime import datetime
+
 
 def anonimizarDado(dado):
     sigla = ''
@@ -28,8 +30,37 @@ def retornarNomeMes(chave):
         12: "dezembro"
     }
 
-    if chave in meses:
-        return meses[chave]
+    return meses.get(chave, "")
+
+# determina se o ano é bissexto
+def bissexto(ano):
+
+    if ano % 400 == 0:
+        return True
+    else:
+        if ano % 4 == 0:
+            if ano % 100 == 0:
+                return False
+            return True
+
+
+def retornar_meses(ano=0):
+    meses = {
+        'janeiro':[1,31],
+        'fevereiro':[2,29 if bissexto(ano) else 28],
+        'março':[3,31],
+        'abril':[4,30],
+        'maio':[5,31],
+        'junho':[6,30],
+        'julho':[7,31],
+        'agosto':[8,31],
+        'setembro':[9,30],
+        'outubro':[10,31],
+        'novembro':[11,30],
+        'dezembro':[12,31]
+    }
+
+    return meses
     
 
 def criarMensagemModal(texto, tipo):
@@ -56,9 +87,7 @@ def padronizar_nome(nome):
 
         
 def testePadronizaNome():
-    alunos = Aluno.objects.all()
-    
-    padronizar_nomes(alunos)
+    pass
     
 # Migrar Serie,Turma,Ano EM DESENVOLVIMENTO
 def migrar_dados_aluno_serie():

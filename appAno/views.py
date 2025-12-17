@@ -1,8 +1,11 @@
-from django.shortcuts import render, HttpResponse
-from .models import Ano
-from appMatricula.models import Matricula
+from django.shortcuts import HttpResponse, render
+
 from appAluno.models import Aluno
+from appMatricula.models import Matricula
 from utilitarios.utilitarios import criarMensagem
+
+from .models import Ano
+
 
 # Create your views here.
 def inicial_ano(request):

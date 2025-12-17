@@ -1,79 +1,30 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import Faltas, Faltas_Pessoas, Pontuacoes, Cargos
-from .forms import formularioLF, formularioPontuacao, FiltroRelatorioDescritivoForm
-from django.contrib import messages
-from app_pessoa.models import Pessoas
-
-from django.db.models import Sum
-from .forms import FaltaPesquisaForm, FaltaPesquisaFormGeral
-from datetime import date
 # Create your views here.
-from datetime import datetime, timedelta
-from django.http import HttpResponse
-
-from django.template.defaulttags import register
-from django.template.loader import get_template
-from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import A4
-from reportlab.lib.units import cm
-from reportlab.lib import colors
-from reportlab.lib.styles import ParagraphStyle
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
-
-
-from django.db.models import Q
-
+from datetime import date, datetime, timedelta
+from functools import partial
 from io import BytesIO
 
-# determina se o ano é bissexto
-def bissexto(ano):
+from django.contrib import messages
+from django.db.models import Sum
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.template.defaulttags import register
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib.units import cm
+from reportlab.pdfgen import canvas
+from reportlab.platypus import (Image, Paragraph, SimpleDocTemplate, Spacer,
+                                Table, TableStyle)
 
-    if ano % 400 == 0:
-        return True
-    else:
-        if ano % 4 == 0:
-            if ano % 100 == 0:
-                return False
-            return True
+from app_pessoa.models import Pessoas
+from utilitarios.utilitarios import retornarNomeMes, retornar_meses
 
-
-def retornar_meses(ano=0):
-    meses = {
-        'janeiro':[1,31],
-        'fevereiro':[2,29 if bissexto(ano) else 28],
-        'marco':[3,31],
-        'abril':[4,30],
-        'maio':[5,31],
-        'junho':[6,30],
-        'julho':[7,31],
-        'agosto':[8,31],
-        'setembro':[9,30],
-        'outubro':[10,31],
-        'novembro':[11,30],
-        'dezembro':[12,31]
-    }
-
-    return meses
+from .forms import (FaltaPesquisaForm, FaltaPesquisaFormGeral,
+                    FiltroRelatorioDescritivoForm, formularioLF,
+                    formularioPontuacao)
+from .models import Cargos, Faltas, Faltas_Pessoas, Pontuacoes
 
 
-def retornar_nome_mes(num_mes):
-    meses = {
-        1: 'janeiro',
-        2: 'fevereiro',
-        3: 'marco',
-        4: 'abril',
-        5: 'maio',
-        6: 'junho',
-        7: 'julho',
-        8: 'agosto',
-        9: 'setembro',
-        10: 'outubro',
-        11: 'novembro',
-        12: 'dezembro'
-    }
-     
-    return meses[num_mes]
-    
 
 
 # função recursiva que determina se a data é útil (excluindo sábado e domingo) para o tipo P, senão retorna própria data
@@ -293,7 +244,7 @@ def pessoas_faltas(request, pessoa_id):
     else:
             
         form = formularioLF(initial={'pessoa':pessoa})
-    return render(request,'template/lancar_falta.html', {'form':form, 'pessoa':pessoa, 'faltas':pessoa_falta,'ha':ha})
+    return render(request,'template/lancar_falta.html', {'form':form, 'pessoa':pessoa, 'faltas':pessoa_falta})
 
 
 def excluir_pessoas_faltas(request, pessoa_id, lancamento_id):
@@ -1084,8 +1035,9 @@ def retornar_preenchimento_tipos_falta(ano, pessoa_id, meses):
             mes = data.month
             dia = data.day - 1
         
+           
             # preenche onde acontece a falta
-            meses[retornar_nome_mes(mes)][dia] = falta.falta.tipo
+            meses[retornarNomeMes(mes)][dia] = falta.falta.tipo
     
     return tipo_faltas
 
@@ -1288,10 +1240,12 @@ def inserir_chave(dicionario, chave):
         
 def pdf_v3(request, pessoa_id, ano):
     from io import BytesIO
+
     from reportlab.lib import colors
     from reportlab.lib.pagesizes import A4, landscape
-    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Image
-    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+    from reportlab.platypus import (Paragraph, SimpleDocTemplate, Table,
+                                    TableStyle)
     
    
     
@@ -1501,10 +1455,12 @@ def pdf_v3(request, pessoa_id, ano):
 
 def pdf_v_original(request, pessoa_id, ano):
     from io import BytesIO
+
     from reportlab.lib import colors
     from reportlab.lib.pagesizes import A4, landscape
-    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Image
-    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+    from reportlab.platypus import (Paragraph, SimpleDocTemplate, Table,
+                                    TableStyle)
     contexto = buscar_informacoes_ficha_v2(pessoa_id,ano)
    
     buffer = BytesIO()
@@ -1734,6 +1690,249 @@ def pdf_v_original(request, pessoa_id, ano):
     buffer.close()
 
     return response
+
+# implementação requerimento abonada 11/12/2025 
+import io
+from datetime import datetime
+
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib.units import cm
+from reportlab.platypus import (Frame, PageTemplate, Paragraph,
+                                SimpleDocTemplate, Spacer)
+
+# Importações de classes/funções fictícias necessárias no contexto do seu projeto Django:
+# from .models import Servidor # Assumindo um modelo de Servidor
+# from .utils import retornarNomeMes # Função para formatar o nome do mês em português
+
+
+def calcular_data_pedido(data_falta):
+    """
+    Calcula a data do pedido como 5 dias úteis antes da data da falta.
+    Um dia útil é considerado de Segunda a Sexta-feira (weekday < 5).
+    :param data_falta_str: String com a data da falta no formato "dd/mm/aaaa".
+    :return: Objeto datetime para a data do pedido.
+    """
+    
+
+    dias_uteis_a_subtrair = 5
+    data_calculada = data_falta
+
+    # 2. Iterar subtraindo 1 dia por vez e checando se é dia útil
+    while dias_uteis_a_subtrair > 0:
+        data_calculada -= timedelta(days=1)
+        
+        # O weekday() retorna 0 para Segunda-feira e 6 para Domingo.
+        # Dias úteis (Segunda a Sexta) são 0, 1, 2, 3, 4.
+        if data_calculada.weekday() < 5: 
+            dias_uteis_a_subtrair -= 1
+
+    # 3. Retorna a data calculada (5 dias úteis antes)
+    return data_calculada
+
+# Função principal adaptada
+def emitir_abonada(request, lancamento_id):
+    """
+    Gera um PDF de Requerimento de Falta Abonada baseado no template anexo.
+    Os dados do servidor e da falta devem ser passados via POST.
+    """
+    pessoas_faltas = Faltas_Pessoas.objects.get(id=lancamento_id)
+    pessoa = pessoas_faltas.pessoa
+    
+    
+    # -----------------------------------------------------
+    # DADOS OBTIDOS DA REQUISIÇÃO (EXEMPLOS)
+    # -----------------------------------------------------
+    # Você precisará adaptar a forma de obtenção destes dados
+    servidor_nome = request.POST.get("nome_servidor", pessoa.nome)
+    servidor_matricula = request.POST.get("matricula_servidor", pessoa.id)
+    setor_lotacao = request.POST.get("setor_lotacao", "no setor da Educação, na EMEB Profª. Victória Olivito Nonino") # Exemplo baseado no anexo [cite: 4]
+    data_falta = request.POST.get("data_falta", pessoas_faltas.data) # Data da falta abonada (ex: dd/mm/aaaa)
+    data_formatada = f"{data_falta.day:02d}/{data_falta.month:02d}/{data_falta.year}"
+    
+    data_pedido = calcular_data_pedido(data_falta)
+
+    buffer = io.BytesIO()
+
+    # -----------------------------------------------------
+    # ESTILOS
+    # -----------------------------------------------------
+    # Mantendo apenas os estilos necessários e adaptando o alinhamento
+    corpo = ParagraphStyle(
+        name="Corpo",
+        fontSize=14,
+        alignment=4,  # Justificado
+        firstLineIndent=1.5 * cm, # Remove o recuo da primeira linha
+        spaceBefore=15,
+        leading=24,
+    )
+    
+    titulo = ParagraphStyle(
+        name="Titulo",
+        fontSize=18,
+        alignment=1,  # Centralizado
+        spaceAfter=40,
+        
+    )
+
+    style_direita = ParagraphStyle(
+        name="Direita",
+        fontSize=14,
+        alignment=2,  # Direita
+        spaceBefore=1,
+        spaceAfter=1,
+    )
+
+    style_assinatura = ParagraphStyle(
+        name="Assinatura",
+        fontSize=12,
+        alignment=1, # Centralizado
+        spaceBefore=10,
+        spaceAfter=5,
+    )
+    
+    style_autorizacao = ParagraphStyle(
+        name="Autorizacao",
+        fontSize=12,
+        alignment=0, # Esquerda
+        spaceBefore=15,
+        spaceAfter=25,
+        leftIndent=1.5*cm,
+    )
+
+    # -----------------------------------------------------
+    # DOCUMENTO BASE
+    # -----------------------------------------------------
+    pdf = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        leftMargin=2 * cm,
+        rightMargin=2 * cm,
+        topMargin= 6 * cm,
+        bottomMargin=2 * cm,
+    )
+    
+    frame = Frame(
+        pdf.leftMargin,
+        pdf.bottomMargin,
+        pdf.width,
+        pdf.height,
+        id="normal",
+    )
+
+    # Não incluiremos o cabeçalho de imagem para simplificar, 
+    # -----------------------------------------------------
+
+    # -----------------------------------------------------
+    # CABEÇALHO COM IMAGEM (FORMA CORRETA)
+    # -----------------------------------------------------
+    header_img = Image(
+        "appAluno/static/appAluno/jpeg/cabecalho_600dpi.png",
+        width=500,
+        height=120,
+    )
+
+    def header(canvas, doc, img):
+        canvas.saveState()
+        img.drawOn(canvas, doc.leftMargin, A4[1] - 150)
+        canvas.restoreState()
+
+    template = PageTemplate(
+        id="template",
+        frames=frame,
+        onPage=partial(header, img=header_img),
+    )
+
+    pdf.addPageTemplates([template])
+
+    # -----------------------------------------------------
+    # CONTEÚDO DO PDF
+    # -----------------------------------------------------
+    story = []
+
+    # Título
+    story.append(Paragraph("<b><u>REQUERIMENTO DE FALTA ABONADA</u></b>", titulo))
+
+    # Corpo do Requerimento
+    texto_requerimento = f"""
+    Eu, <b>{servidor_nome}</b>, matrícula nº.: <b>{servidor_matricula}</b>, lotado(a) 
+     {setor_lotacao}, venho através deste, nos devidos termos da Lei nº. 
+    3.841 de 06 de Dezembro de 2011, solicitar autorização para gozo de 
+    uma falta abonada, na data de <b>{data_formatada}</b>.
+    """
+    story.append(Paragraph(texto_requerimento, corpo))
+    
+    story.append(Spacer(1, 10))
+
+    # [cite_start]Termos em que, pede deferimento [cite: 7]
+    story.append(Paragraph("Termos em que, pede deferimento.", corpo))
+
+    story.append(Spacer(1, 40))
+
+    # [cite_start]Data do Pedido (Orlândia, [cite: 8])
+    data_emissao = Paragraph(
+        f"Orlândia, {data_pedido.day} de {retornarNomeMes(data_pedido.month)} de {data_pedido.year}.",
+        style_direita,
+    )
+    story.append(data_emissao)
+
+    story.append(Spacer(1, 50))
+    
+    # [cite_start]Assinatura do Funcionário 
+    story.append(
+        Paragraph(
+            f"""____________________________________________<br/>
+            (ASSINATURA DO FUNCIONÁRIO/SERVIDOR)""",
+            style_assinatura,
+        )
+    )
+    
+    story.append(Spacer(1, 50))
+
+    # [cite_start]Autorização/Deferimento [cite: 11]
+    # Usando uma tabela ou combinação de parágrafos para simular os campos de deferimento/assinatura
+    # Aqui optamos por parágrafos para manter a simplicidade com reportlab's flowables
+    
+    # Campo Deferido/Indeferido (Opcional)
+    story.append(
+        Paragraph(
+            "Deferido (  ) &nbsp; &nbsp; &nbsp; &nbsp; Indeferido (  )",
+            style_autorizacao,
+        )
+    )
+
+    # Assinatura do Superior Imediato
+    story.append(
+        Paragraph(
+            """__________________________________<br/>
+            Superior Imediato/Diretor(a)""",
+            style_autorizacao,
+        )
+    )
+    
+    # [cite_start]Data da Autorização [cite: 12]
+    story.append(
+        Paragraph(
+            "<br/><br/><br/><br/>Orlândia, ____ de ________________ de ______.",
+            style_autorizacao,
+        )
+    )
+
+    # -----------------------------------------------------
+    # GERAR PDF
+    # -----------------------------------------------------
+    pdf.build(story)
+
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = f'inline; filename="Requerimento_Abonada_{servidor_matricula}.pdf"'
+    response.write(buffer.getvalue())
+    buffer.close()
+    return response
+
+# Exemplo de como você precisaria configurar a requisição (se fosse um formulário):
+# Para testar, você precisará garantir que o objeto 'request' no seu ambiente Django
+# contenha os dados POST esperados.
+
 
 def atualizar_pontuacoes(request, pontuacao_id, pessoa_id):
 

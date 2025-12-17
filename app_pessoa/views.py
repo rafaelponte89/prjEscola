@@ -1,7 +1,9 @@
-from django.shortcuts import render, redirect, HttpResponse
-from .models import Pessoas
-from .forms import formularioPessoa
 from django.contrib import messages
+from django.shortcuts import HttpResponse, redirect, render
+
+from .forms import formularioPessoa
+from .models import Pessoas
+
 
 # Create your views here.
 # atualiza informações de uma pessoa

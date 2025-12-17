@@ -1,5 +1,6 @@
 from django.urls import path
-from .views import dashboard, visualizar_alunos_periodo, visualizar_alunos_mes
+
+from .views import dashboard, visualizar_alunos_mes, visualizar_alunos_periodo
 
 urlpatterns = [
     path('dashboard', dashboard, name='dashboard'),

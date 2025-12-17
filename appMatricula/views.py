@@ -1,13 +1,16 @@
-from django.shortcuts import render
-from django.shortcuts import HttpResponse
-from appClasse.models import Classe
+from datetime import datetime
+
+from django.db.models import Q
+from django.shortcuts import HttpResponse, render
+
 from appAluno.models import Aluno
 from appAno.models import Ano
+from appClasse.models import Classe
+from utilitarios.utilitarios import (converter_data_formato_br_str,
+                                     criarMensagem, criarMensagemModal)
+
 from .models import Matricula
-from appAno.views import fechar_abrir_ano
-from django.db.models import Q
-from utilitarios.utilitarios import criarMensagem, converter_data_formato_br_str, criarMensagemModal
-from datetime import datetime
+
 # Create your views here.
 
 
@@ -56,6 +59,7 @@ def calcular_idade(data_nascimento, data_referencia):
 def prever_idade_serie(aluno):
     import joblib
     import pandas as pd
+
     # carregar modelo
     modelo = joblib.load('templates/modelo_tree_classifier_v1.pkl')
 
@@ -71,7 +75,6 @@ def prever_idade_serie(aluno):
     return predicao
 
 def matricular_aluno_ia(request):
-    from random import randint
     aluno = Aluno.objects.get(pk=request.POST.get('aluno'))
     ano = Ano.objects.get(pk=request.POST.get('ano'))
     previsao = prever_idade_serie(aluno)[0]
@@ -110,19 +113,18 @@ def exibirTelaMatricula(request):
                     <div class='row'>
                     <div class='col form-group'>
                     <label for='pesquisaAluno'>Nome</label>
-                    <input id='pesquisaAluno' class='form-control' type='text'\>
+                    <input id='pesquisaAluno' class='form-control' type='text'/>
                     </div>   
                     <div class='col-5 form-group'> 
                     <label for='dataMatriculaIndividual'>Data da Matrícula</label>
-                    <input id='dataMatriculaIndividual' class='form-control' type='date' value='{datetime.now().strftime("%Y-%m-%d")}'\>
+                    <input id='dataMatriculaIndividual' class='form-control' type='date' value='{datetime.now().strftime("%Y-%m-%d")}'/>
                     </div>               
                     </div>
                     <div class='row'>
                     
                     </div>
                     
-                    </form>
-                    """
+                    </form>"""
    
     return HttpResponse(tela)
 

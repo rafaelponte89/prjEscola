@@ -1,6 +1,8 @@
 
 from django.urls import path
-from .views import cadastrar_pessoas,  pesquisar_pessoas, tela_pesquisar_pessoas, atualizar_pessoa, selecionar_pessoa
+
+from .views import (atualizar_pessoa, cadastrar_pessoas, pesquisar_pessoas,
+                    selecionar_pessoa, tela_pesquisar_pessoas)
 
 urlpatterns = [
     path('cadastrarpessoas', cadastrar_pessoas, name="cadastrarpessoas"),

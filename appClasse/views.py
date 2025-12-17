@@ -1,13 +1,12 @@
-from django.shortcuts import render
-from .models import Classe
-from appAluno.models import Aluno
+from django.db.models import Q
+from django.shortcuts import HttpResponse, render
+
 from appAno.models import Ano
 from appMatricula.models import Matricula
-from django.shortcuts import HttpResponse
-from datetime import datetime
-from django.db.models import Q
-from utilitarios.utilitarios import criarMensagem, criarMensagemModal
-from appMatricula.views import verificar_matricula_ativa_no_ano
+from utilitarios.utilitarios import criarMensagem
+
+from .models import Classe
+
 
 # Create your views here.
 def classe(request): 
@@ -53,8 +52,7 @@ def buscar(request):
                     </select>
                     </div>
                     </div> 
-                </form>
-                    """
+                </form>"""
     
     return HttpResponse(corpo)
     

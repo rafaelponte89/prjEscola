@@ -1,7 +1,9 @@
-from django.shortcuts import render, redirect
-from .models import Cargos
-from .forms import formularioCargo
 from django.contrib import messages
+from django.shortcuts import redirect, render
+
+from .forms import formularioCargo
+from .models import Cargos
+
 # Create your views here.
 
 def cargos(request):

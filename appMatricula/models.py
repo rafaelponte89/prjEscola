@@ -1,7 +1,10 @@
 from django.db import models
-from appClasse.models import Classe
+
 from appAluno.models import Aluno
 from appAno.models import Ano
+from appClasse.models import Classe
+
+
 # Create your models here.
 #Matrícula do aluno (NÃO IMPLEMENTADO)
 class Matricula(models.Model):

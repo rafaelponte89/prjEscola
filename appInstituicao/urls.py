@@ -1,7 +1,7 @@
 from django.urls import path
-from .views import (instituicao, gravar_instituicao, pesquisar_instituicao, 
-                    excluir_instituicao, carregar_instituicoes)
 
+from .views import (carregar_instituicoes, excluir_instituicao,
+                    gravar_instituicao, instituicao, pesquisar_instituicao)
 
 urlpatterns = [
     path('instituicao', instituicao, name='instituicao'),

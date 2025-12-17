@@ -1,6 +1,7 @@
 from django.urls import path
-from .views import (classe, gravar, atualizar, deletar, listar, 
-                    buscar, exibirClasses, exibirQuadro, gerarTurmas)
+
+from .views import (atualizar, buscar, classe, deletar, exibirClasses,
+                    exibirQuadro, gerarTurmas, gravar, listar)
 
 urlpatterns = [
     path('classe', classe, name='classe'),

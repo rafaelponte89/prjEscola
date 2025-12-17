@@ -10,9 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
-from pathlib import Path
 from os import path
+from pathlib import Path
+
 from django.core.management.utils import get_random_secret_key
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -101,7 +103,7 @@ WSGI_APPLICATION = 'prjEscola.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'bd/db_.sqlite3',
+        'NAME': BASE_DIR / 'bd/db_teste.sqlite3',
     },
     'colaboradores': {
         'ENGINE': 'django.db.backends.sqlite3',

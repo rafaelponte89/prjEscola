@@ -1,9 +1,9 @@
 from django.db import models
 from django.utils.timezone import now
+
+from app_cargo.models import Cargos
 from app_falta.models import Faltas
 from app_pessoa.models import Pessoas
-from app_cargo.models import Cargos
-from django import forms
 
 # Create your models here.
 

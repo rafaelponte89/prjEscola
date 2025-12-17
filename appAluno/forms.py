@@ -1,5 +1,7 @@
 from django import forms
+
 from .models import Aluno
+
 
 class frmAluno(forms.ModelForm):
     nome = forms.CharField(max_length=100, required=True)

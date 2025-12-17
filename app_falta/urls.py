@@ -1,5 +1,6 @@
 from django.urls.conf import path
-from .views import faltas,atualizar_faltas
+
+from .views import atualizar_faltas, faltas
 
 urlpatterns = [
           path('', faltas, name='listarfaltas'),

@@ -1,12 +1,14 @@
 from django.urls import path
-from .views import (index, gravar, buscar, recarregarTabela, atualizar,
-                    baixar_pdf, cancelarRM, buscarRM, 
-                    carregar_classes, baixar_lista_telefonica,
-                    buscar_dados_aluno, buscarRMCancelar, 
-                    del_telefone, baixar_lista_alunos_personalizavel,
-                    baixar_declaracao, buscar_historico_matriculas, buscar_telefones_aluno, descrever_contato)
 
 from utilitarios.utilitarios import realizar_backup_v2
+
+from .views import (atualizar, baixar_declaracao,
+                    baixar_lista_alunos_personalizavel,
+                    baixar_lista_telefonica, baixar_pdf, buscar,
+                    buscar_dados_aluno, buscar_historico_matriculas,
+                    buscar_telefones_aluno, buscarRMCancelar, cancelarRM,
+                    carregar_classes, del_telefone, descrever_contato, gravar,
+                    index, recarregarTabela)
 
 urlpatterns = [
     path("", index, name="inicial"),  

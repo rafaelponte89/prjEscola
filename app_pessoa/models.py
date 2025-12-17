@@ -1,5 +1,8 @@
 from django.db import models
+
 from app_cargo.models import Cargos
+
+
 # Create your models here.
 class Pessoas(models.Model):
     EFETIVO =  (

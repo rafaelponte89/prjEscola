@@ -1,5 +1,7 @@
 from django import forms
+
 from .models import Faltas
+
 
 # formulário tipo de faltas
 class formularioTF(forms.ModelForm):

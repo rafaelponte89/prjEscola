@@ -1,10 +1,6 @@
 from django.test import TestCase
+
 from .models import Aluno
-from .views import gravar
-from django.test.client import Client
-from django.urls import reverse
-from django.http import HttpResponse, HttpRequest
-from django.shortcuts import render
 
 # Create your tests here.
 

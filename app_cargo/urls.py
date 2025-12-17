@@ -1,5 +1,6 @@
 from django.urls.conf import path
-from .views import cargos, atualizar_cargos
+
+from .views import atualizar_cargos, cargos
 
 urlpatterns = [
      path('', cargos, name='listarcargos'),

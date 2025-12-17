@@ -1,20 +1,22 @@
-from django.shortcuts import render, redirect
-from .models import Aluno, Telefone
-from appClasse.models import Classe
-from appAno.models import Ano
-from appMatricula.models import Matricula
-from .forms import frmAluno
-from django.http import HttpResponse
-from django.db.models import Q
-from django.views.decorators.csrf import csrf_exempt
-from utilitarios.utilitarios import criarMensagem, padronizar_nome, retornarNomeMes, anonimizarDado
 import io
-from os import path
+from datetime import datetime
+
+from django.db.models import Q
+from django.http import HttpResponse
+from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
 from reportlab.lib import colors
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
-from datetime import datetime
-from datetime import datetime
+from reportlab.platypus import Paragraph, SimpleDocTemplate, Table, TableStyle
+
+from appAno.models import Ano
+from appClasse.models import Classe
+from appMatricula.models import Matricula
+from utilitarios.utilitarios import (criarMensagem, padronizar_nome,
+                                     retornarNomeMes)
+
+from .forms import frmAluno
+from .models import Aluno, Telefone
 
 REF_TAMANHO_NOME = 2
 REF_TAMANHO_RA = 7
@@ -74,14 +76,13 @@ def atualizarTabela(alunos):
         classes = 'btn btn-outline-dark btn-lg'
         icon = '<i class="bi bi-arrow-repeat"></i>'
         icon_ia = '<i class="bi bi-robot"></i>'
-        classe_ia = 'btn btn-outline-dark btn-lg'
 
         if aluno.status == 1:
             icon = '<i class="bi bi-x-circle-fill"></i>'
             classes = 'btn btn-outline-danger btn-lg  disabled'
         if aluno.status == 2:
             
-            classe_ia = 'btn btn-light btn-lg disabled'
+            pass
             
         elif nome in nomes_duplicados:
             status_rm = f'<td>{aluno.rm}'
@@ -721,15 +722,14 @@ def header(canvas, doc, content):
         canvas.restoreState()
         
 def baixar_lista_alunos_personalizavel(request):
-    from reportlab.lib.pagesizes import A4
-    from reportlab.platypus.paragraph import Paragraph
-    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-    from reportlab.lib.units import cm
-    from reportlab.platypus import SimpleDocTemplate, PageTemplate
-    from reportlab.platypus.frames import Frame
-    from reportlab.lib import pagesizes
-    from reportlab.platypus.paragraph import Paragraph
     from functools import partial
+
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.styles import ParagraphStyle
+    from reportlab.lib.units import cm
+    from reportlab.platypus import PageTemplate, SimpleDocTemplate
+    from reportlab.platypus.frames import Frame
+    from reportlab.platypus.paragraph import Paragraph
 
     
     classe = Classe.objects.get(pk=int(request.POST.get("classe")))
@@ -844,117 +844,174 @@ def baixar_lista_alunos_personalizavel(request):
 
 # Em Desenvolvimento 05/05/2024
 def baixar_declaracao(request):
-    from reportlab.lib.pagesizes import A4
-    from reportlab.platypus.paragraph import Paragraph
-    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-    from reportlab.lib.units import cm
-    from reportlab.platypus import SimpleDocTemplate, PageTemplate
-    from reportlab.platypus.frames import Frame
-    from reportlab.lib import pagesizes
-    from reportlab.platypus.paragraph import Paragraph
+    from datetime import datetime
     from functools import partial
 
-    tamanho_pagina = (A4[0], A4[1])  # retrato
-    
-    aluno = Aluno.objects.get(pk = request.POST.get('rm'))
-    matricula = Matricula.objects.filter(aluno=aluno).order_by('-ano').order_by('id').last()
-    #matricula = Matricula.objects.filter(aluno=aluno).filter(situacao='C').order_by('-ano').first()
-    nome_operador = request.POST.get('nome_op')
-    cargo_operador = request.POST.get('cargo_op')
-    rg_operador = request.POST.get('rg_op')
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.styles import ParagraphStyle
+    from reportlab.lib.units import cm
+    from reportlab.platypus import (Frame, Image, PageTemplate, Paragraph,
+                                    SimpleDocTemplate)
+
+    aluno = Aluno.objects.get(pk=request.POST.get("rm"))
+    matricula = (
+        Matricula.objects.filter(aluno=aluno)
+        .order_by("-ano","id")
+        .last()
+    )
+
+    nome_operador = request.POST.get("nome_op")
+    cargo_operador = request.POST.get("cargo_op")
+    rg_operador = request.POST.get("rg_op")
 
     buffer = io.BytesIO()
 
+    # -----------------------------------------------------
+    # ESTILOS
+    # -----------------------------------------------------
     style = ParagraphStyle(
-        name='Normal',
+        name="Normal",
         fontSize=10,
-        alignment=1
+        alignment=1,
     )
-    
+
     corpo = ParagraphStyle(
-        name='Arial',
+        name="Corpo",
         fontSize=14,
         alignment=4,
         firstLineIndent=40,
-        spaceBefore = 15,
-        leading=24
-        
-      
+        spaceBefore=15,
+        leading=24,
     )
-    
+
     titulo = ParagraphStyle(
-        name='Arial',
+        name="Titulo",
         fontSize=18,
         alignment=1,
-        spaceAfter=40
+        spaceAfter=40,
     )
 
     style_data = ParagraphStyle(
-        name='Arial',
+        name="Data",
         fontSize=14,
         alignment=2,
-        spaceAfter=40
+        spaceAfter=40,
     )
-    
-    quebras="<br/>"*15
-    p_quebras = Paragraph(f"""{quebras}""")
 
-    pdf = SimpleDocTemplate(buffer, pagesize=tamanho_pagina, 
-        leftMargin = 1.5 * cm, 
-        rightMargin = 1.5 * cm,
-        topMargin = 1.5 * cm, 
-        bottomMargin = 0.5 * cm)
+    # -----------------------------------------------------
+    # DOCUMENTO BASE
+    # -----------------------------------------------------
+    pdf = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        leftMargin=1.5 * cm,
+        rightMargin=1.5 * cm,
+        topMargin=1.5 * cm,
+        bottomMargin=0.5 * cm,
+    )
 
-    frame = Frame(pdf.leftMargin, pdf.bottomMargin, pdf.width, pdf.height, id='normal')
-    
-    espacos = "&nbsp;"*40
-    header_content =(Paragraph(f"""
-                               <strong><font size="18">EMEB PROFª VICTÓRIA OLIVITO NONINO </font></strong> <br/>
-                                 Rua 14, 1303 A - Conjunto Habtacional José Luís Simões - Orlândia - SP - (16)3820-8230  <br/>
-                                 <img src="appAluno/static/appAluno/jpeg/logo_prefeitura.jpg" valign="middle" height="50" width="50" />{espacos}{EMAIL}{espacos}<img src="appAluno/static/appAluno/jpeg/logo_escola.jpg" valign="middle" height="50" width="50" />""", style=style ) )
-      
-    
+    frame = Frame(
+        pdf.leftMargin,
+        pdf.bottomMargin,
+        pdf.width,
+        pdf.height,
+        id="normal",
+    )
+
+    # -----------------------------------------------------
+    # CABEÇALHO COM IMAGEM (FORMA CORRETA)
+    # -----------------------------------------------------
+    header_img = Image(
+        "appAluno/static/appAluno/jpeg/cabecalho_600dpi.png",
+        width=500,
+        height=120,
+    )
+
+    def header(canvas, doc, img):
+        canvas.saveState()
+        img.drawOn(canvas, doc.leftMargin, A4[1] - 150)
+        canvas.restoreState()
+
+    template = PageTemplate(
+        id="template",
+        frames=frame,
+        onPage=partial(header, img=header_img),
+    )
+
+    pdf.addPageTemplates([template])
+
+    # -----------------------------------------------------
+    # CONTEÚDO DO PDF
+    # -----------------------------------------------------
+    story = []
+
+    # Quebras iniciais para descer o conteúdo abaixo do cabeçalho
+    story.append(Paragraph("<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>", style))
+
+    data = datetime.now()
+    data_emissao = Paragraph(
+        f"Orlândia, {data.day} de {retornarNomeMes(data.month)} de {data.year}.",
+        style_data,
+    )
+    story.append(data_emissao)
+
     if matricula is not None:
         descritivo_situacao = Matricula.retornarDescricaoSituacao(matricula)
-        dt_nascimento = (aluno.data_nascimento).split('-')
-    
-        quebras = "<br/>" * 6
-        data = datetime.now()
-        data_emissao = Paragraph(f"""Orlândia, {data.day} de {retornarNomeMes(data.month)} de {data.year}.""",style=style_data)
+        dt_n = aluno.data_nascimento.split("-")
 
-        if matricula.situacao == 'C':
-            p_titulo = Paragraph("""<strong><u>Declaração de Matrícula</u> </strong>""",style=titulo)
-            p1 = (Paragraph(f"""Declaro, para os devidos fins de direito, que o(a) aluno(a) <strong>{aluno.nome} </strong>, 
-                        portador(a) do RA Escolar: <strong>{aluno.ra} - {aluno.d_ra} SP </strong> está <strong>{descritivo_situacao}</strong> o 
-                        <strong>{matricula.classe} </strong> do Ensino Fundamental de 9 anos nesta unidade no ano letivo de <strong>{matricula.ano}</strong>.""", style=corpo))
-        elif matricula.situacao == 'BXTR':    
-            p_titulo = Paragraph("""<strong><u>Declaração de Transferência</u> </strong>""",style=titulo)
-            p1 =(Paragraph(f"""Declaro para os devidos fins de direito, que o(a) aluno(a): <strong>{aluno.nome}</strong> nascido(a) em <strong>{dt_nascimento[2]}/{dt_nascimento[1]}/{dt_nascimento[0]} </strong>
-                    portador(a) do RA Escolar: <strong>{aluno.ra} - {aluno.d_ra}</strong> do <strong>{matricula.classe} </strong> do Ensino Fundamental de 9 anos nesta unidade escolar,
-                    solicitou na presente data <strong>transferência </strong> para estabelecimento congênere, estando apto(a) ao prosseguimento de estudos no <strong>{matricula.classe.serie}º ano
-                    do Ensino Fundamental de 9 anos</strong>.""", style=corpo))
-        p2 = Paragraph(f"""Por ser expressão da verdade firmo a presente declaração.""", style=corpo)
+        # Título
+        if matricula.situacao == "C":
+            story.append(Paragraph("<b><u>Declaração de Matrícula</u></b>", titulo))
+            story.append(
+                Paragraph(
+                    f"""Declaro, para os devidos fins de direito, que o(a) aluno(a) 
+                    <b>{aluno.nome}</b>, portador(a) do RA Escolar: 
+                    <b>{aluno.ra} - {aluno.d_ra} SP</b>, está <b>{descritivo_situacao}</b> 
+                    o <b>{matricula.classe}</b> do Ensino Fundamental de 9 anos nesta 
+                    unidade no ano letivo de <b>{matricula.ano}</b>.""",
+                    corpo,
+                )
+            )
+
+        elif matricula.situacao == "BXTR":
+            story.append(Paragraph("<b><u>Declaração de Transferência</u></b>", titulo))
+            story.append(
+                Paragraph(
+                    f"""Declaro para os devidos fins de direito, que o(a) aluno(a) 
+                    <b>{aluno.nome}</b>, nascido(a) em <b>{dt_n[2]}/{dt_n[1]}/{dt_n[0]}</b>,
+                    portador(a) do RA Escolar <b>{aluno.ra} - {aluno.d_ra}</b> do 
+                    <b>{matricula.classe}</b> do Ensino Fundamental de 9 anos nesta unidade escolar,
+                    solicitou na presente data <b>transferência</b>, estando apto(a) ao prosseguimento 
+                    de estudos no <b>{matricula.classe.serie}º ano</b> do Ensino Fundamental de 9 anos.""",
+                    corpo,
+                )
+            )
+
+        story.append(
+            Paragraph("Por ser expressão da verdade, firmo a presente declaração.", corpo)
+        )
 
     else:
-        p_titulo = Paragraph("""""")
-        p1 = Paragraph("""Sem informações a exibir!!!""", style=titulo)
-        data_emissao = Paragraph("""""")
-        p2 = Paragraph("""""")
+        story.append(Paragraph("<b>Sem informações a exibir.</b>", titulo))
 
+    # Espaço antes da assinatura
+    story.append(Paragraph("<br/><br/><br/><br/><br/>", style))
 
-    
+    # Assinatura
+    story.append(
+        Paragraph(
+            f"""________________________________<br/>
+            {nome_operador}<br/>{cargo_operador}<br/>RG: {rg_operador}""",
+            style,
+        )
+    )
 
-    p_assinatura = Paragraph(f"""________________________________<br/> {nome_operador} <br/>{cargo_operador}<br/>RG: {rg_operador}""", style=style)
-    template = PageTemplate(id='test', frames=frame, onPage=partial(header, content=header_content))
-    pdf.addPageTemplates([template])
-  
-   
-    # conteudo
-    pdf.build([p_quebras,data_emissao,p_titulo,p1,p2,p_quebras,p_assinatura], onLaterPages=partial(header, content=header_content))
+    # -----------------------------------------------------
+    # GERAR PDF
+    # -----------------------------------------------------
+    pdf.build(story)
 
-    response = HttpResponse(content_type='application/pdf')
-    
+    response = HttpResponse(content_type="application/pdf")
     response.write(buffer.getvalue())
     buffer.close()
-    
     return response

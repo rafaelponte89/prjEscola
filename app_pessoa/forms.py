@@ -1,10 +1,10 @@
-from django import forms
-from django.forms.widgets import SelectDateWidget
-from app_cargo.models import Cargos
-from .models import Pessoas
-from django.utils.timezone import now
-from datetime import date
 from bootstrap_datepicker_plus.widgets import DatePickerInput
+from django import forms
+
+from app_cargo.models import Cargos
+
+from .models import Pessoas
+
 
 class formularioPessoa(forms.ModelForm):
     cargos = Cargos.objects.all()

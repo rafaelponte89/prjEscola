@@ -1,7 +1,8 @@
-from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.shortcuts import redirect, render
+
 from .forms import formularioTF
 from .models import Faltas
-from django.contrib import messages
 
 # Create your views here.
 

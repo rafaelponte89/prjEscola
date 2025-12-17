@@ -1,10 +1,13 @@
-from .views import gerar_ficha, abrir_ano, \
-      listar_ficha, encerrar_ano_v2, pessoas_faltas, pdf_v3, lancar_pontuacoes, atualizar_pontuacoes,  \
-      excluir_pontuacoes, coletivo, lancar_evento_coletivo, excluir_pessoas_faltas, relatorio_faltas, \
-      relatorio_faltas_geral, relatorio_faltas_descritivo, relatorio_faltas_descritivo_pdf, \
-      gerar_requerimento_abono_pdf
+from django.urls.conf import include, path
 
-from django.urls.conf import path,include
+from .views import (abrir_ano, atualizar_pontuacoes, coletivo, encerrar_ano_v2,
+                    excluir_pessoas_faltas, excluir_pontuacoes, gerar_ficha,
+                    emitir_abonada, gerar_requerimento_abono_pdf,
+                    lancar_evento_coletivo, lancar_pontuacoes, listar_ficha,
+                    pdf_v3, pessoas_faltas, relatorio_faltas,
+                    relatorio_faltas_descritivo,
+                    relatorio_faltas_descritivo_pdf, relatorio_faltas_geral)
+
 urlpatterns = [
     path('pessoas/',include('app_pessoa.urls')),
     path('pessoas/<str:pessoa_id>/faltas', pessoas_faltas, name="lancarfalta" ),
@@ -27,5 +30,7 @@ urlpatterns = [
     path('relatorio-faltas-descritivo/pdf/', relatorio_faltas_descritivo_pdf, name='relatorio_faltas_descritivo_pdf'),
     #path('relatorio-faltas/pdf/', views.relatorio_faltas_pdf, name='relatorio_faltas_pdf'),
     path('relatorio-faltas-requerimento/<str:servidor_id>/pdf/<int:ano>', gerar_requerimento_abono_pdf, name='gerar_requerimento_abono_pdf'),
+    path('requerimento-abonada/pdf/<int:lancamento_id>', emitir_abonada, name='emitirabonada'),
+
 
 ]

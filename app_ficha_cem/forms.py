@@ -1,10 +1,9 @@
-from django import forms
-from .models import Pessoas, Faltas_Pessoas, Pontuacoes, Cargos
 from bootstrap_datepicker_plus.widgets import DatePickerInput
-from django.utils.timezone import now
-from .models import Pessoas, Faltas, FiltroSalvo
+from django import forms
 from django.forms import SelectMultiple
+from django.utils.timezone import now
 
+from .models import Cargos, Faltas, Faltas_Pessoas, Pessoas, Pontuacoes
 
 
 # formulário lançamento de faltas

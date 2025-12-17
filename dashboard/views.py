@@ -1,8 +1,9 @@
+from django.db.models import Count, Q
+from django.http import JsonResponse
 from django.shortcuts import render
+
 from appAno.models import Ano
 from appMatricula.models import Matricula
-from django.http import JsonResponse
-from django.db.models import Count, Q
 
 # Create your views here.
 

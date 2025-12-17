@@ -1,5 +1,7 @@
 from django.db import models
+
 from appAno.models import Ano
+
 
 # Create your models here.
 #Classe do ano (NÃO IMPLEMENTADO)

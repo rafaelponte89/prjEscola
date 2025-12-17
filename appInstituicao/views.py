@@ -1,7 +1,9 @@
-from django.shortcuts import render, HttpResponse
-from .models import Instituicao
+from django.shortcuts import HttpResponse, render
 from django.views.decorators.csrf import csrf_exempt
+
 from utilitarios.utilitarios import criarMensagem
+
+from .models import Instituicao
 
 # Create your views here.
 

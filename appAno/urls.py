@@ -1,6 +1,7 @@
 from django.urls import path
-from .views import (gravar_ano, fechar_abrir_ano, status_ano,
-                    inicial_ano, listar_ano,buscar_ano, excluir_ano, selecionar_ano)
+
+from .views import (buscar_ano, excluir_ano, fechar_abrir_ano, gravar_ano,
+                    inicial_ano, listar_ano, selecionar_ano, status_ano)
 
 urlpatterns = [
     path("gravarano", gravar_ano, name="gravarano"),  
