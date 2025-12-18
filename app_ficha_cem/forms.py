@@ -106,3 +106,12 @@ class FiltroRelatorioDescritivoForm(forms.Form):
     func_publico =  forms.ChoiceField(choices=PUBLICO_CHOICES, required=False, label="Funcionário Público")
 
 
+# importação de afastamentos
+class ImportarAfastamentosForm(forms.Form):
+    arquivo = forms.FileField(
+        label="Relatório de afastamentos (PDF)",
+        widget=forms.ClearableFileInput(
+            attrs={"class": "form-control",
+                   "accept": "application/pdf"}
+            )                          
+    )

@@ -1,0 +1,46 @@
+
+{% extends 'template/menu.html' %}
+{% load static %}
+
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-body p-4 text-center">
+
+                    <h4 class="card-title mb-4">
+                        Resultado da Importação
+                    </h4>
+
+                    {% if resultado.status == "ok" %}
+                        <div class="alert alert-success">
+                            <strong>Importação realizada com sucesso!</strong>
+                            <div class="mt-2">
+                                Total de registros importados:
+                                <strong>{{ resultado.importados }}</strong>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-danger">
+                            <strong>Erro na importação</strong>
+                            <div class="mt-2">
+                                {{ resultado.mensagem }}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <div class="mt-4">
+                        <a href="{% url 'importar_afastamentos' %}"
+                           class="btn btn-outline-dark px-4">
+                            Voltar
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

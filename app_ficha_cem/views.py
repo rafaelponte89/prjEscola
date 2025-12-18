@@ -24,6 +24,12 @@ from .forms import (FaltaPesquisaForm, FaltaPesquisaFormGeral,
                     formularioPontuacao)
 from .models import Cargos, Faltas, Faltas_Pessoas, Pontuacoes
 
+# importação de afastamentos
+from django.shortcuts import render
+from .forms import ImportarAfastamentosForm
+from .services import importar_afastamentos_pdf
+# faltas/services.py
+
 
 
 
@@ -2185,6 +2191,50 @@ def lancar_evento_coletivo(request):
         form = formularioLF()
 
     return render(request,'template/lancar_evento_coletivo.html', {'form':form, 'cargos': cargos})
+
+
+
+
+# faltas/views.py
+import tempfile
+
+from django.shortcuts import render
+from .forms import ImportarAfastamentosForm
+from .services import importar_afastamentos_pdf
+
+
+def importar_afastamentos(request):
+    if request.method == "POST":
+        form = ImportarAfastamentosForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            arquivo = form.cleaned_data["arquivo"]
+
+            # salvar temporariamente
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+                for chunk in arquivo.chunks():
+                    tmp.write(chunk)
+                caminho_pdf = tmp.name
+
+            resultado = importar_afastamentos_pdf(caminho_pdf)
+
+            return render(
+                request,
+                "template/importar_resultado.html",
+                {"resultado": resultado}
+            )
+    else:
+        form = ImportarAfastamentosForm()
+
+    return render(
+        request,
+        "template/importar_afastamentos.html",
+        {"form": form}
+    )
+
+
+
+
 
 
 @register.filter

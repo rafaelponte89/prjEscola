@@ -6,7 +6,8 @@ from .views import (abrir_ano, atualizar_pontuacoes, coletivo, encerrar_ano_v2,
                     lancar_evento_coletivo, lancar_pontuacoes, listar_ficha,
                     pdf_v3, pessoas_faltas, relatorio_faltas,
                     relatorio_faltas_descritivo,
-                    relatorio_faltas_descritivo_pdf, relatorio_faltas_geral)
+                    relatorio_faltas_descritivo_pdf, relatorio_faltas_geral,
+                    importar_afastamentos)
 
 urlpatterns = [
     path('pessoas/',include('app_pessoa.urls')),
@@ -31,6 +32,8 @@ urlpatterns = [
     #path('relatorio-faltas/pdf/', views.relatorio_faltas_pdf, name='relatorio_faltas_pdf'),
     path('relatorio-faltas-requerimento/<str:servidor_id>/pdf/<int:ano>', gerar_requerimento_abono_pdf, name='gerar_requerimento_abono_pdf'),
     path('requerimento-abonada/pdf/<int:lancamento_id>', emitir_abonada, name='emitirabonada'),
+    path("ferramentas/importar-afastamentos", importar_afastamentos, name="importar_afastamentos"),
+
 
 
 ]
