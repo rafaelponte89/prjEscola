@@ -38,6 +38,10 @@ Mais do que um simples cadastro, o Projeto Escola visa proporcionar **integraç�
 - ✅ Relatórios de Faltas
 - **Ficha de Frequência e Requerimento de Abono Anual Único**
 - ✅ Filtros de Faltas
+- ✅ Requerimento de Falta Abonada
+- ✅ Importação de afastamentos de relatório pdf
+
+
 
 
 ---
