@@ -1,9 +1,8 @@
-import pdfplumber
 import re
+import pdfplumber
 from datetime import datetime
-
-import tempfile
-from .models import Faltas_Pessoas, Faltas, Pessoas  
+from app_ficha_cem.models import Faltas_Pessoas, Faltas, Pessoas
+from django.db import transaction, IntegrityError
 
 def ignorar_linhas(linha):
     
@@ -48,7 +47,8 @@ def converter_tipo_falta(tipo_falta):
     TIPOS_FALTAS = {
         "MÉDICO": "AM",
         "ODONTOLÓGICO": "AO",
-        "FÉRIAS": "F"
+        "FÉRIAS": "F",
+        "ABONADA": "AB",
         }
     
     if tipo_falta is None:
@@ -91,13 +91,6 @@ def extrair_afastamentos_pdf(caminho_pdf):
             print("=" * 80)
     return resultados
 
-
-# faltas/services.py
-from django.db import transaction, IntegrityError
-
-
-
-
 def importar_afastamentos_pdf(caminho_pdf):
     registros = extrair_afastamentos_pdf(caminho_pdf)
     objetos = []
@@ -108,6 +101,7 @@ def importar_afastamentos_pdf(caminho_pdf):
             print("cheguei aqui")
             pessoa = Pessoas.objects.get(id=r["matricula"])
             print("Nome:", pessoa.nome)
+            print("Registros:", r)
             
             falta = Faltas.objects.filter(tipo= r["tipo_falta"]).first()
             print('Falta:', falta.descricao)
@@ -139,9 +133,3 @@ def importar_afastamentos_pdf(caminho_pdf):
         "status": "ok",
         "importados": len(objetos)
     }
-
-
-
-
-
-

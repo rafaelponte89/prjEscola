@@ -5,14 +5,7 @@
 {% block content %}
 
 <style>
-    /* .corpo td,
-        th,
-        tr {
-            font-size: 12px;
-            padding: 1.5px !important;
-          
-           
-        } */
+   
     @media print {
 
         html {
@@ -59,10 +52,6 @@
         @page {
             size: landscape;
         }
-
-
-
-
 
     }
 </style>
@@ -185,8 +174,6 @@
                     <td colspan="31">Pontuação do ano de: <strong>{{contexto.ano_a}} ===== >>></strong></td>
 
 
-
-
                     {% for dia in contexto.colunas_pontuacao %}
                     <td></td>
                     {% endfor %}
@@ -289,15 +276,21 @@
     </div>
 
 </div>
+
+
 <script>
-    var el = document.querySelector('#imprimir');
-    el.addEventListener('click', function (e) {
-        e.preventDefault();      // impedir que o link seja seguido imediatamente
-        var href = this.href;    // colocar em cache o url
-        self.print();            // imprimir
-        window.location.href = href;  // ir para nova página
+    document.addEventListener('DOMContentLoaded', function () {
+        const btnImprimir = document.getElementById('imprimir');
+
+        if (btnImprimir) {
+            btnImprimir.addEventListener('click', function (e) {
+                e.preventDefault();   // impede navegação do link
+                window.print();       // abre a tela de impressão
+            });
+        }
     });
 </script>
+
 
 {% endblock content %}
 
