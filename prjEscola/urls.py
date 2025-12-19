@@ -28,6 +28,8 @@ urlpatterns = [
     path('instituicoes/', include('appInstituicao.urls')),
     path('fichacem/', include('app_ficha_cem.urls')),
     path('pessoas/',index, name='index'),
-    path('central/', include('app_central.urls'))
+    path('central/', include('app_central.urls')),
+    path('pontuacoes/', include('app_pontuacao.urls')),
+
     
 ]

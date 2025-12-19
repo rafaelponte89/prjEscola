@@ -13,6 +13,10 @@ class DB2Router:
             return 'colaboradores'
         elif model._meta.app_label == 'app_ficha_cem':
             return 'colaboradores'
+        elif model._meta.app_label == 'app_pontuacao':
+            return 'colaboradores'
+
+
         return 'default'
 
     def db_for_write(self, model, **hints):
@@ -25,13 +29,15 @@ class DB2Router:
             return 'colaboradores'
         elif model._meta.app_label == 'app_ficha_cem':
             return 'colaboradores'
+        elif model._meta.app_label == 'app_pontuacao':
+            return 'colaboradores'
 
 
         return 'default'
 
     def allow_relation(self, obj1, obj2, **hints):
-        """Permite relações entre bancos diferentes?"""
-        return None
+       """Permite relações entre bancos diferentes?"""
+       return None
 
     def allow_migrate(self, db, app_label, model_name=None, **hints):
         """Decide se deve aplicar migração para o banco certo."""
@@ -43,5 +49,10 @@ class DB2Router:
             return db == 'colaboradores'
         elif app_label == 'app_ficha_cem':  
             return db == 'colaboradores'
+        elif app_label == 'app_pontuacao':
+            return db == 'colaboradores'
         
         return db == 'default'
+    
+    
+    

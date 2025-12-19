@@ -15,11 +15,12 @@ from reportlab.platypus import (Paragraph, SimpleDocTemplate, Spacer,
                                 Table, TableStyle)
 
 from app_pessoa.models import Pessoas
+from app_pontuacao.models import Pontuacoes
+from app_pontuacao.pontuacoes import criar_salvar_pontuacao, deletar_pontuacao_ano
 
 from .forms import (FaltaPesquisaForm, FaltaPesquisaFormGeral,
-                    FiltroRelatorioDescritivoForm, formularioLF,
-                    formularioPontuacao)
-from .models import Cargos, Faltas, Faltas_Pessoas, Pontuacoes
+                    FiltroRelatorioDescritivoForm, formularioLF)
+from .models import Cargos, Faltas, Faltas_Pessoas
 
 # importação de afastamentos
 from django.shortcuts import render
@@ -31,11 +32,11 @@ import tempfile
 from .services.calculos import gerar_lancamento_em_memoria, gerar_pontuacao_anual_v2
 from .services.consultas import (verificar_status_ano, listar_anos, verificar_data_saida, checar_existencia_pontuacao, 
                                 buscar_informacoes_ficha_v2, buscar_informacoes_ficha_v3, 
-                                consultar_anos_status, verificar_ano_saida)
+                                consultar_anos_status)
+
 from .services.importacoes import importar_afastamentos_pdf
 from .services.transformacoes import inserir_chave
 from .services.faltas import lancar_falta
-from .services.pontuacoes import deletar_pontuacao_ano, criar_salvar_pontuacao
 
 from .services.relatorios import (requerimento_abonada, gerar_relatorio_faltas_descritivo,
                                     gerar_relatorio_faltas_descritivo_pdf, buscar_faltas_geral)
@@ -132,10 +133,9 @@ def excluir_pessoas_faltas(request, pessoa_id, lancamento_id):
         lancamento.delete()    
         messages.success(request,"Lançamento Apagado!")
         return redirect('lancarfalta',pessoa_id)
-    else:
-        form = formularioPontuacao(initial={'pessoa':pessoa})
     
-    return render(request,'template/lancar_falta.html', {'form':form, 'pessoa':pessoa, 'faltas':pessoa_falta})
+    
+    return render(request,'template/lancar_falta.html', {'pessoa':pessoa, 'faltas':pessoa_falta})
         
 
 def listar_ficha(request, pessoa_id):
@@ -152,7 +152,7 @@ def listar_ficha(request, pessoa_id):
     # ordem decrescente de ano
     anos_status = dict(sorted(anos_status.items(), key=lambda item: item[0], reverse=True))
   
-    return render(request,'template/listar_ficha_v2.html',{'anos':anos_status, 'pessoa':pessoa})
+    return render(request,'app_ficha_cem/listar_ficha_v2.html',{'anos':anos_status, 'pessoa':pessoa})
 
 ############################# Filtros #########################
 
@@ -421,7 +421,7 @@ def relatorio_faltas_descritivo_pdf(request):
 def gerar_ficha(request, pessoa_id, ano):
     
     contexto = buscar_informacoes_ficha_v3(pessoa_id, ano)
-    return render(request,'template/ficha_cem_v2.html', {'contexto':contexto})
+    return render(request,'app_ficha_cem/ficha_cem_v2.html', {'contexto':contexto})
 
 def index(request):
     
@@ -660,29 +660,6 @@ def emitir_abonada(request, lancamento_id):
     
     return response
 
-def atualizar_pontuacoes(request, pontuacao_id, pessoa_id):
-
-    pontuacao = Pontuacoes.objects.get(pk=pontuacao_id)
-    pontuacoes = Pontuacoes.objects.filter(pessoa=pessoa_id)
-    pessoa = Pessoas.objects.get(pk=pessoa_id)
-
-    if request.method == 'POST':
-        form = formularioPontuacao(request.POST, instance=pontuacao)
-        
-        if form.is_valid():
-           
-            form.save()
-            
-            messages.success(request,"Pontuação Gravada!")
-            return redirect('lancarpontuacao',pessoa_id)
-        else:
-            messages.error(request,"Erro ao  Gravar Pontuação!",'danger')
-            
-
-    else:
-        form = formularioPontuacao(instance=pontuacao,initial={'pessoa':pessoa})
-    
-    return render(request,'template/lancar_pontuacao.html',{'form':form,'pessoa':pessoa,'pontuacoes':pontuacoes})
 
 
 def encerrar_ano_v2(request, pessoa_id, ano):
@@ -756,49 +733,9 @@ def abrir_ano(request, pessoa_id, ano):
    
     return render(request,'template/listar_ficha.html',{'anos':anos_status, 'pessoa':pessoa})
 
-def excluir_pontuacoes(request, pessoa_id, pontuacao_id):
-    pontuacao = Pontuacoes.objects.get(pk=pontuacao_id)
-    pontuacoes = Pontuacoes.objects.filter(pessoa=pessoa_id).order_by('ano')
-    pessoa = Pessoas.objects.get(pk=pessoa_id)
-
-    if request.method == 'GET':
-        pontuacao.delete()    
-        messages.success(request,"Pontuação Apagada!")
-        return redirect('lancarpontuacao',pessoa_id)     
-    else:
-        form = formularioPontuacao(initial={'pessoa':pessoa})
-    
-    return render(request,'template/lancar_pontuacao.html',{'form':form,'pessoa':pessoa,'pontuacoes':pontuacoes})
-
-def lancar_pontuacoes(request, pessoa_id):
-
-    pessoa = Pessoas.objects.get(pk=pessoa_id)
-    pontuacoes = Pontuacoes.objects.filter(pessoa=pessoa_id).order_by('ano')
-    ativo = verificar_ano_saida(pessoa_id)
-    if request.method == 'POST':
-        form = formularioPontuacao(request.POST)
-        ano = form['ano'].value()
-        if pessoa.admissao.year <= int(ano) and ativo :
-            if form.is_valid():
-            
-                form.save()
-                messages.success(request,"Pontuação Gravada!")
-                return redirect('lancarpontuacao',pessoa_id)
-            else:
-                messages.error(request,"Erro ao  Gravar Pontuação!",'danger')
-        else:
-            if pessoa.saida == None:
-                messages.error(request,f"Erro ao  Gravar Pontuação! Ano Admissao: {pessoa.admissao.year}",'danger')
-
-            else:
-                messages.error(request,f"Erro ao  Gravar Pontuação! Ano Admissao: {pessoa.admissao.year} Ano Saída: {pessoa.saida.year}",'danger')
 
 
-    else:
-        form = formularioPontuacao(initial={'pessoa':pessoa})
-        
-    
-    return render(request,'template/lancar_pontuacao.html',{'form':form,'pessoa':pessoa,'pontuacoes':pontuacoes})
+
 
 
 def coletivo(request):

@@ -1,9 +1,9 @@
 from django.urls.conf import include, path
 
-from .views import (abrir_ano, atualizar_pontuacoes, coletivo, encerrar_ano_v2,
-                    excluir_pessoas_faltas, excluir_pontuacoes, gerar_ficha,
+from .views import (abrir_ano, coletivo, encerrar_ano_v2,
+                    excluir_pessoas_faltas, gerar_ficha,
                     emitir_abonada, gerar_requerimento_abono_pdf,
-                    lancar_evento_coletivo, lancar_pontuacoes, listar_ficha,
+                    lancar_evento_coletivo, listar_ficha,
                     pdf_v3, pessoas_faltas, relatorio_faltas,
                     relatorio_faltas_descritivo,
                     relatorio_faltas_descritivo_pdf, relatorio_faltas_geral,
@@ -13,9 +13,6 @@ urlpatterns = [
     path('pessoas/',include('app_pessoa.urls')),
     path('pessoas/<str:pessoa_id>/faltas', pessoas_faltas, name="lancarfalta" ),
     path('pessoas/<str:pessoa_id>/faltas/<int:lancamento_id>', excluir_pessoas_faltas, name="excluirevento" ),
-    path('pessoas/<str:pessoa_id>/pontuacoes', lancar_pontuacoes, name='lancarpontuacao'),
-    path('pessoas/<str:pessoa_id>/pontuacoes/<str:pontuacao_id>', atualizar_pontuacoes, name='atualizarpontuacao'),
-    path('pessoas/<str:pessoa_id>/pontuacoes/<str:pontuacao_id>/apagar', excluir_pontuacoes, name='excluirpontuacao'),
     path('pessoas/<str:pessoa_id>/fichas', listar_ficha, name='listarficha' ),
     path('pessoas/<str:pessoa_id>/fichas/<int:ano>', gerar_ficha, name='ficha'),
     path('pessoas/<str:pessoa_id>/fichas/encerrar/<int:ano>', encerrar_ano_v2, name='encerrarano' ),
@@ -24,7 +21,8 @@ urlpatterns = [
     path('coletivo', coletivo, name='coletivo'),
     path('coletivo/evento', lancar_evento_coletivo, name='eventocoletivo'),
     path('faltas/', include('app_falta.urls')),
-    path('cargos/',include('app_cargo.urls')),   
+    path('cargos/',include('app_cargo.urls')),  
+ 
     path('relatorio-faltas/<str:pessoa_id>/', relatorio_faltas, name='relatorio_faltas'),
     path('relatorio-faltas/', relatorio_faltas_geral, name='relatorio_faltas_geral'),
     path('relatorio-faltas-descritivo/', relatorio_faltas_descritivo, name='relatorio_faltas_descritivo'),

@@ -77,7 +77,8 @@ source env/bin/activate  # Linux/Mac
 env\Scripts\activate     # Windows
 
 # Instalar dependências
-pip install -r requirements.txt
+pip install -r requirements.txt --no-cache-dir
+
 
 # Criar pasta onde serão armazenados os bancos de dados
 mkdir bd 

@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'app_cargo',
     'app_falta',
     'app_pessoa',
+    'app_pontuacao',
 
     'app_central',
 

@@ -1,5 +1,5 @@
-
-from app_ficha_cem.models import Pontuacoes, Pessoas, Faltas_Pessoas
+from app_ficha_cem.models import  Pessoas, Faltas_Pessoas
+from app_pontuacao.models import Pontuacoes
 from .configuracoes import configurar_meses_v4, retornarNomeMes
 from .calculos import gerar_pontuacao_anual_v2, data_util, contar_tipos_faltas
 from .transformacoes import transformar_em_um_dicionario, formatar_cargo_disciplina
@@ -311,18 +311,7 @@ def verificar_data_saida(data_lancamento,pessoa_id):
     else:
         return True
 
-def verificar_ano_saida(pessoa_id):
-    pessoa = Pessoas.objects.get(pk=pessoa_id)
-   
-    ativo = pessoa.saida 
-    if ativo is not None:
-        ano = pessoa.admissao.year
-        if ano >= ativo.year:
-            return True
-        else:
-            return False
-    else:
-        return True
+
     
 def faltas_por_mes_v2(meses):
     '''Guarda dados de comparecimento e todos os tipos de faltas que ocorreram e suas quantidades, uniforme a todos os meses'''
