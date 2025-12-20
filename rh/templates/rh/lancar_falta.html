@@ -1,0 +1,152 @@
+{% extends 'rh/menu.html'%}
+{% load crispy_forms_tags %}
+{% load bootstrap4 %}
+{% bootstrap_css %}
+
+{% block content %}
+
+{{form.media}}
+<div class="container mt-2 d-flex justify-content-center mb-2">
+    <div class="col-md-8 bg-light p-4 rounded shadow">
+        <form method="POST" class="was-validated mb-2" style="background-color: #f8f9fa;">
+            {% csrf_token %}
+            {{ form.pessoa|as_crispy_field }}
+            <div class="container mt-2">
+                <div class="row justify-content-center">
+                    <!-- Título do Formulário -->
+                    <div class="col-md-8 text-center mb-4">
+                        <h3>Cadastro de Falta</h3>
+                        <p>Preencha os campos abaixo para registrar a falta.</p>
+                    </div>
+                </div>
+
+                <div class="row justify-content-center">
+                    <!-- Formulário com fundo cinza e cantos arredondados -->
+                    <div class="col-md-8 p-2">
+                        <div class="form-group">
+                            {{ form.data|as_crispy_field }}
+                        </div>
+
+                        <div class="row justify-content-center">
+                            <!-- Campo Falta -->
+                            <div class="col-md-8 mb-4">
+                                <div class="form-group">
+                                    {{ form.falta|as_crispy_field }}
+                                </div>
+                            </div>
+
+                            <!-- Campo Quantidade de Dias -->
+                            <div class="col-md-3 mb-4">
+                                <div class="form-group">
+                                    {{ form.qtd_dias|as_crispy_field }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+
+                        </div>
+
+                        <!-- Botão de Envio -->
+                        <div class="row justify-content-center">
+                            <div class="col-md-6 text-center">
+                                <div class="form-group">
+                                    <button type="submit" class="btn btn-outline-dark btn-lg">Gravar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+</div>
+
+
+
+
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th scope="col">Data</th>
+            <th scope="col">Tipo</th>
+            <th scope="col">Quantidade</th>
+            <th scope="col">Excluir</th>
+            <th class="text-center" scope="col">Documento</th>
+
+        </tr>
+    </thead>
+    <tbody>
+
+
+        {% for falta in faltas %}
+        <tr>
+            <td>
+                {{ falta.data|date:"d/m/Y" }}
+            </td>
+            <td>
+                {{falta.falta}}
+            </td>
+            <td>
+                {{falta.qtd_dias}}
+            </td>
+            <td>
+                <a class='btn btn-danger' href="{% url 'excluirevento' pessoa.id falta.id %}">
+                    <span class="material-icons">
+                        delete
+                    </span>
+                </a>
+            </td>
+            {% if falta.falta.tipo == "AB" %}
+            <td class="text-center">
+                <a class='btn btn-info' href="{% url 'emitirabonada' falta.id %}" target="_blank">
+                    <span class="material-icons">
+                        description
+                    </span>
+                </a>
+            </td>
+            {% else %}
+            <td class="text-center"></td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<script>
+    let falta = document.getElementById("id_falta");
+    let texto = "";
+    falta.addEventListener("change", function () {
+        texto = falta.options[falta.selectedIndex].text;
+        if (texto === "NOJO") {
+            document.getElementById("id_qtd_dias").value = 8;
+            // document.getElementById("id_qtd_dias").disabled=true;
+        }
+        else if (texto === "PATERNIDADE") {
+            document.getElementById("id_qtd_dias").value = 5;
+            // document.getElementById("id_qtd_dias").disabled=true;
+        }
+        else if (texto === "LICENÇA PRÊMIO") {
+            document.getElementById("id_qtd_dias").value = 90;
+            // document.getElementById("id_qtd_dias").disabled=true;
+        }
+        else if (texto === "FÉRIAS") {
+            document.getElementById("id_qtd_dias").value = 30;
+            // document.getElementById("id_qtd_dias").disabled=true;
+        }
+        else {
+            document.getElementById("id_qtd_dias").value = 1;
+            // document.getElementById("id_qtd_dias").disabled=false;
+
+        }
+
+
+    });
+
+
+
+
+
+</script>
+{% endblock content %}

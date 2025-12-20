@@ -16,7 +16,6 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 
-from app_ficha_cem.views import index
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -25,11 +24,11 @@ urlpatterns = [
     path('alunos/', include('appMatricula.urls')),
     path('alunos/', include('dashboard.urls')),
     path('alunos/', include('appAno.urls')),
-    path('instituicoes/', include('appInstituicao.urls')),
-    path('fichacem/', include('app_ficha_cem.urls')),
-    path('pessoas/',index, name='index'),
     path('central/', include('app_central.urls')),
-    path('pontuacoes/', include('app_pontuacao.urls')),
+    path('instituicoes/', include('appInstituicao.urls')),
+    
+    
+    path('rh/', include('rh.urls'))
 
     
 ]

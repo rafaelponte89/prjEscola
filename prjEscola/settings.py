@@ -48,11 +48,11 @@ INSTALLED_APPS = [
     'appAno',
     'appInstituicao',
     # modulo pessoas
-    'app_ficha_cem',
-    'app_cargo',
-    'app_falta',
-    'app_pessoa',
-    'app_pontuacao',
+    'rh.app_ficha_cem',
+    'rh.app_cargo',
+    'rh.app_falta',
+    'rh.app_pessoa',
+    'rh.app_pontuacao',
 
     'app_central',
 
@@ -81,8 +81,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [path.join((BASE_DIR), 'templates/'), path.join((BASE_DIR), 'appAluno/bd/'),
-                 path.join((BASE_DIR)), path.join('app_cargo/template'), path.join('app_falta/template'), path.join('app_pessoa/template'),
-                 path.join('app_central/template')],
+                 path.join((BASE_DIR)), path.join('rh/templates/'),],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

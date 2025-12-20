@@ -1,0 +1,169 @@
+{% extends 'rh/menu.html'%}
+{% load crispy_forms_tags %}
+{% load bootstrap4 %}
+{% bootstrap_css %}
+
+{% block css %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+{% endblock css %}
+{% block content %}
+
+{{form.media}}
+<!--<form method="get">
+    {{ form.as_p }}
+    <button type="submit">Pesquisar</button>
+</form>-->
+
+{{form.media}}
+<div class="container mt-2 d-flex justify-content-center">
+    <div class="col-md-8 bg-light p-4 rounded shadow">
+        <form method="get" class="was-validated mb-2" style="background-color: #f8f9fa;">
+
+            <div class="container mt-2">
+                <div class="row justify-content-center">
+                    <!-- Título do Formulário -->
+                    <div class="col-md-8 text-center mb-1">
+                        <h3>Filtro</h3>
+                        <p>Preencha os filtros para pesquisar.</p>
+                    </div>
+                </div>
+
+                <div class="row justify-content-center">
+                    <!-- Formulário com fundo cinza e cantos arredondados -->
+                    <!-- Campo data inicial -->
+                    <div class="col-md-4 mb-1">
+                        <div class="form-group">
+                            {{ form.data_inicio|as_crispy_field }}
+                        </div>
+                    </div>
+
+                    <!-- Campo data final -->
+                    <div class="col-md-4 mb-1">
+                        <div class="form-group">
+                            {{ form.data_fim|as_crispy_field }}
+                        </div>
+                    </div>
+
+
+
+                </div>
+                <div class="row justify-content-center">
+                    <div class="col-md-12 mb-1">
+                        <div class="form-group">
+                            {{ form.falta|as_crispy_field }}
+                        </div>
+                    </div>
+                </div>
+                <!-- Botão de Envio -->
+                <div class="row justify-content-center">
+                    <div class="col-md-6 text-center">
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-outline-dark btn-lg">Pesquisar</button>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+    </div>
+    </form>
+</div>
+
+</div>
+
+
+
+<div class="container">
+    {% if resultados %}
+    <!-- <h2>Faltas Encontradas:</h2> -->
+    <table class="table table-hover mt-2">
+        <thead>
+            <tr>
+                <th scope="col" class="text-center">Data da Falta</th>
+                <th scope="col" class="text-center">Descrição da Falta</th>
+                <th scope="col" class="text-center">Quantidade de Dias</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            {% for falta in resultados %}
+            <tr>
+                <td class="text-center">{{ falta.data }}</td>
+                <td class="text-center"> {{ falta.falta.descricao }}</td>
+                <td class="text-center"> ({{ falta.qtd_dias }} dia{{ falta.qtd_dias|pluralize }})</td>
+            </tr>
+            {% endfor %}
+
+            <tr class="text-info">
+                <td colspan="2" class="text-center">
+                    <h3>Total</h3>
+                </td>
+                <td class="text-center">
+                    <h3>{{ total_geral }}</h3>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+
+<!--
+<h3>Total por tipo:</h3>
+
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th scope="col">Tipo da Falta</th>
+            <th scope="col">Quantidade de Dias</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        {% for item in totais_por_tipo %}
+        <tr>
+            <td>{{ item.falta__descricao }}</td>
+            <td> {{ item.total_dias }} dia{{ item.total_dias|pluralize }}</td>
+        </tr>
+        {% endfor %}
+
+
+    </tbody>
+</table>
+
+-->
+
+
+<!--
+<form method="get" action="{% url 'relatorio_faltas_pessoa' pessoa.id %}">
+    {% for key, value in request.GET.items %}
+    <input type="hidden" name="{{ key }}" value="{{ value }}">
+    {% endfor %}
+    <button type="submit">Exportar PDF</button>
+</form>
+-->
+
+
+{% elif form.is_bound %}
+<p>Nenhum resultado encontrado.</p>
+{% endif %}
+
+
+
+{% endblock content %}
+
+{% block script %}
+<!-- JS do Select2 -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<!-- Inicialização -->
+<script>
+    $(document).ready(function () {
+        $('.select2').select2({
+            width: '100%',
+            placeholder: "Selecione os tipos de falta",
+            allowClear: true
+        });
+    });
+</script>
+{% endblock script %}
