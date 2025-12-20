@@ -41,12 +41,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # modulo aluno
-    'appAluno',
-    'appClasse',
-    'appMatricula',
-    'dashboard',
-    'appAno',
-    'appInstituicao',
+    'aluno.appAluno',
+    'aluno.appClasse',
+    'aluno.appMatricula',
+    'aluno.dashboard',
+    'aluno.appAno',
+    'aluno.appInstituicao',
+    
     # modulo pessoas
     'rh.app_ficha_cem',
     'rh.app_cargo',
@@ -80,8 +81,11 @@ print('dIRBASE', BASE_DIR)
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [path.join((BASE_DIR), 'templates/'), path.join((BASE_DIR), 'appAluno/bd/'),
-                 path.join((BASE_DIR)), path.join('rh/templates/'),],
+        'DIRS': [
+            BASE_DIR / 'aluno' / 'templates',
+            BASE_DIR / 'rh' / 'templates'
+            
+            ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -150,6 +154,9 @@ USE_TZ = True
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 STATIC_ROOT = path.join(BASE_DIR,'static_root')
+STATICFILES_DIRS = [
+    BASE_DIR / 'appAluno' / 'static',  # se precisar adicionar mais dirs
+]
 MEDIA_ROOT = path.join(BASE_DIR, 'media/')
 
 # Default primary key field type
@@ -160,6 +167,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CRISPY_TEMPLATE_PACK='bootstrap4'
 
 DATABASE_ROUTERS = ['prjEscola.db_router.DB2Router']
+
+
 
 BOOTSTRAP_DATEPICKER_PLUS = {
     "options": {
