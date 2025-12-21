@@ -41,12 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # modulo aluno
-    'aluno.appAluno',
-    'aluno.appClasse',
-    'aluno.appMatricula',
-    'aluno.dashboard',
-    'aluno.appAno',
-    'aluno.appInstituicao',
+    'aluno',
+   
     
     # modulo pessoas
     'rh.app_ficha_cem',
@@ -82,7 +78,6 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            BASE_DIR / 'aluno' / 'templates',
             BASE_DIR / 'rh' / 'templates'
             
             ],
@@ -155,7 +150,7 @@ STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 STATIC_ROOT = path.join(BASE_DIR,'static_root')
 STATICFILES_DIRS = [
-    BASE_DIR / 'appAluno' / 'static',  # se precisar adicionar mais dirs
+    BASE_DIR / 'aluno' / 'static',  # se precisar adicionar mais dirs
 ]
 MEDIA_ROOT = path.join(BASE_DIR, 'media/')
 

@@ -1,11 +1,12 @@
-from django.urls import include, path
-
+from .routes import aluno, classe, matricula, ano, dashboard # Importando seus arquivos da pasta urls
+from django.urls import path, include
 
 urlpatterns = [
-    path('', include('aluno.appAluno.urls')),
-    path('', include('aluno.appClasse.urls')),
-    path('', include('aluno.appMatricula.urls')),
-    path('', include('aluno.dashboard.urls')),
-    path('', include('aluno.appAno.urls')),
-    path('', include('aluno.appInstituicao.urls')),
-    ]
+    path('aluno/', include(aluno.urlpatterns)),
+    path('classe/', include(classe.urlpatterns)),
+    path('matricula/', include(matricula.urlpatterns)),
+    path('ano/', include(ano.urlpatterns)),
+    path('dashboard/', include(dashboard.urlpatterns)),
+
+
+]

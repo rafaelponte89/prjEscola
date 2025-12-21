@@ -24,10 +24,12 @@ urlpatterns = [
     path('', include('app_central.urls')),
     
     
-    path('aluno/', include('aluno.urls')),
+    path("aluno/", include("aluno.urls")),
     
     
     path('rh/', include('rh.urls'))
+    
+
 
     
 ]
