@@ -1,7 +1,7 @@
 from django import forms
 
 from aluno.models.aluno import Aluno
-
+from aluno.utils.texto import padronizar_nome
 
 class FrmAluno(forms.ModelForm):
     class Meta:
@@ -18,6 +18,10 @@ class FrmAluno(forms.ModelForm):
                 'placeholder': 'RA'
             }),
         }
+        
+    def clean_nome(self):
+        nome = self.cleaned_data.get('nome')
+        return padronizar_nome(nome)
 
 class FrmAlunoUpdate(forms.ModelForm):
     class Meta:
@@ -44,6 +48,10 @@ class FrmAlunoUpdate(forms.ModelForm):
             ),
         }
 
+    def clean_nome(self):
+        nome = self.cleaned_data.get('nome')
+        return padronizar_nome(nome)
+    
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['data_nascimento'].input_formats = ['%Y-%m-%d']

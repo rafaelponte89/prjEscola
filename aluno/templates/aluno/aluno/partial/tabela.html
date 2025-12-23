@@ -1,30 +1,55 @@
 {% for aluno in alunos %}
-<tr>
-    <td class="align-middle">
-        {{ aluno.rm }}
-        {% if aluno.nome|upper in nomes_duplicados %}
-        <button type="button" class="btn btn-outline-primary btn-sm m-1 advertencia"
-                value="{{ aluno.rm }}"
-                data-bs-toggle="modal" data-bs-target="#resolucaoDuplicidadeModal">
-            <i class="bi bi-person-fill-exclamation"></i>
-        </button>
-        {% endif %}
-    </td>
-    <td class="align-middle">{{ aluno.nome }}</td>
-    <td class="align-middle text-center">{{ aluno.ra }}</td>
-    <td class="align-middle text-center conteudoAtualizar">
-        <button type="button" class="btn btn-outline-dark btn-lg atualizar"
-                value="{{ aluno.rm }}"
-                data-bs-toggle="modal" data-bs-target="#atualizarModal">
-            <i class="bi bi-arrow-repeat"></i>
-        </button>
-    </td>
-    <td class="align-middle text-center">
-        <button type="button" class="btn btn-outline-dark btn-lg declaracao"
-                value="{{ aluno.rm }}">
-            <i class="bi bi-journal"></i>
-        </button>
-    </td>
-</tr>
+<tr class="{% if aluno.is_cancelado %}table-secondary text-muted{% endif %}">
 
+  <td class="align-middle">
+    {{ aluno.rm }}
+
+    {% if aluno.nome|upper in nomes_duplicados %}
+      <button type="button"
+              class="btn btn-outline-primary btn-sm m-1 advertencia"
+              value="{{ aluno.rm }}"
+              data-bs-toggle="modal"
+              data-bs-target="#resolucaoDuplicidadeModal"
+              {% if aluno.is_cancelado %}disabled{% endif %}>
+        <i class="bi bi-person-fill-exclamation"></i>
+      </button>
+    {% endif %}
+  </td>
+
+  <td class="align-middle">{{ aluno.nome }}</td>
+  <td class="align-middle text-center">{{ aluno.ra }}</td>
+
+  <td class="align-middle text-center conteudoAtualizar">
+    {% if not aluno.is_cancelado %}
+      <button type="button"
+              class="btn btn-outline-dark btn-lg atualizar"
+              value="{{ aluno.rm }}"
+              data-bs-toggle="modal"
+              data-bs-target="#atualizarModal">
+        <i class="bi bi-arrow-repeat"></i>
+      </button>
+    {% endif %}
+  </td>
+
+  <td class="align-middle text-center">
+    {% if not aluno.is_cancelado %}
+      <button type="button"
+              class="btn btn-outline-dark btn-lg declaracao"
+              value="{{ aluno.rm }}">
+        <i class="bi bi-journal"></i>
+      </button>
+    {% endif %}
+  </td>
+
+  <td class="align-middle text-center">
+    <span class="badge
+      {% if aluno.is_ativo %}bg-success
+      {% elif aluno.is_cancelado %}bg-danger
+      {% elif aluno.is_arquivado %}bg-primary
+      {% else %}bg-secondary{% endif %}">
+      {{ aluno.get_status_display }}
+    </span>
+  </td>
+
+</tr>
 {% endfor %}

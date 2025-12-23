@@ -59,19 +59,18 @@ def salvar_aluno(request):
     if len(nome) <= REF_TAMANHO_NOME:
         return JsonResponse({
             'success': False,
-            'mensagem': criarMensagemJson(f'Nome muito Pequeno!','warnning')
+            'mensagem': criarMensagemJson(f'Nome muito Pequeno!','warning')
         })
 
     if len(ra) <= REF_TAMANHO_RA:
         return JsonResponse({
             'success': False,
-            'mensagem': criarMensagemJson(f'RA muito Pequeno!','warnning')
+            'mensagem': criarMensagemJson(f'RA muito Pequeno!','warning')
         })
 
     # Salva aluno
     form.save()
 
-    # 🔥 Recarrega os últimos 5
     alunos = Aluno.retornarNUltimos()
     nomes_duplicados = buscar_duplicados(alunos)
     html = renderizarTabela(alunos, nomes_duplicados, request)
@@ -82,11 +81,10 @@ def salvar_aluno(request):
         'html': html
     })
 
-
 def atualizar_aluno(request):
     aluno = get_object_or_404(Aluno, rm=request.POST.get("rm"))
     form = FrmAlunoUpdate(request.POST, instance=aluno)
-
+    
     if form.is_valid():
         form.save()
         return JsonResponse({'success': True, 'mensagem': criarMensagemJson('Aluno atualizado com sucesso!!!','success')})
@@ -100,39 +98,7 @@ def atualizar_aluno(request):
             )
         })
         
-def cancelarRM(request):
-    rm_req = int(request.POST.get('rm'))
-    aluno = Aluno.objects.get(pk=rm_req)
-    aluno.status = 1
-    aluno.save()
-    return criarMensagem(f"{aluno.nome} - {aluno.rm} : Cancelado!!!","success")
-
-
-     
-def recarregarTabela(request):
-    print("carregou a tabela")
-    alunos = Aluno.retornarNUltimos()
-    nomes_duplicados = buscar_duplicados(alunos)
-    print(alunos)
-    print(nomes_duplicados)
-    html = renderizarTabela(alunos, nomes_duplicados, request)
-    print(html)
-    return JsonResponse({'html': html, 'mensagem': ''})  # sem mensagem
-
-def renderizarTabela(alunos, nomes_duplicados, request):
-    html = render_to_string(
-            'aluno/aluno/partial/tabela.html',
-            {
-                'alunos': alunos,
-                'nomes_duplicados': nomes_duplicados,
-                'retornar_ultima_matricula_ativa': retornar_ultima_matricula_ativa,
-                'retornar_numeros_telefones': retornar_numeros_telefones,
-            },
-            request=request
-        )
-    return html
-
-def buscar(request):
+def pesquisar_aluno(request):
     nome = padronizar_nome(request.POST.get("nome", ""))
     filtro = request.POST.get("filtro")
 
@@ -152,12 +118,62 @@ def buscar(request):
     nomes_duplicados = buscar_duplicados(alunos)
     html = renderizarTabela(alunos, nomes_duplicados, request)
 
-  
     if not alunos:
        
-        return JsonResponse({'html': '', 'mensagem': criarMensagemJson('Aluno Não Encontrado','info')})
+        return JsonResponse({'html': '', 'mensagem': criarMensagemJson('Aluno não Encontrado!','info')})
     
     return JsonResponse({'html': html, 'mensagem': ''})
+        
+def cancelarRM(request):
+    rm = request.POST.get("rm")
+    try:
+        aluno = Aluno.objects.get(rm=rm)
+    except Aluno.DoesNotExist:
+        return JsonResponse({"success": False, "mensagem":criarMensagemJson('Aluno não Encontrado!', 'info')})
+
+    # Defina explicitamente o status de cancelado
+    aluno.status = Aluno.STATUS_CANCELADO
+    aluno.save()
+
+    return JsonResponse({"success": False, "mensagem":criarMensagemJson(f'Aluno {aluno.nome}, RM {aluno.rm} Cancelado com Sucesso!', 'success')})
+ 
+def recarregarTabela(request):
+    alunos = Aluno.retornarNUltimos()
+    nomes_duplicados = buscar_duplicados(alunos)
+    html = renderizarTabela(alunos, nomes_duplicados, request)
+  
+    return JsonResponse({'html': html, 'mensagem': ''})  # sem mensagem
+
+def renderizarTabela(alunos, nomes_duplicados, request):
+    html = render_to_string(
+            'aluno/aluno/partial/tabela.html',
+            {
+                'alunos': alunos,
+                'nomes_duplicados': nomes_duplicados,
+                'retornar_ultima_matricula_ativa': retornar_ultima_matricula_ativa,
+                'retornar_numeros_telefones': retornar_numeros_telefones,
+            },
+            request=request
+        )
+    return html
+
+def buscar_dados_aluno(request):
+    aluno = get_object_or_404(Aluno, rm=request.POST.get("rm"))
+    form = FrmAlunoUpdate(instance=aluno)
+
+    return render(
+        request,
+        "aluno/aluno/partial/form_update.html",
+        {"form": form, "aluno": aluno}
+    )
+
+
+def buscarRMCancelar(request):
+    rm = request.POST.get('rm')
+    aluno = Aluno.objects.get(pk=rm)
+    dados = f'<div class="col-12"> <p class="text-white bg-dark" > RM: <span id="registroAluno">{aluno.rm} </span> </p> <p class="text-white bg-dark"> Nome: {aluno.nome} </p>  </div>'
+    return HttpResponse(dados)
+
 
 def carregar_classes(request):
     ano = request.GET.get('ano')
@@ -285,24 +301,6 @@ def descrever_contato(request):
     return HttpResponse(novoTelefone)
         
 
-def buscar_dados_aluno(request):
-    aluno = get_object_or_404(Aluno, rm=request.POST.get("rm"))
-    form = FrmAlunoUpdate(instance=aluno)
-
-    return render(
-        request,
-        "aluno/aluno/partial/form_update.html",
-        {"form": form, "aluno": aluno}
-    )
-
-
-def buscarRMCancelar(request):
-    rm = request.POST.get('rm')
-    print("RM", rm)
-    aluno = Aluno.objects.get(pk=rm)
-    dados = f'<div class="col-12"> <p class="text-white bg-dark" > RM: <span id="registroAluno">{aluno.rm} </span> </p> <p class="text-white bg-dark"> Nome: {aluno.nome} </p>  </div>'
-    return HttpResponse(dados)
-
 
 def del_telefone(request):
     id_tel = request.POST.get('id_tel')
@@ -310,58 +308,7 @@ def del_telefone(request):
     telefone.delete()
     
     return HttpResponse("Telefone Excluido")
-    
-# busca aluno por rm
-@csrf_exempt
-def buscarRM(request):
-    rm = request.POST.get('rm')
-    print("RM", rm)
-    aluno = Aluno.objects.get(pk=rm)
-   
-    dados = f'<div class="col-sm-6 p-3"> \
-           <div class="input-group"> \
-      <div class="input-group-prepend"> \
-        <span class="input-group-text bg-dark text-white" id="basic-addon1"><i class="bi bi-search"></i></span>\
-      </div> \
-            <input type="text" name="nome" maxlength="100" class="form-control formulario" placeholder="Nome do Aluno" aria-describedby="basic-addon1" required="" id="id_nome" value="{aluno.nome}"> \
-            </div> \
-            </div> \
-            <div class="col-sm-2 p-3"> \
-            <input type="number" name="ra" maxlength="20" class="form-control formulario" placeholder="RA" required="" id="id_ra" value="{aluno.ra}"> \
-        </div> \
-            <div class="col-sm-4 d-flex justify-content-center"> \
-    <button \
-      id="atualizar2" \
-      class="btn btn-outline-primary m-3"\
-      title="Atualizar Aluno" \
-      value="{aluno.rm}" \
-    > \
-      Atualizar\
-    </button>\
-    \
-    <button\
-      id="relatorio"\
-      class="btn btn-outline-dark m-3"\
-      title="Gerar Relatório"\
-      data-bs-toggle="modal"\
-      data-bs-target="#relatorioModal"\
-    >\
-      Relatório\
-    </button>\
-    <button\
-      id="bkp"\
-      class="btn btn-outline-primary m-3"\
-      title="Enviar Cópia para a Nuvem"\
-    >\
-      <i class="bi bi-cloud-arrow-up-fill"></i>\
-    </button>\
-  </div>'
-        
-    return HttpResponse(dados)
-
-
-
-  
+      
 
 ## Nova Personalizável
 def footer(canvas, doc, content):

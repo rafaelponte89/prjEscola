@@ -38,7 +38,5 @@ class Matricula(models.Model):
             if self.situacao == self.SITUACAO[i][0]:
                 return self.SITUACAO[i][1]
 
-
-
     class Meta:
         app_label = 'aluno'

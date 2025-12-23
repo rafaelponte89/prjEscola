@@ -1,4 +1,6 @@
-{% extends 'aluno/base.html' %} {% block content %}
+{% extends 'aluno/base.html' %}
+
+{% block content %}
 
 {% load static %}
 
@@ -27,7 +29,7 @@
     </div>
 
     <div class="col-sm-4 d-flex justify-content-center">
-      <button type="submit" class="btn btn-outline-dark m-3" title="Registrar Aluno">
+      <button type="submit" class="btn btn-outline-dark m-3" title="Registrar Aluno" id="gravarAluno">
         Gravar
       </button>
 
@@ -55,11 +57,13 @@
         <th class="text-center">RA</th>
         <th class="text-center">Atualizar</th>
         <th class="text-center">Declaração</th>
+        <th class="text-center">Status</th>
         <!--
         <th class="text-center"> IA Matrícula</th>
         -->
       </thead>
       <tbody id="corpoTabela">
+
         <!-- Tabela dinâmica aparece aqui -->
       </tbody>
     </table>
@@ -78,6 +82,7 @@
       </div>
       <div class="modal-body">
         <div id="dadosAluno" class="row">
+
           <!-- Dados do Registro Aqui -->
         </div>
       </div>
@@ -231,188 +236,25 @@
 
 <!-- Fim Modal Resolução de Duplicidade-->
 
+
 <script type="text/javascript">
   $(document).ready(() => {
 
-    const csrftoken = document.querySelector(
-      "[name=csrfmiddlewaretoken]"
-    ).value;
+    // Rebind automático, usando elemento fixo que não muda com ajax
+    $("#corpoTabela").on("click", ".declaracao", function () {
+      sendBaixarDeclaracao($(this).val());
+    });
 
-    // Pesquisar por nome
-    function sendBuscar() {
-      let nome = document.getElementById("id_nome").value;
-      let filtro = localStorage.getItem("filtro");
+    $("#corpoTabela").on("click", ".atualizar", function () {
+      buscarAluno($(this).val());
+    });
 
-      $.post({
-        url: "{% url 'buscar' %}",
-        data: {
-          nome: nome,
-          filtro: filtro,
-        },
-        headers: {
-          "X-CSRFToken": csrftoken,
-        },
-        success: (response) => {
-          // Atualiza o corpo da tabela
-          $("#corpoTabela").html(response.html);
-
-          // Mostra ou esconde a mensagem
-          if (response.mensagem) {
-            $("#corpoTabela").html(response.mensagem).show();
-          } else {
-            $("#mensagemTabelaAluno").hide();
-          }
-
-          // Rebind dos botões
-          $(".advertencia").off("click").on("click", function () {
-            buscarAlunoCancelar($(this).val());
-          });
-          $(".atualizar").off("click").on("click", function () {
-            buscarAluno($(this).val());
-          });
-          $(".declaracao").off("click").on("click", function () {
-            sendBaixarDeclaracao($(this).val());
-          });
-        },
-      });
-    }
+    $("#corpoTabela").on("click", ".advertencia", function () {
+      buscarAlunoCancelar($(this).val());
+    });
 
     // Chama a função ao digitar
     $("#id_nome").keyup(() => sendBuscar());
-
-    function sendBaixarListaTelefonica(classe) {
-      $.post({
-        url: "{% url 'listatelefonicapdf' %}",
-        // datatype: 'pdf',
-        data: {
-          classe: classe,
-        },
-        headers: {
-          "X-CSRFToken": csrftoken,
-        },
-        success: (response) => {
-          var blob = new Blob([response], { type: "application/pdf" });
-
-          if (window.navigator && window.navigator.msSaveOrOpenBlob) {
-            window.navigator.msSaveOrOpenBlob(blob); // for IE
-          } else {
-            var fileURL = URL.createObjectURL(blob);
-            var newWin = window.open(fileURL);
-            newWin.focus();
-          }
-        },
-      });
-    }
-
-    //Baixar Pdf
-    function sendBaixarPdf(rmi, rmf) {
-      $.post({
-        url: "{% url 'baixarpdf' %}",
-        // datatype: 'pdf',
-        data: {
-          rmi: rmi,
-          rmf: rmf,
-        },
-        headers: {
-          "X-CSRFToken": csrftoken,
-        },
-        success: (response) => {
-          var blob = new Blob([response], { type: "application/pdf" });
-
-          if (window.navigator && window.navigator.msSaveOrOpenBlob) {
-            window.navigator.msSaveOrOpenBlob(blob); // for IE
-          } else {
-            var fileURL = URL.createObjectURL(blob);
-            var newWin = window.open(fileURL);
-            newWin.focus();
-          }
-        },
-      });
-    }
-
-    function sendBaixarListaPersonalizavel(classe) {
-      $.post({
-        url: "{% url 'listapersonalizavelpdf' %}",
-        // datatype: 'pdf',
-        data: {
-          classe: classe,
-          titulo: $("#titulo").val(),
-          colunas: $("#colunas").val(),
-          tam_colunas: $("#tamanho").val(),
-          pagina: $("#pagina").val(),
-          repeticao: $("#repeticao").val(),
-          tamanho_fonte: $("#tamanho_fonte").val(),
-        },
-        headers: {
-          "X-CSRFToken": csrftoken,
-        },
-        success: (response) => {
-          var blob = new Blob([response], { type: "application/pdf" });
-
-          if (window.navigator && window.navigator.msSaveOrOpenBlob) {
-            window.navigator.msSaveOrOpenBlob(blob); // for IE
-          } else {
-            var fileURL = URL.createObjectURL(blob);
-            var newWin = window.open(fileURL);
-            newWin.focus();
-          }
-        },
-      });
-    }
-
-    function sendBaixarDeclaracao(rm) {
-      $.post({
-        url: "{% url 'baixar_declaracao_matricula' %}",
-        // datatype: 'pdf',
-        data: {
-          rm: rm,
-          nome_op: localStorage.getItem("nomeOperador"),
-          cargo_op: localStorage.getItem("cargoOperador"),
-          rg_op: localStorage.getItem("rgOperador"),
-        },
-        headers: {
-          "X-CSRFToken": csrftoken,
-        },
-        success: (response) => {
-          var blob = new Blob([response], { type: "application/pdf" });
-
-          if (window.navigator && window.navigator.msSaveOrOpenBlob) {
-            window.navigator.msSaveOrOpenBlob(blob); // for IE
-          } else {
-            var fileURL = URL.createObjectURL(blob);
-            var newWin = window.open(fileURL);
-            newWin.focus();
-          }
-        },
-      });
-    }
-
-    // Recarregar Tabela Estado Inicial
-    function recarregarTabela() {
-
-
-      $.get({
-        url: "{% url 'recarregarTabela' %}",
-        success: (response) => {
-          $("#corpoTabela").html(response.html);
-
-          $(".advertencia").off("click");
-          $(".advertencia").click(function () {
-            buscarAlunoCancelar($(this).val());
-          });
-          $(".atualizar").off("click");
-          $(".atualizar").click(function () {
-            buscarAluno($(this).val());
-          });
-
-          $(".declaracao").off("click");
-          $(".declaracao").click(function () {
-            sendBaixarDeclaracao($(this).val());
-          });
-        },
-        fail: (response) => { },
-      });
-    }
 
     $("#cadastrarAluno").on("submit", function (e) {
       e.preventDefault();
@@ -426,8 +268,6 @@
           $("#mensagens")
             .html(response.mensagem)
             .show();
-
-          // 🔥 Atualiza tabela com últimos 5
           if (response.success && response.html) {
             $("#corpoTabela").html(response.html);
           }
@@ -445,9 +285,6 @@
       });
     });
 
-
-
-
     $(document).on("submit", "#atualizarAluno", function (e) {
       e.preventDefault();
 
@@ -457,6 +294,10 @@
         success: (response) => {
           if (response.success) {
             $(".modal").modal("hide");
+            $("#mensagens")
+              .stop(true, true)
+              .html(response.mensagem)
+              .show();
             $("#mensagens").html(response.mensagem);
             setTimeout(() => {
               $("#mensagens").fadeOut(1000, function () {
@@ -471,141 +312,9 @@
       });
     });
 
-
-    //Buscar Aluno por rm para cancelar
-    function buscarAlunoCancelar(rm) {
-      $.post({
-        url: "{% url 'buscarRMCancelar' %}",
-
-        headers: {
-          "X-CSRFToken": csrftoken,
-        },
-        data: {
-          rm: rm,
-        },
-        success: (response) => {
-          $("#identificador").html(response);
-        },
-        fail: (response) => { },
-      });
-    }
-
-    function delTelefone() {
-      var close = document.getElementsByClassName("removerTelefone");
-      var i;
-      for (i = 0; i < close.length; i++) {
-        close[i].onclick = function () {
-          var div = this.parentElement;
-          sendDelTelefone(this.value);
-          div.remove();
-        };
-      }
-    }
-
-    function addTelefone() {
-      $.get({
-        url: "{% url 'contato' %}",
-        success: (response) => {
-          $("#dados").append(response)
-
-        },
-        fail: () => { },
-      });
-    }
-
-    function sendDelTelefone(idTel) {
-      $.post({
-        url: "{% url 'delTelefone' %}",
-        headers: {
-          "X-CSRFToken": csrftoken,
-        },
-        data: {
-          id_tel: idTel,
-        },
-        success: (response) => {
-          console.log("response");
-        },
-      });
-    }
-
-    function telefonesAlunos(rm) {
-      $.post({
-        url: "{% url 'buscarTelefonesAluno' %}",
-
-        headers: {
-          "X-CSRFToken": csrftoken,
-        },
-        data: {
-          rm: rm,
-        },
-        success: (response) => {
-          $("#dados").html(response);
-          $("#addTelefone").click(() => {
-            addTelefone();
-            delTelefone();
-          });
-          delTelefone();
-        },
-        fail: (response) => { },
-      });
-    }
-
-    function exibirHistoricoMatriculas(rm) {
-      $.post({
-        url: "{% url 'buscarHistoricoMatriculas' %}",
-
-        headers: {
-          "X-CSRFToken": csrftoken,
-        },
-        data: {
-          rm: rm,
-        },
-        success: (response) => {
-          $("#dados").html(response);
-        },
-        fail: (response) => { },
-      });
-    }
-
-    //Cancelar RM
-    function sendCancelar(rm) {
-      $.post({
-        url: "{% url 'cancelarRM' %}",
-
-        headers: {
-          "X-CSRFToken": csrftoken,
-        },
-        data: {
-          rm: rm,
-        },
-        success: (response) => {
-          configurarElementos(response);
-        },
-        fail: (response) => { },
-      });
-    }
-
-
-
-
     $("#simCancelar").click(() => {
       sendCancelar($("#registroAluno").text());
     });
-
-    function configurarElementos(response) {
-      $("#mensagens").html(response);
-      setTimeout(function () {
-        $("#mensagem").css("display", "none");
-      }, 3000);
-      $("#id_nome").text = "";
-      $("#id_ra").prop("value", null);
-      $("#id_nome").focus();
-      $("#success-outlined").prop("checked", true);
-      $("#id_nome").prop("value", "");
-      recarregarTabela();
-    }
-
-
 
     $("#persorelatorio").on("change", function () {
       if ($("#persorelatorio:checked")) {
@@ -653,30 +362,56 @@
       carregarClasses(localStorage.getItem("idAno"));
     });
 
-    function buscarAluno(rm) {
-      $.post("{% url 'buscarDadosAluno' %}", {
-        rm: rm,
-        csrfmiddlewaretoken: csrftoken
-      }).done((html) => {
-        $("#dadosAluno").html(html);
+    recarregarTabela();
 
-        // Fecha qualquer modal ativo primeiro
-        $('.modal').modal('hide');
+  });
 
-        // Remove qualquer backdrop restante
-        $('.modal-backdrop').remove();
-
-        // Abre o modal
-        const modalEl = document.getElementById("atualizarModal");
-        const modal = new bootstrap.Modal(modalEl);
-        modal.show();
+  function configurarElementos(response) {
+    $("#mensagens").html(response);
+    setTimeout(function () {
+      $("#mensagem").css("display", "none");
+    }, 3000);
+    $("#id_nome").val("");
+    $("#id_ra").prop("value", null);
+    $("#id_nome").focus();
+    $("#success-outlined").prop("checked", true);
+    $("#id_nome").prop("value", "");
+    recarregarTabela();
+  }
+  
+  function carregarClasses(ano) {
+      $.get({
+        url: "{% url 'carregarclasses' %}",
+        data: {
+          ano: ano,
+        },
+        success: (response) => {
+          $("#classes").html(response);
+        },
+        fail: () => { },
       });
     }
 
-    recarregarTabela();
-
-
-
-  });
 </script>
+
+<div id="urls" data-buscar-aluno="{% url 'buscarDadosAluno' %}" 
+  data-cancelar-rm="{% url 'cancelarRM' %}"
+  data-buscar-cancelar="{% url 'buscarRMCancelar' %}" 
+  data-recarregar-tabela="{% url 'recarregarTabela' %}"
+  data-pesquisar-aluno="{% url 'pesquisar_aluno' %}" 
+  data-relatorio-rm="{% url 'baixarpdf' %}"
+  data-relatorio-personalizavel="{% url 'listapersonalizavelpdf' %}"
+  data-declaracao-matricula="{% url 'baixar_declaracao_matricula' %}"
+  data-lista-telefonica="{% url 'baixar_declaracao_matricula' %}">
+
+</div>
+
+<script src="{% static 'aluno/js/base.js' %}"></script>
+
+{% block script %}
+<script src="{% static 'aluno/js/aluno.js' %}"></script>
+<script src="{% static 'aluno/js/relatorio.js' %}"></script>
+
+{% endblock script %}
+
 {% endblock content %}

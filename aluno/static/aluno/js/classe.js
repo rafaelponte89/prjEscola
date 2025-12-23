@@ -186,8 +186,6 @@ $(document).ready(() => {
     sendListar();
   });
 
-
-
   sendListar();
 
   function limparCampos() {
