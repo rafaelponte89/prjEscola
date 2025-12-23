@@ -13,7 +13,7 @@ def classe(request):
     context = {
         'periodos': Classe.PERIODO_CHOICES
     }   
-    return render(request, 'aluno/classe.html', context)
+    return render(request, 'aluno/classe/classe.html', context)
 
 
 def buscar(request):

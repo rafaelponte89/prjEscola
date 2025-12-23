@@ -15,7 +15,7 @@ from aluno.models.matricula import Matricula
 
 def matricula(request):
     
-    return render(request, 'aluno/matricula.html')
+    return render(request, 'aluno/matricula/matricula.html')
 
 
 def adicionar(reqeust):

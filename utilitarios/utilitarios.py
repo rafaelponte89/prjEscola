@@ -1,10 +1,14 @@
 from datetime import datetime
+from django.http import HttpResponse
 
-from django.shortcuts import HttpResponse
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 
 
+
+
+
+    
 def anonimizarDado(dado):
     sigla = ''
     lista_dado = str(dado).split(' ')

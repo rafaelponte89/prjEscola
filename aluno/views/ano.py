@@ -9,7 +9,7 @@ from aluno.models.ano import Ano
 
 # Create your views here.
 def inicial_ano(request):
-    return render(request,"aluno/ano.html")
+    return render(request,"aluno/ano/ano.html")
 
 
 def gravar_ano(request):

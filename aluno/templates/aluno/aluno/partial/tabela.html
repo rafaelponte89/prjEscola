@@ -1,0 +1,30 @@
+{% for aluno in alunos %}
+<tr>
+    <td class="align-middle">
+        {{ aluno.rm }}
+        {% if aluno.nome|upper in nomes_duplicados %}
+        <button type="button" class="btn btn-outline-primary btn-sm m-1 advertencia"
+                value="{{ aluno.rm }}"
+                data-bs-toggle="modal" data-bs-target="#resolucaoDuplicidadeModal">
+            <i class="bi bi-person-fill-exclamation"></i>
+        </button>
+        {% endif %}
+    </td>
+    <td class="align-middle">{{ aluno.nome }}</td>
+    <td class="align-middle text-center">{{ aluno.ra }}</td>
+    <td class="align-middle text-center conteudoAtualizar">
+        <button type="button" class="btn btn-outline-dark btn-lg atualizar"
+                value="{{ aluno.rm }}"
+                data-bs-toggle="modal" data-bs-target="#atualizarModal">
+            <i class="bi bi-arrow-repeat"></i>
+        </button>
+    </td>
+    <td class="align-middle text-center">
+        <button type="button" class="btn btn-outline-dark btn-lg declaracao"
+                value="{{ aluno.rm }}">
+            <i class="bi bi-journal"></i>
+        </button>
+    </td>
+</tr>
+
+{% endfor %}

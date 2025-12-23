@@ -504,7 +504,7 @@
 
     function sendBaixarDeclaracao(rm) {
       $.post({
-        url: "{% url 'baixardeclaracao' %}",
+        url: "{% url 'baixar_declaracao_matricula' %}",
         // datatype: 'pdf',
         data: {
           rm: rm,

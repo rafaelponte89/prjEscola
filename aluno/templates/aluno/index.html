@@ -1,40 +1,50 @@
- {% extends 'aluno/base.html' %}{% block content %}
+{% extends 'aluno/base.html' %} {% block content %}
 
-<div class="row">
-  <div class="col-12">
-    <h1 class="text-center">Registro de Alunos</h1>
-  </div>
-</div>
+{% load static %}
 
-<div id="aluno" class="row mt-2 bg-body-secondary rounded-3">
+<form id="cadastrarAluno" method="POST" action="{% url 'salvar_aluno' %}">
   {% csrf_token %}
-  <!--   <label class="btn btn-outline-success  m-3" for="success-outlined" title="Pesquisar"><i class="bi bi-search"></i>-->
 
-  <div class="col-sm-6 p-3">
-    <div class="input-group">
-      <div class="input-group-prepend">
-        <span class="input-group-text bg-dark text-white" id="basic-addon1"><i class="bi bi-search"></i></span>
-      </div>
-      {{form.nome}}
+  <div class="row">
+    <div class="col-12">
+      <h1 class="text-center">Registro de Alunos</h1>
     </div>
   </div>
-  <div class="col-sm-2 p-3">{{form.ra}}</div>
 
-  <div class="col-sm-4 d-flex justify-content-center">
-    <button id="gravar" class="btn btn-outline-dark m-3" title="Registrar Aluno">
-      Gravar
-    </button>
+  <div id="aluno" class="row mt-2 bg-body-secondary rounded-3">
 
-    <button id="relatorio" class="btn btn-outline-dark m-3" title="Gerar Relatório" data-bs-toggle="modal"
-      data-bs-target="#relatorioModal">
-      Relatório
-    </button>
+    <div class="col-sm-6 p-3">
+      <div class="input-group">
+        <span class="input-group-text bg-dark text-white">
+          <i class="bi bi-search"></i>
+        </span>
+        {{ form.nome }}
+      </div>
+    </div>
 
-    <button id="bkp" class="btn btn-outline-primary m-3" title="Enviar Cópia para a Nuvem" style="display: none;"\>
-      <i class="bi bi-cloud-arrow-up-fill"></i>
-    </button>
+    <div class="col-sm-2 p-3">
+      {{ form.ra }}
+    </div>
+
+    <div class="col-sm-4 d-flex justify-content-center">
+      <button type="submit" class="btn btn-outline-dark m-3" title="Registrar Aluno">
+        Gravar
+      </button>
+
+      <button type="button" class="btn btn-outline-dark m-3" title="Gerar Relatório" data-bs-toggle="modal"
+        data-bs-target="#relatorioModal">
+        Relatório
+      </button>
+
+      <button type="button" class="btn btn-outline-primary m-3" title="Enviar Cópia para a Nuvem"
+        style="display: none;">
+        <i class="bi bi-cloud-arrow-up-fill"></i>
+      </button>
+    </div>
+
   </div>
-</div>
+</form>
+
 
 <div class="row mt-3">
   <div class="col-12 table-responsive">
@@ -42,8 +52,6 @@
       <thead>
         <th>RM</th>
         <th>Nome</th>
-        <th class="text-center">Turma</th>
-        <th class="text-center">Telefone</th>
         <th class="text-center">RA</th>
         <th class="text-center">Atualizar</th>
         <th class="text-center">Declaração</th>
@@ -225,7 +233,7 @@
 
 <script type="text/javascript">
   $(document).ready(() => {
-    recarregarTabela();
+
     const csrftoken = document.querySelector(
       "[name=csrfmiddlewaretoken]"
     ).value;
@@ -234,6 +242,7 @@
     function sendBuscar() {
       let nome = document.getElementById("id_nome").value;
       let filtro = localStorage.getItem("filtro");
+
       $.post({
         url: "{% url 'buscar' %}",
         data: {
@@ -244,30 +253,32 @@
           "X-CSRFToken": csrftoken,
         },
         success: (response) => {
-          $("#corpoTabela").html(response);
+          // Atualiza o corpo da tabela
+          $("#corpoTabela").html(response.html);
 
-          $(".advertencia").off("click");
-          $(".advertencia").click(function () {
+          // Mostra ou esconde a mensagem
+          if (response.mensagem) {
+            $("#corpoTabela").html(response.mensagem).show();
+          } else {
+            $("#mensagemTabelaAluno").hide();
+          }
+
+          // Rebind dos botões
+          $(".advertencia").off("click").on("click", function () {
             buscarAlunoCancelar($(this).val());
           });
-          $(".atualizar").off("click");
-          $(".atualizar").click(function () {
+          $(".atualizar").off("click").on("click", function () {
             buscarAluno($(this).val());
           });
-          $(".declaracao").off("click");
-          $(".declaracao").click(function () {
+          $(".declaracao").off("click").on("click", function () {
             sendBaixarDeclaracao($(this).val());
           });
         },
       });
     }
 
-  
-
-    // Ao apertar a tecla pesquisar por nome
+    // Chama a função ao digitar
     $("#id_nome").keyup(() => sendBuscar());
-
-   
 
     function sendBaixarListaTelefonica(classe) {
       $.post({
@@ -351,7 +362,7 @@
 
     function sendBaixarDeclaracao(rm) {
       $.post({
-        url: "{% url 'baixardeclaracao' %}",
+        url: "{% url 'baixar_declaracao_matricula' %}",
         // datatype: 'pdf',
         data: {
           rm: rm,
@@ -378,10 +389,12 @@
 
     // Recarregar Tabela Estado Inicial
     function recarregarTabela() {
+
+
       $.get({
         url: "{% url 'recarregarTabela' %}",
         success: (response) => {
-          $("#corpoTabela").html(response);
+          $("#corpoTabela").html(response.html);
 
           $(".advertencia").off("click");
           $(".advertencia").click(function () {
@@ -396,105 +409,68 @@
           $(".declaracao").click(function () {
             sendBaixarDeclaracao($(this).val());
           });
-
-          $(".ia").off("click");
-          $(".ia").click(function () {
-
-            matricularAlunoIa($(this).val());
-          });
         },
         fail: (response) => { },
       });
     }
 
-    //Gravar Aluno
-    function sendGravar() {
-      let nome = document.getElementById("id_nome").value.toUpperCase();
-      let ra = document.getElementById("id_ra").value.toUpperCase();
+    $("#cadastrarAluno").on("submit", function (e) {
+      e.preventDefault();
 
       $.post({
-        url: "{% url 'gravar' %}",
-        headers: {
-          "X-CSRFToken": csrftoken,
-        },
-        data: {
-          nome: nome,
-          ra: ra,
-        },
-        success: (response) => {
-          configurarElementos(response);
-        },
-        fail: (response) => { },
+        url: $(this).attr("action"),
+        data: $(this).serialize(),
+        success: function (response) {
+
+          // Mensagem
+          $("#mensagens")
+            .html(response.mensagem)
+            .show();
+
+          // 🔥 Atualiza tabela com últimos 5
+          if (response.success && response.html) {
+            $("#corpoTabela").html(response.html);
+          }
+
+          // Limpa formulário
+          if (response.success) {
+            $("#cadastrarAluno")[0].reset();
+            $("#id_nome").focus();
+          }
+
+          setTimeout(() => {
+            $("#mensagens").fadeOut();
+          }, 3000);
+        }
       });
-    }
+    });
 
-    // Atualizar Aluno
-    function sendAtualizar(rm) {
-      let nome = document.getElementById("nomeAtualizar").value.toUpperCase();
-      let ra = document.getElementById("raAtualizar").value;
-      let dra = document.getElementById("raDigitoAtualizar").value;
-      let dt_nascimento = document.getElementById("nascimentoAtualizar").value;
-      let telefones = document.getElementsByClassName("numTelefone");
-      let contatos = document.getElementsByClassName("contato");
-      let removerTelefone = document.getElementsByClassName("removerTelefone");
-      let numTelefones = [];
-      let tipoContatos = [];
-      let novTelefones = [];
-      for (novo of removerTelefone) {
-        novTelefones.push(novo.value);
-      }
-      for (tel of telefones) {
-        numTelefones.push(tel.value);
-      }
 
-      for (contato of contatos) {
-        tipoContatos.push(contato.value);
-      }
+
+
+    $(document).on("submit", "#atualizarAluno", function (e) {
+      e.preventDefault();
 
       $.post({
-        url: "{% url 'atualizar' %}",
-        headers: {
-          "X-CSRFToken": csrftoken,
-        },
-        data: {
-          nome: nome,
-          rm: rm,
-          ra: ra,
-          dra: dra,
-          dt_nascimento: dt_nascimento,
-          telefones: numTelefones,
-          contatos: tipoContatos,
-          novos_tel: novTelefones,
-        },
+        url: $(this).attr("action"),
+        data: $(this).serialize(),
         success: (response) => {
-          $("#gravar").off("click");
-          $("#id_nome").off("keyup");
-          $("#id_ra").off("keypress");
-
-          $("#gravar").click(() => sendGravar());
-          $("#id_nome").keypress((event) => {
-            let tecla = event.which;
-            if (tecla == 13) {
-              sendGravar();
-            }
-          });
-          $("#id_ra").keypress((event) => {
-            let tecla = event.which;
-            if (tecla == 13) {
-              sendGravar();
-            }
-          });
-          $("#id_nome").keyup(() => sendBuscar());
-
-          configurarElementos(response);
-          //document.getElementById("gravar").style.display = "block";
-          //document.getElementById("atualizar2").style.display = "none";
-          document.getElementById("basic-addon1").classList.add("bg-dark");
-          document.getElementById("basic-addon1").classList.add("text-white");
-        },
-        fail: (response) => { },
+          if (response.success) {
+            $(".modal").modal("hide");
+            $("#mensagens").html(response.mensagem);
+            setTimeout(() => {
+              $("#mensagens").fadeOut(1000, function () {
+                $(this).html("").show(); // limpa e prepara para próxima mensagem
+              });
+            }, 3000);
+            recarregarTabela();
+          } else {
+            $("#dadosAluno").html(response.html);
+          }
+        }
       });
-    }
+    });
+
 
     //Buscar Aluno por rm para cancelar
     function buscarAlunoCancelar(rm) {
@@ -549,49 +525,6 @@
         success: (response) => {
           console.log("response");
         },
-      });
-    }
-
-    //Buscar aluno por rm
-    function buscarAluno(rm) {
-      $.post({
-        url: "{% url 'buscarDadosAluno' %}",
-
-        headers: {
-          "X-CSRFToken": csrftoken,
-        },
-        data: {
-          rm: rm,
-        },
-        success: (response) => {
-          $("#dadosAluno").html(response);
-          telefonesAlunos(rm);
-
-          $(".nav-link").click(function (e) {
-            e.preventDefault();
-            $(".nav-link").removeClass("active");
-            $(this).addClass("active");
-          });
-
-          $("#aba1").click(function (e) {
-            e.preventDefault();
-            telefonesAlunos(rm);
-          });
-
-          $("#aba2").click(() => {
-            exibirHistoricoMatriculas(rm);
-          });
-          $("#simAtualizar").click(() => {
-            sendAtualizar($("#simAtualizar").val());
-          });
-
-          //adicionar telefone quando clica no +
-          $("#addTelefone").click(() => {
-            addTelefone();
-            delTelefone();
-          });
-        },
-        fail: (response) => { },
       });
     }
 
@@ -652,6 +585,9 @@
       });
     }
 
+
+
+
     $("#simCancelar").click(() => {
       sendCancelar($("#registroAluno").text());
     });
@@ -669,20 +605,7 @@
       recarregarTabela();
     }
 
-    $("#gravar").click(() => sendGravar());
 
-    $("#id_nome").keypress((event) => {
-      let tecla = event.which;
-      if (tecla == 13) {
-        sendGravar();
-      }
-    });
-    $("#id_ra").keypress((event) => {
-      let tecla = event.which;
-      if (tecla == 13) {
-        sendGravar();
-      }
-    });
 
     $("#persorelatorio").on("change", function () {
       if ($("#persorelatorio:checked")) {
@@ -730,6 +653,27 @@
       carregarClasses(localStorage.getItem("idAno"));
     });
 
+    function buscarAluno(rm) {
+      $.post("{% url 'buscarDadosAluno' %}", {
+        rm: rm,
+        csrfmiddlewaretoken: csrftoken
+      }).done((html) => {
+        $("#dadosAluno").html(html);
+
+        // Fecha qualquer modal ativo primeiro
+        $('.modal').modal('hide');
+
+        // Remove qualquer backdrop restante
+        $('.modal-backdrop').remove();
+
+        // Abre o modal
+        const modalEl = document.getElementById("atualizarModal");
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+      });
+    }
+
+    recarregarTabela();
 
 
 

@@ -3,21 +3,53 @@ from django import forms
 from aluno.models.aluno import Aluno
 
 
-class frmAluno(forms.ModelForm):
-    nome = forms.CharField(max_length=100, required=True)
-    ra = forms.CharField(max_length=20, required=True,widget=forms.NumberInput)
-
-    nome.widget.attrs["class"] = "form-control formulario"
-    nome.widget.attrs["placeholder"] = "Nome do Aluno"
-    nome.widget.attrs["aria-describedby"]="basic-addon1"
-    ra.widget.attrs["class"] = "form-control"
-    ra.widget.attrs["placeholder"] = "RA"
-    ra.widget.attrs["class"] = "form-control formulario"
-    
-    
-    def __str__(self):
-        return self.nome
-    
+class FrmAluno(forms.ModelForm):
     class Meta:
         model = Aluno
-        fields = ['nome','ra']
+        fields = ['nome', 'ra']
+        widgets = {
+            'nome': forms.TextInput(attrs={
+                'class': 'form-control formulario',
+                'placeholder': 'Nome do Aluno',
+                'aria-describedby': 'basic-addon1'
+            }),
+            'ra': forms.NumberInput(attrs={
+                'class': 'form-control formulario',
+                'placeholder': 'RA'
+            }),
+        }
+
+class FrmAlunoUpdate(forms.ModelForm):
+    class Meta:
+        model = Aluno
+        fields = [
+            'nome',
+            'ra',
+            'd_ra',
+            'data_nascimento',
+        ]
+        widgets = {
+            'nome': forms.TextInput(attrs={'class': 'form-control'}),
+            'ra': forms.NumberInput(attrs={'class': 'form-control'}),
+            'd_ra': forms.TextInput(attrs={
+                'class': 'form-control',
+                'maxlength': 1
+            }),
+            'data_nascimento': forms.DateInput(
+                format='%Y-%m-%d',
+                attrs={
+                    'type': 'date',
+                    'class': 'form-control'
+                }
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['data_nascimento'].input_formats = ['%Y-%m-%d']
+
+
+        
+        
+
+    

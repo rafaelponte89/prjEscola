@@ -10,20 +10,22 @@ class Aluno (models.Model):
     #status (0 - arquivado, 1 - cancelado, 2 - ativo) 
     status = models.IntegerField(default=0) 
     ra = models.CharField(max_length=100, default='')
-    d_ra = models.CharField(max_length=1, default='')
-    data_nascimento = models.CharField(max_length=10, default='')
+    d_ra = models.CharField(max_length=1, default='', null=True, blank=True)
+    data_nascimento = models.DateField(null=True, blank=True)
 
     def __str__(self):
        
         return f'{self.nome}'
     
     # Retorna o último aluno no banco de dados
-    def retornarUltimo():
-        aluno = Aluno.objects.last()
+    @classmethod
+    def retornarUltimo(cls):
+        aluno = cls.objects.last()
         return aluno
     
-    def retornarNUltimos(n=5):
-        alunos = Aluno.objects.order_by('-rm')[:n]
+    @classmethod
+    def retornarNUltimos(cls, n=5):
+        alunos = cls.objects.order_by('-rm')[:n]
         return alunos
     
     class Meta:

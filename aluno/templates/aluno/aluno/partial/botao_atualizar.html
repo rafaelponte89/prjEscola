@@ -1,0 +1,14 @@
+{% if aluno.status == 1 %}
+  <button class="btn btn-outline-danger btn-lg disabled">
+    <i class="bi bi-x-circle-fill"></i>
+  </button>
+{% else %}
+  <button
+    type="button"
+    class="btn btn-outline-dark btn-lg atualizar"
+    value="{{ aluno.rm }}"
+    data-bs-toggle="modal"
+    data-bs-target="#atualizarModal">
+    <i class="bi bi-arrow-repeat"></i>
+  </button>
+{% endif %}

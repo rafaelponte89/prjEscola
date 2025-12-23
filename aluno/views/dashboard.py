@@ -7,7 +7,7 @@ from aluno.models.matricula import Matricula
 # Create your views here.
 
 def dashboard(request):
-    return render(request, 'aluno/dashboard.html',)
+    return render(request, 'aluno/dashboard/dashboard.html',)
 
 def contar_por_periodo_aggregate(ano, situacoes_validas=['C', 'P']):
     contagens = Matricula.objects.filter(ano=ano, situacao__in=situacoes_validas).aggregate(
