@@ -1,0 +1,38 @@
+<div class="row">
+  <div class="col-3 text-center"><strong>Ano</strong></div>
+  <div class="col-3 text-center"><strong>Manhã</strong></div>
+  <div class="col-3 text-center"><strong>Tarde</strong></div>
+  <div class="col-3 text-center"><strong>Integral</strong></div>
+</div>
+
+{% for linha in linhas %}
+  <div class="row mt-2 d-flex justify-content-center align-items-center">
+    <div class="col-3 text-center bg-body-secondary p-1 rounded-4">
+      <strong>{{ linha.serie }}<span>º</span></strong>
+    </div>
+
+    <div class="col-3 text-center">
+      <input type="number"
+             class="form-control text-center"
+             id="m{{ linha.serie }}"
+             value="{{ linha.manha }}"
+             {% if desabilita %}disabled{% endif %}>
+    </div>
+
+    <div class="col-3 text-center">
+      <input type="number"
+             class="form-control text-center"
+             id="t{{ linha.serie }}"
+             value="{{ linha.tarde }}"
+             {% if desabilita %}disabled{% endif %}>
+    </div>
+
+    <div class="col-3 text-center">
+      <input type="number"
+             class="form-control text-center"
+             id="i{{ linha.serie }}"
+             value="{{ linha.integral }}"
+             {% if desabilita %}disabled{% endif %}>
+    </div>
+  </div>
+{% endfor %}

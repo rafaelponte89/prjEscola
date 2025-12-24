@@ -1,0 +1,18 @@
+<form id="atualizarClasse" method="POST" action="{% url 'atualizarclasse' %}">
+    {% csrf_token %}
+    <input type="hidden" name="classe_id" id="codClasse" value="{{ classe.id }}">
+    <div class='row'>
+        <div class='col form-group'>
+            <label for='serieAtualizar'>Série</label>
+            {{form.serie}}
+        </div>
+        <div class='col form-group'>
+            <label for='turmaAtualizar'>Turma</label>
+            {{form.turma}}
+        </div>
+        <div class='col form-group'>
+            <label for='periodoAtualizar'>Período</label>
+            {{form.periodo}}
+        </div>
+    </div>
+</form>

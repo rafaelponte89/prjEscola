@@ -6,9 +6,6 @@ from pydrive.drive import GoogleDrive
 
 
 
-
-
-    
 def anonimizarDado(dado):
     sigla = ''
     lista_dado = str(dado).split(' ')

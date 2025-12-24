@@ -10,8 +10,6 @@ $(document).ready(() => {
       },
       success: (response) => {
         $("#alunosClasse").html(response);
-
-
       },
 
       fail: (response) => { },
@@ -69,14 +67,14 @@ $(document).ready(() => {
   }
 
   function sendAtualizar() {
-    $.get({
+    $.post({
       url: "atualizarclasse",
       data: {
         ano: localStorage.getItem("idAno"),
         classe: $("#codClasse").val(),
-        serie: $("#serieAtualizar").val(),
-        turma: $("#turmaAtualizar").val(),
-        periodo: $("#periodoAtualizar").val(),
+        serie: $("#id_serie").val(),
+        turma: $("#id_turma").val(),
+        periodo: $("#id_periodo").val(),
       },
       success: (response) => {
         $("#mensagens").html(response);
@@ -123,22 +121,8 @@ $(document).ready(() => {
       success: (response) => {
 
         $("#corpoTabela").html(response);
-        $(".visualizar").off("click");
-        $(".atualizar").off("click");
         $(".matricular").off("click");
-        $(".nav-link").off("click");
-
-        $(".visualizar").click(function () {
-          classe = $(this).val();
-
-          exibirClasse(classe);
-        });
-
-        $(".atualizar").click(function () {
-          classe = $(this).val();
-
-          buscarClasse(classe);
-        });
+        $(".nav-link").off("click");        
 
         $(".matricular").click(function () {
           classe = $(this).val();
@@ -255,4 +239,16 @@ $(document).ready(() => {
     gerarTurmas();
     sendListar();
   });
+
+
+  // Delegação fixar no elemento mais proximo que não será reconstruído assim o evento permanece
+  $("#corpoTabela").on("click", ".atualizar", function () {
+    classe = $(this).val();
+    buscarClasse(classe);
+  });
+  $("#corpoTabela").on("click", ".visualizar", function () {
+    classe = $(this).val();
+    exibirClasse(classe);
+  });
+
 });

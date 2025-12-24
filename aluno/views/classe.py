@@ -1,11 +1,17 @@
 from django.db.models import Q
-from django.shortcuts import HttpResponse, render
+from django.shortcuts import render, get_object_or_404
+from django.http import JsonResponse, HttpResponse
+from django.template.loader import render_to_string
 
 from aluno.models.ano import Ano
 from aluno.models.matricula import Matricula
 from utilitarios.utilitarios import criarMensagem
 
 from aluno.models.classe import Classe
+from aluno.services.mensagem import criarMensagemJson
+
+from aluno.forms.classe import FrmClasseUpdate
+from aluno.utils.texto import padronizar_nome
 
 
 # Create your views here.
@@ -20,42 +26,13 @@ def classe(request):
 def buscar(request):
     classe = request.GET.get('classe')
     classe = Classe.objects.get(pk=classe)
-    corpo = ""
-    
-    selecionado = "" 
-    periodos = Classe.retornarPeriodos()
-    opcoes_periodo = f"<option {selecionado}> Selecione </option>"
+    form = FrmClasseUpdate(instance=classe)
    
-    for i in range(len(periodos)):
-        sigla, periodo = periodos[i]
-        if classe.periodo == sigla:
-            selecionado = "selected"
-            opcoes_periodo += f"""<option value={sigla} {selecionado}>{periodo}</option>"""
-        else:
-            selecionado = ""
-            opcoes_periodo += f"""<option value='{sigla}' {selecionado}>{periodo}</option>"""
-    
-    corpo = f"""<form>
-                    <input type='hidden' id='codClasse' value={classe.id} />
-                    <div class='row'>
-                    <div class='col form-group'> 
-                    <label for='serieAtualizar'>Série</label>
-                    <input id='serieAtualizar' class='form-control' type='number' value={classe.serie} \>
-                    </div>            
-                     <div class='col form-group'> 
-                      <label for='turmaAtualizar'>Turma</label>
-                    <input id='turmaAtualizar' class='form-control' type='text' value={classe.turma} \>
-                    </div>
-                     <div class='col form-group'> 
-                      <label for='periodoAtualizar'>Período</label>
-                    <select id='periodoAtualizar' class='form-control' >
-                     {opcoes_periodo}
-                    </select>
-                    </div>
-                    </div> 
-                </form>"""
-    
-    return HttpResponse(corpo)
+    return render(
+        request,
+        "aluno/classe/partials/form_update.html",
+        {"form": form, "classe": classe}
+    )
     
 
 #Gravar classe
@@ -88,104 +65,32 @@ def deletar(request):
         return criarMensagem('Classe deletada com sucesso!!!','warning')
     except Exception as erro:
         return criarMensagem(erro, 'danger')
-    
+
+
 #Atualizar classe
 def atualizar(request):
 
     try:
-        classeid = request.GET.get('classe')
-        
+        classeid = request.POST.get('classe')
         classe = Classe.objects.get(pk=classeid)
-        ano = Ano.objects.get(pk=request.GET.get('ano'))
-      
+        serie = request.POST.get('serie')
+        turma = padronizar_nome(request.POST.get('turma'))
+        periodo = request.POST.get('periodo')
+        ano = request.POST.get('ano')
+        ano = Ano.objects.get(pk=ano)
+        
+        classe.serie = serie
+        classe.turma = turma
+        classe.periodo = periodo
         classe.ano = ano
-   
-        classe.serie = request.GET.get('serie')
-        classe.turma = request.GET.get('turma').upper()
-        classe.periodo = request.GET.get('periodo')
-        print(classeid, classe.ano, classe.serie, classe.turma, classe.periodo)
         classe.save()
         return criarMensagem("Classe Atualizada com Sucesso!!!","success")
     except Exception as e:
         print(e)
         return criarMensagem("Erro ao Atualizar Classe!!!", "danger")
 
-
-#Construir tabela das classes do ano recebido como parâmetro
-def carregarAnoAtual_v1(ano):
-    print("Ano",ano)
-    ano = Ano.objects.get(pk=ano)
-    classe = Classe.objects.filter(ano=ano).order_by('periodo').order_by('turma').order_by('serie')
-    corpo = ''
-    
-    
-
-    
-    for c in classe:
-        periodo = Classe.retornarDescricaoPeriodo(c)
-        
-
-       
-        corpo += f"""<tr><td class='text-center '>{c.serie}</td><td class='text-center'>{c.turma}</td><td class='text-center'>{periodo}</td> <td class='text-center'>  <button type="button" class="btn btn-outline-dark btn-lg atualizar"
-          value={c.id} data-bs-toggle="modal" data-bs-target="#atualizarModal"> 
-                            <i class="bi bi-arrow-repeat"></i> 
-                        </button> </td>
-                       
-                        <td class='text-center'>  <button type="button" class="btn btn-outline-dark btn-lg visualizar"
-                        value={c.id} data-bs-toggle="modal" data-bs-target="#visualizarClasseModal"> 
-                            <i class="bi bi-eye"></i>
-                        </button> </td>
-                        </tr>
-                        """
-        print(corpo)
-    return corpo 
-
-def carregarAnoAtual_v2(ano):
-    print("Ano", ano)
-    ano = Ano.objects.get(pk=ano)
-    classe = Classe.objects.filter(ano=ano).order_by('periodo').order_by('turma').order_by('serie')
-    corpo = ''
-    series = []
-
-    for c in classe:
-        periodo = Classe.retornarDescricaoPeriodo(c)
-        
-        # ID único para cada série
-        serie_id = f"turmas_{c.serie}"
-        
-        if c.serie not in series:
-            series.append(c.serie)
-            corpo += f"""
-            <tr class="serie" data-bs-toggle="collapse" data-bs-target="#{serie_id}">
-                <td colspan="4" class="text-center bg-light">{c.serie}º Ano</td>
-            </tr>
-            """
-        
-        # Defina `id` para o elemento que será colapsado
-        corpo += f"""
-        <tr id="{serie_id}" class="collapse">
-            <td class='text-center'>{c.turma}</td>
-            <td class='text-center'>{periodo}</td>
-            <td class='text-center'>
-                <button type="button" class="btn btn-outline-dark btn-lg atualizar"
-                        value="{c.id}" data-bs-toggle="modal" data-bs-target="#atualizarModal">
-                    <i class="bi bi-arrow-repeat"></i>
-                </button>
-            </td>
-            <td class='text-center'>
-                <button type="button" class="btn btn-outline-dark btn-lg visualizar"
-                        value="{c.id}" data-bs-toggle="modal" data-bs-target="#visualizarClasseModal">
-                    <i class="bi bi-eye"></i>
-                </button>
-            </td>
-        </tr>
-        """
-        
-    return corpo
-
 # versão 3 em abas 12/01/2025
 def carregarAnoAtual(ano):
-    print("Ano", ano)
     ano = Ano.objects.get(pk=ano)
     classe = Classe.objects.filter(ano=ano).order_by('periodo').order_by('turma').order_by('serie')
     abas = ''
@@ -195,8 +100,6 @@ def carregarAnoAtual(ano):
 
     for c in classe:
        
-        
-        
         if c.serie not in series:
             series.append(c.serie)
             tabela = buscarTabelaTurmas(ano, c.serie)
@@ -207,9 +110,6 @@ def carregarAnoAtual(ano):
                 </li>
             """
             
-            
-                   
-            print(c.serie)
             conteudos += f"""
                      <div class="tab-pane fade" id="cont-aba-{c.serie}" role="tabpanel" aria-labelledby="{c.serie}">
                      
@@ -226,35 +126,6 @@ def carregarAnoAtual(ano):
         
     return abas
 
-
-
-def carregarAnoAtual_v3(ano):
-    print("Ano",ano)
-    ano = Ano.objects.get(pk=ano)
-    classe = Classe.objects.filter(ano=ano).order_by('periodo').order_by('turma').order_by('serie')
-    corpo = ''
-    
-    
-
-    
-    for c in classe:
-        periodo = Classe.retornarDescricaoPeriodo(c)
-        
-
-       
-        corpo += f"""<tr><td class='text-center '>{c.serie}</td><td class='text-center'>{c.turma}</td><td class='text-center'>{periodo}</td> <td class='text-center'>  <button type="button" class="btn btn-outline-dark btn-lg atualizar"
-          value={c.id} data-bs-toggle="modal" data-bs-target="#atualizarModal"> 
-                            <i class="bi bi-arrow-repeat"></i> 
-                        </button> </td>
-                       
-                        <td class='text-center'>  <button type="button" class="btn btn-outline-dark btn-lg visualizar"
-                        value={c.id} data-bs-toggle="modal" data-bs-target="#visualizarClasseModal"> 
-                            <i class="bi bi-eye"></i>
-                        </button> </td>
-                        </tr>
-                        """
-        print(corpo)
-    return corpo 
 
 
 
@@ -304,7 +175,6 @@ def buscarTabelaTurmas(ano, serie):
 #Listar classes em HTML   
 def listar(request):
     ano = int(request.GET.get("ano"))
-    print("id_ano", ano)
     return HttpResponse(carregarAnoAtual(ano))
 
 
@@ -382,41 +252,28 @@ def gerarTurmas(request):
 
 
 def exibirQuadro(request):
-    
-    ano = request.GET.get('ano')
-    ano = Ano.objects.get(pk=ano)
-    
-    classe = Classe.objects.filter(ano=ano)
-    if (classe):
-        desabilita = 'disabled'
-    else:
-        desabilita =''
-        
-    tela = """ <div class="row">
-            <div class="col-3 text-center"><strong>Ano</strong></div>
-            <div class="col-3 text-center"><strong>Manhã</strong></div>
-            <div class="col-3 text-center"><strong>Tarde</strong></div>
-            <div class="col-3 text-center"><strong>Integral</strong></div>
+    ano_id = request.GET.get("ano")
+    ano = Ano.objects.get(pk=ano_id)
 
-          </div>
-            """
-            
+    classes = Classe.objects.filter(ano=ano)
+    desabilita = classes.exists()
+
+    linhas = []
+
     for i in range(1, 10):
-        
-        tela += f"""<div
-            class="row mt-2 d-flex justify-content-center align-items-center"
-          >
-            <div class="col-3 text-center  bg-body-secondary p-1 rounded-4"><strong>{i}<span>º</span></strong></div>
-            <div class="col-3 text-center">
-              <input type="number" class="form-control" value="{contar(i,ano,'M')}" id="m{i}" {desabilita} />
-            </div>
-            <div class="col-3 text-center">
-              <input type="number" class="form-control" value="{contar(i,ano,'T')}" id="t{i}" {desabilita} />
-            </div>
-            <div class="col-3 text-center">
-              <input type="number" class="form-control" value="{contar(i,ano,'I')}" id="i{i}" {desabilita} />
-            </div>
-          </div>"""
-          
-    return HttpResponse(tela)
-    
+        linhas.append({
+            "serie": i,
+            "manha": contar(i, ano, "M"),
+            "tarde": contar(i, ano, "T"),
+            "integral": contar(i, ano, "I"),
+        })
+
+    return render(
+        request,
+        "aluno/classe/partials/quadro.html",
+        {
+            "ano": ano,
+            "linhas": linhas,
+            "desabilita": desabilita,
+        }
+    )

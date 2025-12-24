@@ -1,8 +1,22 @@
-
 from aluno.models.matricula import Matricula
 from aluno.models.aluno import Telefone
 from aluno.models.aluno import Aluno
 from django.db.models import Q
+from django.template.loader import render_to_string
+
+
+def renderizarTabela(alunos, nomes_duplicados, request):
+    html = render_to_string(
+            'aluno/aluno/partials/tabela.html',
+            {
+                'alunos': alunos,
+                'nomes_duplicados': nomes_duplicados,
+                'retornar_ultima_matricula_ativa': retornar_ultima_matricula_ativa,
+                'retornar_numeros_telefones': retornar_numeros_telefones,
+            },
+            request=request
+        )
+    return html
 
 def buscar_duplicados(alunos):
    
