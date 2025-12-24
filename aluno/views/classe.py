@@ -11,7 +11,8 @@ from aluno.models.classe import Classe
 # Create your views here.
 def classe(request): 
     context = {
-        'periodos': Classe.PERIODO_CHOICES
+        'periodos': Classe.PERIODO_CHOICES,
+        
     }   
     return render(request, 'aluno/classe/classe.html', context)
 
@@ -223,8 +224,6 @@ def carregarAnoAtual(ano):
             """
 
         
-        
-        
     return abas
 
 
@@ -298,6 +297,8 @@ def buscarTabelaTurmas(ano, serie):
         {tabela}
       </tbody>
     </table>"""
+    
+    
     return tabela_estrutura
  
 #Listar classes em HTML   
@@ -305,8 +306,6 @@ def listar(request):
     ano = int(request.GET.get("ano"))
     print("id_ano", ano)
     return HttpResponse(carregarAnoAtual(ano))
-
-
 
 
 #Visualizar alunos da classe

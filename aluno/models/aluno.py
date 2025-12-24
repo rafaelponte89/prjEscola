@@ -23,9 +23,7 @@ class Aluno (models.Model):
     d_ra = models.CharField(max_length=1, default='', null=True, blank=True)
     data_nascimento = models.DateField(null=True, blank=True)
  
-
     def __str__(self):
-       
         return f'{self.nome}'
     
     @property

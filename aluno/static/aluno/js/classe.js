@@ -1,5 +1,5 @@
 $(document).ready(() => {
-  
+
 
 
   function exibirClasse(classe) {
@@ -121,7 +121,7 @@ $(document).ready(() => {
         ano: localStorage.getItem("idAno"),
       },
       success: (response) => {
-        
+
         $("#corpoTabela").html(response);
         $(".visualizar").off("click");
         $(".atualizar").off("click");
@@ -151,12 +151,12 @@ $(document).ready(() => {
           $(".nav-link").removeClass("active");
           $(".nav-link").removeClass("show");
           $(".tab-pane").removeClass("show");
-          $(".nav-link").prop("aria-expanded",false);
+          $(".nav-link").prop("aria-expanded", false);
           $(this).addClass("active");
           $(this).addClass("show");
-          $(this).prop("aria-expanded",true);
+          $(this).prop("aria-expanded", true);
           //alert($(this).prop("id"));
-          $("#cont-"+$(this).prop("id")).addClass("show");
+          $("#cont-" + $(this).prop("id")).addClass("show");
 
 
         });
@@ -165,6 +165,8 @@ $(document).ready(() => {
       fail: (response) => { },
     });
   }
+
+
 
 
 

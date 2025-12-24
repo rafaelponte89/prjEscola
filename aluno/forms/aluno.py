@@ -1,5 +1,4 @@
 from django import forms
-
 from aluno.models.aluno import Aluno
 from aluno.utils.texto import padronizar_nome
 

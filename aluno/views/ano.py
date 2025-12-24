@@ -5,12 +5,12 @@ from aluno.models.matricula import Matricula
 from utilitarios.utilitarios import criarMensagem
 
 from aluno.models.ano import Ano
+from aluno.services.ano import retornarStatusAno
 
 
 # Create your views here.
 def inicial_ano(request):
     return render(request,"aluno/ano/ano.html")
-
 
 def gravar_ano(request):
     ano = Ano(ano=request.GET.get('ano'))
@@ -76,14 +76,6 @@ def listar_ano(request):
         </tr>"""
     
     return HttpResponse(linhas) 
-    
-
-def retornarStatusAno(ano):
-    ano = Ano.objects.get(pk=ano)
-    if ano.fechado:
-        return '<i class="bi bi-lock-fill"></i>'
-    else:
-        return '<i class="bi bi-unlock-fill"></i>'
 
 
 def fechar_abrir_ano(request):

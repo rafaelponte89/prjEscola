@@ -23,7 +23,7 @@ REF_TAMANHO_RA = 7
 from aluno.services.aluno import buscar_duplicados, retornar_numeros_telefones, retornar_ultima_matricula_ativa
 
 def criarMensagemJson(texto, tipo):
-    return render_to_string('aluno/aluno/partial/mensagem.html', {
+    return render_to_string('aluno/aluno/partials/mensagem.html', {
         'texto': texto,
         'tipo': tipo
     })
@@ -34,7 +34,7 @@ def index(request):
         return salvar_aluno(request)
     # Se for GET, apenas renderiza o formulário
     form = FrmAluno()
-    return render(request, "aluno/index.html", {"form": form})
+    return render(request, "aluno/aluno/index.html", {"form": form})
 
 # Gravar registro do Aluno
 def salvar_aluno(request):
@@ -92,7 +92,7 @@ def atualizar_aluno(request):
         return JsonResponse({
             'success': False,
             'html': render_to_string(
-                'aluno/aluno/partial/form_update.html',
+                'aluno/aluno/partials/form_update.html',
                 {'form': form, 'aluno': aluno},
                 request=request
             )
@@ -146,7 +146,7 @@ def recarregarTabela(request):
 
 def renderizarTabela(alunos, nomes_duplicados, request):
     html = render_to_string(
-            'aluno/aluno/partial/tabela.html',
+            'aluno/aluno/partials/tabela.html',
             {
                 'alunos': alunos,
                 'nomes_duplicados': nomes_duplicados,
@@ -163,7 +163,7 @@ def buscar_dados_aluno(request):
 
     return render(
         request,
-        "aluno/aluno/partial/form_update.html",
+        "aluno/aluno/partials/form_update.html",
         {"form": form, "aluno": aluno}
     )
 
