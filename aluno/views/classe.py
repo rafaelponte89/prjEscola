@@ -21,7 +21,6 @@ def classe(request):
     }   
     return render(request, 'aluno/classe/classe.html', context)
 
-
 def buscar_classe(request):
     classe = request.GET.get('classe')
     classe = Classe.objects.get(pk=classe)
@@ -36,11 +35,11 @@ def buscar_classe(request):
 #Gravar classe
 def gravar(request):
     try:
-        ano = request.GET.get('ano')
+        ano = request.POST.get('ano')
         ano = Ano.objects.get(pk=ano)
-        serie = request.GET.get('serie')
-        turma = request.GET.get('turma')
-        periodo = request.GET.get('periodo')
+        serie = request.POST.get('serie')
+        turma = request.POST.get('turma')
+        periodo = request.POST.get('periodo')
     
         classe = Classe()
         classe.ano = ano
@@ -57,7 +56,7 @@ def gravar(request):
 #Deletar classe
 def deletar(request):
     try:
-        classe = request.GET.get("classe")
+        classe = request.POST.get("classe")
         classe = Classe.objects.get(pk=classe)
         classe.delete()
         return criarMensagem('Classe deletada com sucesso!!!','warning')
@@ -138,7 +137,6 @@ def contar(serie,ano,periodo):
     
     return len(classes)
 
-
 # Gera a turma
 def gerarTurma(serie, ano, series, periodo, turma):
     for i in range(serie):
@@ -153,7 +151,7 @@ def gerarTurma(serie, ano, series, periodo, turma):
 
 # Gera as turmas
 def gerarTurmas(request):
-    ano = request.GET.get('ano')
+    ano = request.POST.get('ano')
     ano = Ano.objects.get(pk=ano)
     turma = 65
     

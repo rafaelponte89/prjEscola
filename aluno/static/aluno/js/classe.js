@@ -1,7 +1,5 @@
 $(document).ready(() => {
 
-
-
   function exibirClasse(classe) {
     $.get({
       url: "exibirClasse",
@@ -45,7 +43,7 @@ $(document).ready(() => {
   }
 
   function sendDeletar() {
-    $.get({
+    $.post({
       url: "deletarclasse",
       data: {
         classe: $("#codClasse").val(),
@@ -87,10 +85,8 @@ $(document).ready(() => {
     });
   }
 
-
-
   function sendGravar() {
-    $.get({
+    $.post({
       url: "gravarclasse",
       data: {
         ano: localStorage.getItem("idAno"),
@@ -148,10 +144,6 @@ $(document).ready(() => {
     });
   }
 
-
-
-
-
   $("#gravar").click(() => {
     sendGravar();
     sendListar();
@@ -192,7 +184,7 @@ $(document).ready(() => {
   }
 
   function gerarTurmas() {
-    $.get({
+    $.post({
       url: "gerarTurmas",
       data: {
         ano: localStorage.getItem("idAno"),
