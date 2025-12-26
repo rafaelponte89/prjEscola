@@ -20,8 +20,6 @@ urlpatterns = [
     path('excluirMatricula', excluir_matricula, name='excluirmatricula'),
     path('movimentar', movimentar, name='movimentar'),
     path('uploadMatriculas', upload_matriculas, name='uploadmatriculas'),
-
-
     path('buscarAluno', buscarAluno, name='buscarAluno'),
     path('adicionarNaClasse', adicionarNaClasse, name='adicionarNaClasse'),
     path('telamatricular', exibirTelaMatricula, name='telamatricular'),

@@ -470,3 +470,5 @@ def upload_matriculas(request):
     except Exception as e:
         return HttpResponse(carregar_linhas(0))
         
+        
+    #Visualizar alunos da classe

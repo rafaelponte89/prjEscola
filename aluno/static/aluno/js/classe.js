@@ -16,8 +16,6 @@ $(document).ready(() => {
     });
   }
 
-
-
   // buscar classe
   function buscarClasse(classe) {
     $.get({
@@ -119,8 +117,8 @@ $(document).ready(() => {
         ano: localStorage.getItem("idAno"),
       },
       success: (response) => {
-
-        $("#corpoTabela").html(response);
+        
+        $("#corpoTabela").html(response.html);
         $(".matricular").off("click");
         $(".nav-link").off("click");        
 
@@ -243,11 +241,11 @@ $(document).ready(() => {
 
   // Delegação fixar no elemento mais proximo que não será reconstruído assim o evento permanece
   $("#corpoTabela").on("click", ".atualizar", function () {
-    classe = $(this).val();
+    classe = $(this).data("id");
     buscarClasse(classe);
   });
   $("#corpoTabela").on("click", ".visualizar", function () {
-    classe = $(this).val();
+    classe = $(this).data("id")
     exibirClasse(classe);
   });
 
