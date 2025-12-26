@@ -1,0 +1,37 @@
+<div class="modal fade" id="movimentarModal" tabindex="-1" aria-labelledby="movimentarModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="movimentarModalLabel">Tela Movimentação</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="dadosMovimento" class="row">
+          <!-- Dados do Registro Aqui -->
+        </div>
+
+        <div class="row" id="movimentacao">
+          <label for="selecaoMovimentacao">Movimentação</label>
+          <div class="col">
+            <select id="selecaoMovimentacao" class="form-control formulario mt-2"></select>
+          </div>
+        </div>
+
+        <div class="row" id="selecaoClasse">
+          <label for="classesRemanejamento">Classes</label>
+          <div class="col">
+            <select id="classesRemanejamento" class="form-control formulario mt-2"></select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer mt-2">
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
+          Cancelar
+        </button>
+        <button id="simMovimentar" type="button" class="btn btn-primary" data-bs-dismiss="modal">
+          Movimentar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
