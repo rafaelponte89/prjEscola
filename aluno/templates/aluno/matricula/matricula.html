@@ -82,7 +82,10 @@
           classe: classe,
         },
         success: (response) => {
-          $("#dadosMatricula").html(response);
+          $("#serie").html(response.serie);
+          $("#turma").html(response.turma);
+          $("#periodo").html(response.periodo);
+          $("#codClasseMatricula").val(response.cod_classe);
           $("#pesquisaAluno").off("keyup").on("keyup", function () {
             sendBuscar($(this).val(), localStorage.getItem("idAno"));
           });

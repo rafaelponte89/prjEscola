@@ -1,7 +1,8 @@
 from datetime import datetime
 
 from django.db.models import Q
-from django.shortcuts import HttpResponse, render
+from django.shortcuts import render
+from django.http import JsonResponse, HttpResponse
 
 from aluno.models.aluno import Aluno
 from aluno.models.ano import Ano
@@ -10,6 +11,9 @@ from utilitarios.utilitarios import (converter_data_formato_br_str,
                                      criarMensagem, criarMensagemModal)
 
 from aluno.models.matricula import Matricula
+
+from aluno.services.predicao import prever_idade_serie
+from aluno.services.matricula import verificar_matricula_ativa, verificar_matricula_ativa_no_ano, deletar_todas_matriculas_da_classe
 
 # Create your views here.
 
@@ -41,36 +45,6 @@ def buscarAluno(request):
     return HttpResponse(linhas)    
 
 
-
-
-def calcular_idade(data_nascimento, data_referencia):
-    # Calcule a diferença de anos
-    idade = data_referencia.year - data_nascimento.year
-
-    # Ajuste se o aniversário ainda não tiver ocorrido naquele ano
-    if (data_referencia.month, data_referencia.day) < (data_nascimento.month, data_nascimento.day):
-        idade -= 1
-
-    return idade
-
-def prever_idade_serie(aluno):
-    import joblib
-    import pandas as pd
-
-    # carregar modelo
-    modelo = joblib.load('modelos_ml/modelo_tree_classifier_v1.pkl')
-
-    data_nascimento = datetime.strptime(aluno.data_nascimento,'%Y-%m-%d')
-    data_base = datetime.strptime(f'{datetime.now().year}-03-31','%Y-%m-%d')
-   
-    idade = calcular_idade(data_nascimento, data_base)
-    
-    # Preparar novo dado de entrada
-    novo_objeto = pd.DataFrame({'idade': [idade]})
-    predicao = modelo.predict(novo_objeto)
- 
-    return predicao
-
 def matricular_aluno_ia(request):
     aluno = Aluno.objects.get(pk=request.POST.get('aluno'))
     ano = Ano.objects.get(pk=request.POST.get('ano'))
@@ -98,29 +72,12 @@ def matricular_aluno_ia(request):
 def exibirTelaMatricula(request):
     codigo_classe = request.GET.get("classe")
     classe = Classe.objects.get(pk=codigo_classe)
-    
     periodo = Classe.retornarDescricaoPeriodo(classe)
-            
-    tela = f"""<form>
-                    <h5 class='bg-body-secondary d-flex rounded-5 justify-content-center p-2'><strong>{classe.serie}º{classe.turma} - {periodo} </strong></h5>
-                    <input type='hidden' id='codClasseMatricula' value={classe.id} />
-                    <div class='row'>
-                    <div class='col form-group'>
-                    <label for='pesquisaAluno'>Nome</label>
-                    <input id='pesquisaAluno' class='form-control' type='text'/>
-                    </div>   
-                    <div class='col-5 form-group'> 
-                    <label for='dataMatriculaIndividual'>Data da Matrícula</label>
-                    <input id='dataMatriculaIndividual' class='form-control' type='date' value='{datetime.now().strftime("%Y-%m-%d")}'/>
-                    </div>               
-                    </div>
-                    <div class='row'>
-                    
-                    </div>
-                    
-                    </form>"""
    
-    return HttpResponse(tela)
+    return JsonResponse({"serie":classe.serie, 
+                         "turma": classe.turma , 
+                         "periodo": periodo,
+                         "cod_classe": classe.id})
 
     
 #Adicionar aluno na classe        
@@ -136,14 +93,11 @@ def adicionarNaClasse(request):
         resposta = matricular_aluno(ano, classe, aluno, 
                               Classe.retornarProximoNumeroClasse(Matricula, classe),
                               request.GET.get('data_matricula'))
-            
         return resposta
-        
-
+    
     except Exception as error:    
         print(error)
         return criarMensagemModal(f"Erro ao efetuar a Matrícula", "danger")
-
 
 def matricular_aluno(ano, classe, aluno, numero, data_matricula, data_movimentacao=None, situacao='C', m_sucesso='Matriculado com Sucesso!!!', m_tipo='M'):
    
@@ -176,8 +130,6 @@ def matricular_aluno(ano, classe, aluno, numero, data_matricula, data_movimentac
                 return criarMensagem(m_sucesso,'success')
         else:
             return criarMensagemModal('Aluno com Matricula Ativa!','danger')
-
-
 
 def movimentar(request):
     
@@ -216,20 +168,15 @@ def movimentar(request):
         else:
             return criarMensagem("Data da movimentação deve ser maior que a data da matrícula!", "warning")
 
-
-        
     except Exception as erro:
         print(erro)
         return criarMensagem(f"Erro ao efetuar o Remanejamento!{erro}",
                              "danger")
         
-
-
 def ordernar_alfabetica(request):
     classe = request.GET.getlist('classe')[0]
     linhas = carregar_linhas(classe, 'aluno__nome')
     return HttpResponse(linhas)
-
 
 def carregar_movimentacao(request):
    
@@ -264,20 +211,7 @@ def carregar_classes_remanejamento(request):
        periodo = Classe.retornarDescricaoPeriodo(c)
        opcoes += f"<option value={c.id}>{c.serie}º {c.turma} - {periodo}</option>"
         
-    return HttpResponse(opcoes)
-
-
-#def carregar_classes(request):
- 
-#    ano = request.GET.get('ano')
-#    classes = Classe.objects.filter(ano=ano)
-#    opcoes = "<option value='0'>Selecione</option>"
-                                            
-#    for c in classes:
-#        periodo = Classe.retornarDescricaoPeriodo(c)
-#        opcoes += f"<option value={c.id}>{c.serie}º {c.turma} - {periodo}</option>"
-        
-#    return HttpResponse(opcoes)  
+    return HttpResponse(opcoes) 
 
 
 def carregar_linhas(classe, ordem="numero"):
@@ -383,40 +317,6 @@ def carregar_matriculas(request):
         return HttpResponse(linhas)
     else:
         return criarMensagem("Sem alunos matriculados","info")
-
-
-# Verificar se existe matrícula ativa no ano, se não possuir pode matricular
-# Se possuir não pode
-def verificar_matricula_ativa_no_ano(ano, rm, situacao='C'):
-    matriculas = Matricula.objects.filter(Q(ano=ano) & Q(aluno_id=rm) & Q(situacao=situacao))  
-    return False if matriculas else True 
-
-# Verificar se existe matrícula ativa, se não possuir pode matricular
-def verificar_matricula_ativa(rm, situacao='C'):
-    matriculas = Matricula.objects.filter(Q(aluno_id=rm) & Q(situacao=situacao) )  
-    return False if matriculas else True 
-  
-# Veriricar se aluno já foi matriculado na mesma série  no mesmo ano 09/10/2024       
-def verificar_matricula_na_mesma_serie_ano_corrente(matricula,serie):
-
-    for m in matricula:
-        print(m.classe.serie)
-    return False if matricula else True
-
-# Veriricar se aluno já foi matriculado na mesma série qualquer ano 09/10/2024       
-#def verificar_matricula_na_mesma_serie_mesmo_ano(rm, serie):
-#    matriculas = Matricula.objects.filter(Q(aluno_id=rm) & Q(serie=serie))
-#    return False if matriculas else True
-
-
-def deletar_todas_matriculas_da_classe(classe):
-    matriculas = Matricula.objects.filter(classe=classe)
-    matriculas.delete()
-    for matricula in matriculas:
-        aluno = Aluno.objects.filter(rm=matricula.aluno.rm)
-        aluno.status = 0
-        aluno.save()
-    
     
 # EM DESENVOLVIMENTO 26/02/2024
 # modulo que efetuará todas as matrículas através de uma arquivo csv do próprio SED

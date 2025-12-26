@@ -53,6 +53,18 @@ def gerarIntervalo(rm_inicial, rm_final):
     
     alunos = Aluno.objects.filter(Q(rm__gte=rm_inicial) & Q(rm__lte=rm_final))
     return alunos
+        
+
+def calcular_idade(data_nascimento, data_referencia):
+    # Calcule a diferença de anos
+    idade = data_referencia.year - data_nascimento.year
+
+    # Ajuste se o aniversário ainda não tiver ocorrido naquele ano
+    if (data_referencia.month, data_referencia.day) < (data_nascimento.month, data_nascimento.day):
+        idade -= 1
+
+    return idade
+
 
 def header(canvas, doc, content):
         canvas.saveState()
