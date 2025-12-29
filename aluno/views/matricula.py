@@ -14,6 +14,8 @@ from aluno.models.matricula import Matricula
 from aluno.services.predicao import prever_idade_serie
 from aluno.services.matricula import verificar_matricula_ativa, verificar_matricula_ativa_no_ano, deletar_todas_matriculas_da_classe
 from aluno.services.matricula import matricular_aluno, movimentar_transferencia, movimentar_remanejamento
+from aluno.services.matricula import reordenar_matriculas_alfabetica, listar_por_classe
+
 # Create your views here.
 
 def matricula(request):
@@ -115,11 +117,17 @@ def movimentar(request):
         print(erro)
         return criarMensagem(f"Erro ao efetuar o Remanejamento!{erro}",
                              "danger")
-        
-def ordernar_alfabetica(request):
-    classe = request.GET.getlist('classe')[0]
-    linhas = carregar_linhas(classe, 'aluno__nome')
-    return HttpResponse(linhas)
+
+
+def ordenar_em_alfabetica(request):
+    classe_id = request.GET.get('classe')
+
+    matriculas = reordenar_matriculas_alfabetica(classe_id)
+
+    return render(request, 'aluno/matricula/partials/tabela_matriculas.html', {
+        'matriculas': matriculas,
+    })
+
 
 def carregar_movimentacao(request):
    
@@ -156,69 +164,6 @@ def carregar_classes_remanejamento(request):
     return HttpResponse(opcoes) 
 
 
-def carregar_linhas_(classe, ordem="numero"):
-    linhas = ""
-    situacao = ""
-    matriculas = Matricula.objects.filter(classe=classe).order_by(ordem)
-    numero = 0
-    CSS_STATUS = {
-        "C": "text-primary",
-        "BXTR": "text-danger",
-        "TRAN": "text-danger",
-        "REMA": "text-success",
-        "P": "text-primary",
-        "R": "text-danger",
-        "NCFP": "text-danger",
-    }
-    
-    if ordem == "aluno__nome":
-        for m in matriculas:
-            numero = numero + 1
-            m.numero = numero
-            m.save()
-    cor = "text-dark"        
-    for m in matriculas:
-        situacao = Matricula.retornarDescricaoSituacao(m)
-
-        if m.situacao == "C":
-            cor = "text-primary"
-        elif m.situacao == "BXTR" or m.situacao == "TRAN":
-            cor = "text-danger"
-        elif m.situacao == "REMA":
-            cor = "text-success"
-        elif m.situacao == "P":
-            situacao = "PROMOVIDO"
-            cor = "text-primary"
-        elif m.situacao == "R":
-            situacao = "REPROVADO"
-            cor = "text-danger"
-        elif m.situacao == "NCFP":
-            cor = "text-danger"
-            situacao = "Ñ COMP. FORA PRAZO"
-        else:
-            situacao = "INDEFINIDA"
-        if m.data_movimentacao is None:
-            m.data_movimentacao = ''
-            
-        linhas += f"""<tr> <td class='text-center'><button class='rounded-circle bg-light text-dark border-success'>{m.numero} </button></td> <td >{m.aluno.nome}</td> <td class={cor}> {situacao} </td> 
-                            <td  class='text-center'> {m.data_matricula.strftime('%d/%m/%Y')} </td> 
-                            <td  class='text-center text-danger'> {converter_data_formato_br_str(m.data_movimentacao)} </td>
-                        <td class='text-center'> <button type='button' class='btn btn-outline-dark btn-lg movimentar'
-          value={m.id} data-bs-toggle='modal' data-bs-target='#movimentarModal'> 
-                           <i class="bi bi-arrow-down-up"></i>
-                        </button></td>
-                                     <td class='text-center'> <button type='button' class='btn btn-outline-dark btn-lg excluir'
-          value={m.id} > 
-                          <i class="bi bi-trash3-fill"></i>
-                        </button></td></tr>"""
-        
-    return linhas
-
-
-def carregar_linhas(classe, ordem="numero"):
-    matriculas = Matricula.objects.filter(classe=classe).order_by(ordem)
-    return matriculas
-
 def excluir_matricula(request):
   
         matricula = request.GET.get('matricula')
@@ -239,13 +184,9 @@ def buscar_matricula(request):
   
     return JsonResponse (matricula)
 
-
-
-
-
 def carregar_matriculas(request):
     classe = request.GET.get('classe')
-    matriculas = carregar_linhas(classe)
+    matriculas = listar_por_classe(classe)
 
     if matriculas:
         return render(request, 'aluno/matricula/partials/tabela_matriculas.html', {

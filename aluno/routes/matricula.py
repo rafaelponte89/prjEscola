@@ -4,13 +4,13 @@ from aluno.views.matricula import (adicionar, adicionarNaClasse, buscar_matricul
                     buscarAluno, carregar_classes_remanejamento,
                     carregar_matriculas, carregar_movimentacao, deletar,
                     excluir_matricula, exibirTelaMatricula, matricula,
-                    matricular_aluno_ia, movimentar, ordernar_alfabetica,
+                    matricular_aluno_ia, movimentar, ordenar_em_alfabetica,
                     upload_matriculas)
 urlpatterns = [
     path('', matricula, name='matricula'),
     path('adicionar', adicionar, name='adicionar'),
     path('deletar', deletar, name='deletar'),
-    path('ordenarAlfabeto', ordernar_alfabetica, name='ordemalfabetica'),
+    path('ordenarAlfabeto', ordenar_em_alfabetica, name='ordemalfabetica'),
    # path('carregarClasses', carregar_classes, name='carregarclasses'),
     path('carregarClassesRemanejamento', carregar_classes_remanejamento, name='carregarclassesremanejamento'),
     path('carregarMovimentacao', carregar_movimentacao, name='carregarmovimentacao'),

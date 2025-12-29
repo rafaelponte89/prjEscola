@@ -3,6 +3,8 @@ from aluno.models.matricula import Matricula
 from aluno.models.aluno import Aluno
 from aluno.models.classe import Classe
 from aluno.utils.mensagem_http import criarMensagemModal
+from django.db import transaction
+
 
 # Verificar se existe matrícula ativa no ano, se não possuir pode matricular
 # Se possuir não pode
@@ -85,4 +87,23 @@ def movimentar_transferencia(**kwargs):
     aluno.status = 0
     aluno.save()
     matricula.save()
-    return criarMensagem("Transferência efetuada!", "success")
+    return criarMensagemModal("Transferência efetuada!", "success")
+
+def listar_por_classe(classe, ordem="numero"):
+    matriculas = Matricula.objects.filter(classe=classe).order_by(ordem)
+    return matriculas
+
+@transaction.atomic
+def reordenar_matriculas_alfabetica(classe):
+    matriculas = (
+        Matricula.objects
+        .filter(classe=classe)
+        .select_related('aluno')
+        .order_by('aluno__nome')
+    )
+
+    for index, matricula in enumerate(matriculas, start=1):
+        matricula.numero = index
+        matricula.save(update_fields=['numero'])
+
+    return matriculas
