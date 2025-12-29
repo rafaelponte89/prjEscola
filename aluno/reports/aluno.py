@@ -137,12 +137,12 @@ def emitir_declaracao_matricula(aluno, nome_operador, cargo_operador, rg_operado
             )
 
         elif matricula.situacao == "BXTR":
-            dt_n = aluno.data_nascimento
+            dt_n = aluno.data_nascimento if aluno.data_nascimento else ''
             story.append(Paragraph("<b><u>Declaração de Transferência</u></b>", titulo))
             story.append(
                 Paragraph(
                     f"""Declaro para os devidos fins de direito, que o(a) aluno(a) 
-                    <b>{aluno.nome}</b>, nascido(a) em <b>{dt_n.strftime("%d/%m/%Y")}</b>,
+                    <b>{aluno.nome}</b>, nascido(a) em <b>{dt_n}</b>,
                     portador(a) do RA Escolar <b>{aluno.ra} - {aluno.d_ra}</b> do 
                     <b>{matricula.classe}</b> do Ensino Fundamental de 9 anos nesta unidade escolar,
                     solicitou na presente data <b>transferência</b>, estando apto(a) ao prosseguimento 

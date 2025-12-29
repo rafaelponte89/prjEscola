@@ -131,40 +131,51 @@ def matricular_aluno(ano, classe, aluno, numero, data_matricula, data_movimentac
         else:
             return criarMensagemModal('Aluno com Matricula Ativa!','danger')
 
+
+def movimentar_remanejamento(**kwargs):
+    classe_remanejamento = kwargs["classe_remanejamento"]
+    matricula = kwargs["matricula"]
+    ano = kwargs["ano"]
+    data_movimentacao = kwargs["data_movimentacao"]
+    matricula.save()          
+    classe = Classe.objects.get(pk=classe_remanejamento)
+    resposta = matricular_aluno(ano,classe, matricula.aluno,
+                                    Classe.retornarProximoNumeroClasse(Matricula, classe),
+                                    data_movimentacao, m_sucesso="Remanejamento Efetuado!")
+    return resposta
+
+def movimentar_transferencia(**kwargs):
+    matricula = kwargs["matricula"]
+    aluno = Aluno.objects.get(pk=matricula.aluno.rm)
+    aluno.status = 0
+    aluno.save()
+    matricula.save()
+    return criarMensagem("Transferência efetuada!", "success")
+
+
 def movimentar(request):
     
     try:
        
         matricula = Matricula.objects.get(pk=request.GET.get('matricula'))
         data_movimentacao = datetime.strptime(request.GET.get('data_movimentacao'),'%Y-%m-%d').date()
+        
+        STATUS_MOVIMENTACAO = {
+            "REMA": movimentar_remanejamento,
+            "BXTR": movimentar_transferencia,
+        }
        
+        print(data_movimentacao, matricula.data_matricula)
     
         if (data_movimentacao > matricula.data_matricula):
-            movimentacao = request.GET.getlist('movimentacao')[0]
+            movimentacao = request.GET.get('movimentacao')
             matricula.situacao = movimentacao
             ano = Ano.objects.get(pk=request.GET.get('ano'))
             matricula.ano = ano
             matricula.data_movimentacao = data_movimentacao
             
-            if(movimentacao == "REMA"):
-                matricula.save()
-                
-                classe = (Classe.objects.get(pk=request.GET.getlist('classe_remanejamento')[0]) if (request.GET.getlist('classe_remanejamento')[0]) != '0' else None)
-                resposta = matricular_aluno(ano,classe, matricula.aluno,
-                                    Classe.retornarProximoNumeroClasse(Matricula, classe),
-                                    data_movimentacao, m_sucesso="Remanejamento Efetuado!")
-                    
-                return resposta
-        
-            elif (movimentacao == "BXTR"):
-                aluno = Aluno.objects.get(pk=matricula.aluno.rm)
-                aluno.status = 0
-                aluno.save()
-                matricula.save()
-
-                return criarMensagem("Transferência efetuada!", "success")
-            else:
-                return criarMensagem("Movimentação efetuada!", "success")
+            return STATUS_MOVIMENTACAO[movimentacao](matricula=matricula, ano=ano, data_movimentacao=data_movimentacao, 
+                                                     classe_remanejamento=request.GET.get('classe_remanejamento'))
         else:
             return criarMensagem("Data da movimentação deve ser maior que a data da matrícula!", "warning")
 
@@ -220,6 +231,7 @@ def carregar_linhas(classe, ordem="numero"):
     matriculas = Matricula.objects.filter(classe=classe).order_by(ordem)
     numero = 0
     
+        
     if ordem == "aluno__nome":
         for m in matriculas:
             numero = numero + 1
