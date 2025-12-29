@@ -18,32 +18,28 @@ from aluno.services.matricula import matricular_aluno, movimentar_transferencia,
 # Create your views here.
 
 def matricula(request):
-    
     return render(request, 'aluno/matricula/matricula.html')
-
 
 def adicionar(reqeust):
     pass
 
-
 def deletar(request):
     pass
 
-
 #Buscar aluno
 def buscarAluno(request):
-    nome = request.GET.get('nome')   
-    # Se status não ativo
-    alunos = Aluno.objects.filter(Q(nome__contains=nome))[:5]
-    linhas = ''
-    for a in alunos:
-        linhas += f"""<tr><td>{a.nome}</td><td>{a.ra}</td><td class='text-center'><button type="button" class="btn btn-outline-dark btn-lg adicionarNaClasse"
-                        value={a.rm} > 
-                        <i class="bi bi-plus-circle-fill"></i>
-                        </button></td></tr>"""
-    
-    return HttpResponse(linhas)    
+    nome = request.GET.get('nome', '')
 
+    alunos = (
+        Aluno.objects
+        .filter(nome__icontains=nome)
+        .order_by('nome')[:5]
+    )
+    
+    return render(request, 'aluno/matricula/partials/tabela_alunos.html', {
+        'alunos': alunos
+    })
+  
 
 def matricular_aluno_ia(request):
     aluno = Aluno.objects.get(pk=request.POST.get('aluno'))
@@ -53,6 +49,7 @@ def matricular_aluno_ia(request):
     print(classes)
     menor = 99
     classe_sel=''
+    
     for classe in classes:
         matriculas = Matricula.objects.filter(classe=classe)
         if(len(matriculas)) <= menor:
@@ -60,7 +57,6 @@ def matricular_aluno_ia(request):
             classe_sel= classe
   
     try:
-       
         resposta =  matricular_aluno(ano=ano, aluno=aluno,classe=classe_sel, numero=Classe.retornarProximoNumeroClasse(Matricula, classe_sel),
                      data_matricula=datetime.now(), m_sucesso=f'Matriculado com sucesso! Na Classe {classe} - Ano: {ano}')
             
@@ -79,7 +75,6 @@ def exibirTelaMatricula(request):
                          "periodo": periodo,
                          "cod_classe": classe.id})
 
-    
 #Adicionar aluno na classe        
 def adicionarNaClasse(request):
     try:
@@ -87,9 +82,7 @@ def adicionarNaClasse(request):
         aluno = Aluno.objects.get(pk=request.GET.get('aluno'))
         ano = request.GET.get('ano')
         ano = Ano.objects.get(pk=ano)
-        
         classe = Classe.objects.get(pk=request.GET.get('classe'))
-           
         resposta = matricular_aluno(ano, classe, aluno, 
                               Classe.retornarProximoNumeroClasse(Matricula, classe),
                               request.GET.get('data_matricula'))
@@ -111,9 +104,7 @@ def movimentar(request):
             "REMA": movimentar_remanejamento,
             "BXTR": movimentar_transferencia,
         }
-       
-        print(data_movimentacao, matricula.data_matricula)
-    
+           
         if (data_movimentacao > matricula.data_matricula):
             movimentacao = request.GET.get('movimentacao')
             matricula.situacao = movimentacao
@@ -155,7 +146,6 @@ def carregar_movimentacao(request):
         
     return HttpResponse(opcoes)
 
-
 def carregar_classes_remanejamento(request):
     ano = request.GET.get('ano')
     ano = Ano.objects.get(pk=ano)
@@ -171,14 +161,12 @@ def carregar_classes_remanejamento(request):
         
     return HttpResponse(opcoes) 
 
-
 def carregar_linhas(classe, ordem="numero"):
     linhas = ""
     situacao = ""
     matriculas = Matricula.objects.filter(classe=classe).order_by(ordem)
     numero = 0
     
-        
     if ordem == "aluno__nome":
         for m in matriculas:
             numero = numero + 1
@@ -222,7 +210,6 @@ def carregar_linhas(classe, ordem="numero"):
         
     return linhas
 
-
 def excluir_matricula(request):
   
         matricula = request.GET.get('matricula')
@@ -233,7 +220,6 @@ def excluir_matricula(request):
             aluno.status = 0
             aluno.save()
             return criarMensagem("Matrícula excluída com sucesso!", "success")
-    
     
 def buscar_matricula(request):
     matricula = request.GET.get('matricula')
@@ -280,7 +266,7 @@ def upload_matriculas(request):
                                  datetime.strptime(linhas_array[linha][10],"%d/%m/%Y"))
             print(data_movimentacao)
    
-            rm = Aluno.objects.filter(ra=ra).values('rm')[:1]
+            rm = Aluno.objects.filter(ra=ra).values('rm').first()
 
             for cod in rm:
                 aluno = Aluno.objects.get(pk=cod['rm'])

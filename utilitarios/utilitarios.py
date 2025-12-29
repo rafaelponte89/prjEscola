@@ -179,7 +179,7 @@ def migrar_dados_aluno():
         arquivo.write("Nao Migrados: " +  str(nao_migrados_count))
     
 def converter_data_formato_br_str(data):
-    if data is not '':
+    if data != '':
         data = data.strftime('%d/%m/%Y')
         return data
     else:
