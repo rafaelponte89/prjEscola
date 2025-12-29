@@ -62,7 +62,7 @@
 <!-- Fim Modal Remanejar Matricula-->
 
 <!-- Modal Matricula-->
-{% include "aluno/matricula/partials/modal_matricula.html" %}
+{% include "aluno/matricula/partials/modal_dados_matricula.html" %}
 <!-- Fim Modal Matricula -->
 
 <script type="text/javascript">
@@ -311,13 +311,14 @@
           $("#simMovimentar").off("click");
 
           $("#dadosMatricula").html(response);
-          $("#dadosMovimento").html(response);
+          $("#rmAluno").val(response.rm_aluno);
+          $("#nomeAluno").val(response.nome_aluno);
+          $("#dataMovimentacao").val(response.data_movimentacao);
+          $("#matricula").val(response.id_matricula);
 
           $("#simMovimentar").click(function () {
             sendMovimentar(matricula);
           });
-
-          $("#dataMovimentacao").val(retornarData());
 
         },
         fail: (response) => { },

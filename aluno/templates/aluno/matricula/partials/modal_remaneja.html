@@ -6,8 +6,30 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <div id="dadosMovimento" class="row">
-          <!-- Dados do Registro Aqui -->
+        <div id="dadosMovimentacao" class="row">
+          <form>
+            <input type="hidden" id="matricula" />
+            <div class="row">
+              <div class="col form-group">
+                <label for="rmAluno">RM</label>
+                <input id="rmAluno" class="form-control" type="text" disabled="disabled" \>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col form-group">
+                <label for="nomeAluno">Aluno</label>
+                <input id="nomeAluno" class="form-control" type="text" disabled="disabled" \>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col form-group">
+                <label for="dataMovimentacao">Data Movimentação</label>
+                <input id="dataMovimentacao" class="form-control" type="date" \>
+              </div>
+            </div>
+          </form>
         </div>
 
         <div class="row" id="movimentacao">

@@ -276,39 +276,14 @@ def excluir_matricula(request):
             return criarMensagem("Matrícula excluída com sucesso!", "success")
     
     
-
-
 def buscar_matricula(request):
     matricula = request.GET.get('matricula')
     matricula = Matricula.objects.get(pk=matricula)
-    corpo = ""
-    
-    corpo = f"""<form>
-                    <input type='hidden' id='matricula' value={matricula.id} />
-                    <div class='row'>
-                    <div class='col form-group'>
-                    <label for='rmAluno'>RM</label>
-                    <input id='rmAluno' class='form-control' type='text' value='{matricula.aluno.rm}' disabled='disabled'\>
-                    </div>
-                    </div>
-                    
-                    <div class='row'>
-                    <div class='col form-group'> 
-                    <label for='nomeAluno'>Aluno</label>
-                    <input id='nomeAluno' class='form-control' type='text' value='{matricula.aluno.nome}' disabled='disabled'\>
-                    </div>
-                    </div>
-                    
-                    <div class='row>
-                    <div class='col form-group'> 
-                    <label for='dataMovimentacao'>Data Movimentação</label>
-                    <input id='dataMovimentacao' class='form-control' type='date' value='{matricula.data_movimentacao}' \>
-                    </div>     
-                    </div> 
-                </form>
-                """
-    
-    return HttpResponse(corpo)
+    print(matricula.__dict__)
+    matricula = {"id_matricula": matricula.id, "rm_aluno": matricula.aluno.rm, "nome_aluno": matricula.aluno.nome, 
+                 "data_movimentacao": matricula.data_movimentacao if matricula.data_movimentacao else datetime.now().date() }
+  
+    return JsonResponse (matricula)
     
 def carregar_matriculas(request):
     classe = request.GET.get('classe')
