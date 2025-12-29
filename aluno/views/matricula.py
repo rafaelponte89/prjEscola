@@ -14,7 +14,7 @@ from aluno.models.matricula import Matricula
 
 from aluno.services.predicao import prever_idade_serie
 from aluno.services.matricula import verificar_matricula_ativa, verificar_matricula_ativa_no_ano, deletar_todas_matriculas_da_classe
-
+from aluno.services.matricula import matricular_aluno, movimentar_transferencia, movimentar_remanejamento
 # Create your views here.
 
 def matricula(request):
@@ -98,59 +98,6 @@ def adicionarNaClasse(request):
     except Exception as error:    
         print(error)
         return criarMensagemModal(f"Erro ao efetuar a Matrícula", "danger")
-
-def matricular_aluno(ano, classe, aluno, numero, data_matricula, data_movimentacao=None, situacao='C', m_sucesso='Matriculado com Sucesso!!!', m_tipo='M'):
-   
-    if ano.fechado:
-        return criarMensagemModal(f'Ano {ano} fechado!','danger')
-    else:
-        if (verificar_matricula_ativa_no_ano(ano=ano, rm=aluno)):
-            matricula = Matricula.objects.filter(aluno=aluno)
-
-            # Se aluno matriculado na mesma serie o status de promovido é alterado para reprovado e salvo
-            for m in matricula:
-                if m.classe.serie == classe.serie:
-                    if m.situacao == 'P':
-                        m.situacao = 'R'
-                        m.save()
-
-            matricula_nova = Matricula(ano=ano, classe=classe, aluno=aluno, 
-                                    numero=numero,
-                                    data_matricula=data_matricula, 
-                                    data_movimentacao=data_movimentacao,
-                                    situacao=situacao,
-                                    )
-
-            matricula_nova.save()
-            aluno.status = 2
-            aluno.save()
-            if m_tipo != 'M':
-                return criarMensagemModal(m_sucesso,'success')
-            else:
-                return criarMensagem(m_sucesso,'success')
-        else:
-            return criarMensagemModal('Aluno com Matricula Ativa!','danger')
-
-
-def movimentar_remanejamento(**kwargs):
-    classe_remanejamento = kwargs["classe_remanejamento"]
-    matricula = kwargs["matricula"]
-    ano = kwargs["ano"]
-    data_movimentacao = kwargs["data_movimentacao"]
-    matricula.save()          
-    classe = Classe.objects.get(pk=classe_remanejamento)
-    resposta = matricular_aluno(ano,classe, matricula.aluno,
-                                    Classe.retornarProximoNumeroClasse(Matricula, classe),
-                                    data_movimentacao, m_sucesso="Remanejamento Efetuado!")
-    return resposta
-
-def movimentar_transferencia(**kwargs):
-    matricula = kwargs["matricula"]
-    aluno = Aluno.objects.get(pk=matricula.aluno.rm)
-    aluno.status = 0
-    aluno.save()
-    matricula.save()
-    return criarMensagem("Transferência efetuada!", "success")
 
 
 def movimentar(request):
