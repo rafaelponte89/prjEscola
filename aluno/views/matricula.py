@@ -1,6 +1,5 @@
 from datetime import datetime
 
-from django.db.models import Q
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 
@@ -35,12 +34,10 @@ def buscarAluno(request):
         .filter(nome__icontains=nome)
         .order_by('nome')[:5]
     )
-    
     return render(request, 'aluno/matricula/partials/tabela_alunos.html', {
         'alunos': alunos
     })
   
-
 def matricular_aluno_ia(request):
     aluno = Aluno.objects.get(pk=request.POST.get('aluno'))
     ano = Ano.objects.get(pk=request.POST.get('ano'))
@@ -78,7 +75,6 @@ def exibirTelaMatricula(request):
 #Adicionar aluno na classe        
 def adicionarNaClasse(request):
     try:
-         
         aluno = Aluno.objects.get(pk=request.GET.get('aluno'))
         ano = request.GET.get('ano')
         ano = Ano.objects.get(pk=ano)
@@ -92,11 +88,9 @@ def adicionarNaClasse(request):
         print(error)
         return criarMensagemModal(f"Erro ao efetuar a Matrícula", "danger")
 
-
 def movimentar(request):
     
     try:
-       
         matricula = Matricula.objects.get(pk=request.GET.get('matricula'))
         data_movimentacao = datetime.strptime(request.GET.get('data_movimentacao'),'%Y-%m-%d').date()
         
@@ -161,11 +155,21 @@ def carregar_classes_remanejamento(request):
         
     return HttpResponse(opcoes) 
 
-def carregar_linhas(classe, ordem="numero"):
+
+def carregar_linhas_(classe, ordem="numero"):
     linhas = ""
     situacao = ""
     matriculas = Matricula.objects.filter(classe=classe).order_by(ordem)
     numero = 0
+    CSS_STATUS = {
+        "C": "text-primary",
+        "BXTR": "text-danger",
+        "TRAN": "text-danger",
+        "REMA": "text-success",
+        "P": "text-primary",
+        "R": "text-danger",
+        "NCFP": "text-danger",
+    }
     
     if ordem == "aluno__nome":
         for m in matriculas:
@@ -210,6 +214,11 @@ def carregar_linhas(classe, ordem="numero"):
         
     return linhas
 
+
+def carregar_linhas(classe, ordem="numero"):
+    matriculas = Matricula.objects.filter(classe=classe).order_by(ordem)
+    return matriculas
+
 def excluir_matricula(request):
   
         matricula = request.GET.get('matricula')
@@ -229,14 +238,22 @@ def buscar_matricula(request):
                  "data_movimentacao": matricula.data_movimentacao if matricula.data_movimentacao else datetime.now().date() }
   
     return JsonResponse (matricula)
-    
+
+
+
+
+
 def carregar_matriculas(request):
     classe = request.GET.get('classe')
-    linhas = carregar_linhas(classe, 'numero')  
-    if linhas:
-        return HttpResponse(linhas)
+    matriculas = carregar_linhas(classe)
+
+    if matriculas:
+        return render(request, 'aluno/matricula/partials/tabela_matriculas.html', {
+            'matriculas': matriculas,
+        })
     else:
-        return criarMensagem("Sem alunos matriculados","info")
+        return criarMensagem("Sem alunos matriculados", "info")
+
     
 # EM DESENVOLVIMENTO 26/02/2024
 # modulo que efetuará todas as matrículas através de uma arquivo csv do próprio SED

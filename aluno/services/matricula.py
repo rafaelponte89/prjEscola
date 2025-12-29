@@ -63,7 +63,7 @@ def matricular_aluno(ano, classe, aluno, numero, data_matricula, data_movimentac
             if m_tipo != 'M':
                 return criarMensagemModal(m_sucesso,'success')
             else:
-                return criarMensagem(m_sucesso,'success')
+                return criarMensagemModal(m_sucesso,'success')
         else:
             return criarMensagemModal('Aluno com Matricula Ativa!','danger')
 

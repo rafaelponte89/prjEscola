@@ -1,0 +1,20 @@
+{% load status_tags %}
+{% for m in matriculas %}
+<tr>
+    <td class='text-center'><button class='rounded-circle bg-light text-dark border-success'>{{ m.numero }} </button>
+    </td>
+    <td>{{ m.aluno.nome }}</td>
+    <td class="{{ m.situacao|css_situacao }}">
+        {{ m.situacao|descricao_situacao }}
+    </td>
+    <td class='text-center'> {{ m.data_matricula|data_br }} </td>
+    <td class='text-center text-danger'> {{ m.data_movimentacao|data_br }} </td>
+    <td class='text-center'> <button type='button' class='btn btn-outline-dark btn-lg movimentar' value='{{ m.id }}'
+            data-bs-toggle='modal' data-bs-target='#movimentarModal'>
+            <i class="bi bi-arrow-down-up"></i>
+        </button></td>
+    <td class='text-center'> <button type='button' class='btn btn-outline-dark btn-lg excluir' value='{{ m.id }}'>
+            <i class="bi bi-trash3-fill"></i>
+        </button></td>
+</tr>
+{% endfor %}
