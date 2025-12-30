@@ -184,6 +184,7 @@ $(document).ready(() => {
   }
 
   function gerarTurmas() {
+    alert("Gerando turmas, aguarde...");
     $.post({
       url: "gerarTurmas",
       data: {

@@ -80,7 +80,7 @@ def movimentar_remanejamento(**kwargs):
 def movimentar_transferencia(**kwargs):
     matricula = kwargs["matricula"]
     aluno = Aluno.objects.get(pk=matricula.aluno.rm)
-    aluno.status = 0
+    aluno.status = Aluno.STATUS_ARQUIVADO
     aluno.save()
     matricula.save()
     return criarMensagemModal("Transferência efetuada!", "success")

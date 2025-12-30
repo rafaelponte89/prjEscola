@@ -92,7 +92,8 @@ def importar_matriculas_pdf(caminho_pdf, classe, ano, data_matricula):
         try:
             
             aluno = Aluno.objects.filter(ra=r["ra"]).first()
-           
+            matricula = Matricula.objects.filter(aluno=aluno, ano=ano, situacao__in=['C']).first()
+            matricula.delete() if matricula else None
             if not aluno:
                 continue
             

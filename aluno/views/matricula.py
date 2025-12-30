@@ -100,6 +100,7 @@ def movimentar(request):
         STATUS_MOVIMENTACAO = {
             "REMA": movimentar_remanejamento,
             "BXTR": movimentar_transferencia,
+            "NCFP": movimentar_transferencia,
         }
            
         if (data_movimentacao > matricula.data_matricula):

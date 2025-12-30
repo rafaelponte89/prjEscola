@@ -25,7 +25,7 @@
       data-bs-target="#matricularModal" title="Adicionar Matrícula">
       <i class="bi bi-journal-plus"></i>
   </div>
-  </td>
+
 </div>
 
 <div class="row mt-3">
@@ -58,38 +58,85 @@
 
 <script type="text/javascript">
   $(document).ready(() => {
-    const csrftoken = document.querySelector(
-      "[name=csrfmiddlewaretoken]"
-    ).value;
+    // --- 1. CONFIGURAÇÕES E TOKENS ---
+    const csrftoken = $("[name=csrfmiddlewaretoken]").val();
 
+    $.ajaxSetup({
+      headers: { "X-CSRFToken": csrftoken }
+    });
 
-    $("#selecaoClasse").hide();
-
-
-    function exibirTelaMatricula(classe) {
-      $.get({
-        url: "telamatricular",
-        data: {
-          classe: classe,
-        },
-        success: (response) => {
-          $("#serie").html(response.serie);
-          $("#turma").html(response.turma);
-          $("#periodo").html(response.periodo);
-          $("#codClasseMatricula").val(response.cod_classe);
-          $("#pesquisaAluno").off("keyup").on("keyup", function () {
-            sendBuscar($(this).val(), localStorage.getItem("idAno"));
-          });
-        },
-        fail: (response) => {
-          alert("Erro na matrícula");
-        },
-      });
+    // Função utilitária para mensagens
+    function notificar(msg) {
+      $("#mensagens").html(msg).stop(true, true).show();
+      setTimeout(() => $("#mensagens").fadeOut(), 3000);
     }
 
+    function notificarModal(msg) {
+      $("#mensagensModal").html(msg).stop(true, true).show();
+      setTimeout(() => $("#mensagensModal").fadeOut(), 3000);
+    }
+
+    // Função utilitária para data atual (YYYY-MM-DD)
+    function retornarDataHoje() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    // --- 2. DELEGAÇÃO DE EVENTOS (DELEGATE) ---
+    // Registrados uma única vez. Funcionam para elementos estáticos e dinâmicos.
+
+    // Botões da Tabela (Excluir e Movimentar)
+    $("#corpoTabela").on("click", ".excluir", function () {
+      const id = $(this).val();
+
+      excluirMatricula(id);
+
+    });
+
+    $("#corpoTabela").on("click", ".movimentar", function () {
+      buscarMatricula($(this).val());
+    });
+
+    // Botão de Matricular (Abre Modal)
+    $(document).on("click", ".matricular", function () {
+      const classe = $("#classes").val();
+      exibirTelaMatricula(classe);
+    });
+
+    // Botão Adicionar Aluno (Dentro do Modal de Busca)
+    $(document).on("click", ".adicionarNaClasse", function () {
+      const btn = $(this);
+      const alunoId = btn.val();
+      btn.addClass("disabled");
+      adicionarNaClasse(alunoId);
+    });
+
+    // --- 3. LÓGICA DE BUSCA COM DEBOUNCE ---
+    let timerBusca;
+    $(document).on("keyup", "#pesquisaAluno", function () {
+      const termo = $(this).val();
+      clearTimeout(timerBusca);
+      timerBusca = setTimeout(() => {
+        sendBuscar(termo, localStorage.getItem("idAno"));
+      }, 300);
+    });
+
+    // --- 4. FUNÇÕES AJAX (LÓGICA DE NEGÓCIO) ---
+
+    function carregarMatriculas(classe) {
+      if (!classe) return;
+      $.get("{% url 'carregarmatriculas' %}", { classe: classe })
+        .done((response) => $("#corpoTabela").html(response));
+    }
+
+    function excluirMatricula(matricula) {
+      $.get("{% url 'excluirmatricula' %}", { matricula: matricula })
+        .done((response) => {
+          notificar(response);
+          carregarMatriculas($("#classes").val());
+        });
+    }
 
     function adicionarNaClasse(aluno) {
-      console.log($("#dataMatriculaIndividual").val());
       $.get({
         url: "adicionarNaClasse",
         data: {
@@ -97,380 +144,179 @@
           classe: $("#codClasseMatricula").val(),
           aluno: aluno,
           data_matricula: $("#dataMatriculaIndividual").val(),
-        },
-        success: (response) => {
-          $("#mensagensModal").html(response);
-          setTimeout(function () {
-            $("#mensagemModal").css("display", "none");
-          }, 3000);
-          carregarMatriculas($("#classes").val());
-
-        },
-        fail: (response) => { },
+        }
+      }).done((response) => {
+        notificarModal(response);
+        carregarMatriculas($("#classes").val());
       });
     }
 
     function sendBuscar(nomeAluno, ano) {
-
-
-      $.get({
-        url: "buscarAluno",
-        data: {
-          nome: nomeAluno,
-          ano: ano,
-        },
-        success: (response) => {
-          $("#tabelaAlunos").html(response);
-          $(".adicionarNaClasse").off("click");
-          $(".adicionarNaClasse").click(function () {
-            aluno = $(this).val();
-            adicionarNaClasse(aluno);
-            $(this).addClass("disabled");
-          });
-
-        },
-      });
+      $.get("buscarAluno", { nome: nomeAluno, ano: ano })
+        .done((response) => $("#tabelaAlunos").html(response));
     }
 
-    function carregarClassesRemanejamento(ano, serie) {
-      $.get({
-        url: "{% url 'carregarclassesremanejamento' %}",
-        data: {
-          ano: ano,
-          serie: serie,
-        },
-        success: (response) => {
-          $("#classesRemanejamento").html(response);
-        },
-        fail: () => { },
-      });
-    }
-    $("#selecaoMovimentacao").change(() => {
-      if ($("#selecaoMovimentacao").val() === "REMA") {
-        carregarClassesRemanejamento(
-          localStorage.getItem("idAno"),
-          $("#classes").val()
-        );
-      }
-    });
     function carregarClasses(ano) {
-      $.get({
-        url: "{% url 'carregarclasses' %}",
-        data: {
-          ano: ano,
-        },
-        success: (response) => {
-
-
+      $.get("{% url 'carregarclasses' %}", { ano: ano })
+        .done((response) => {
           $("#classes").html(response);
-          if (localStorage.getItem("ultimaClasse")) {
-            $("#classes").val(localStorage.getItem("ultimaClasse"));
-          }
-        },
-        fail: () => { },
-      });
-    }
-
-    function excluirMatricula(matricula) {
-      $.get({
-        url: "{% url 'excluirmatricula' %}",
-        data: {
-          matricula: matricula,
-        },
-        success: (response) => {
-          $("#mensagens").html(response);
-          $("#mensagens")
-            .html(response.mensagem)
-            .stop(true, true)
-            .show();
-
-          setTimeout(function () {
-            $("#mensagens").fadeOut();
-          }, 3000);
-
-          carregarMatriculas($("#classes").val());
-        },
-        fail: (response) => { },
-      });
-    }
-
-    function recarregarContexto(response) {
-
-      $("#corpoTabela").html(response);
-
-      $(".movimentar").off("click");
-      $(".movimentar").click(function () {
-        matricula = $(this).val();
-        buscarMatricula(matricula);
-      });
-
-      $(".excluir").off("click");
-      $(".excluir").click(function () {
-        matricula = $(this).val();
-        excluirMatricula(matricula);
-      });
-
-      $(".matricular").off("click");
-      $(".matricular").click(function () {
-        classe = document.getElementById("classes").value;
-        exibirTelaMatricula(classe);
-
-      });
-
-    }
-
-    function retornarData() {
-      let data = new Date();
-      let dia = data.getDate();
-      let mes = data.getMonth() + 1;
-      let ano = data.getFullYear();
-      if (mes < 10) mes = "0" + mes;
-      if (dia < 10) dia = "0" + dia;
-      let hoje = ano + "-" + mes + "-" + dia;
-      return hoje;
-    }
-
-    function carregarMatriculas(classe) {
-      $.get({
-        url: "{% url 'carregarmatriculas' %}",
-        data: {
-          classe: classe,
-        },
-        success: (response) => {
-
-          recarregarContexto(response);
-
-        },
-        fail: (response) => { },
-      });
+          const ultima = localStorage.getItem("ultimaClasse");
+          if (ultima) $("#classes").val(ultima);
+        });
     }
 
     function ordemAlfabetica(classe) {
-      $.get({
-        url: "{% url 'ordemalfabetica' %}",
-        data: {
-          classe: classe,
-        },
-        success: (response) => {
-          recarregarContexto(response);
-        },
-        fail: () => { },
-      });
+      $.get("{% url 'ordemalfabetica' %}", { classe: classe })
+        .done((response) => $("#corpoTabela").html(response));
     }
 
-    function sendMovimentar(matricula) {
-      $.get({
-        url: "{% url 'movimentar' %}",
-        data: {
-          matricula: matricula,
-          data_movimentacao: $("#dataMovimentacao").val(),
-          movimentacao: $("#selecaoMovimentacao").val(),
-          classe_remanejamento: $("#classesRemanejamento").val(),
-          ano: localStorage.getItem("idAno"),
-        },
-        success: (response) => {
-          $("#mensagens").html(response);
-          setTimeout(function () {
-            $("#mensagem").css("display", "none");
-          }, 3000);
-
-          $("#selecaoClasse").hide();
-
-          carregarMovimentacao();
-          carregarMatriculas($("#classes").val());
-          sendBaixarDeclaracao($("#rmAluno").val());
-        },
-        fail: (response) => { },
-      });
+    // 2. A Função que faz o AJAX (Certifique-se que o nome é 'exibir')
+    function exibirTelaMatricula(classe) {
+      $.get("telamatricular", { classe: classe })
+        .done((response) => {
+          // Preenche os campos do modal com o que veio do Django
+          $("#serie").html(response.serie);
+          $("#turma").html(response.turma);
+          $("#periodo").html(response.periodo);
+          $("#codClasseMatricula").val(response.cod_classe);
+        })
+        .fail(() => {
+          alert("Erro ao carregar dados da matrícula");
+        });
     }
+
+    // --- 5. MOVIMENTAÇÃO E REMANEJAMENTO ---
+
+    $("#selecaoClasse").hide();
 
     function carregarMovimentacao() {
-      $.get({
-        url: "{% url 'carregarmovimentacao' %}",
-        data: {},
-        success: (response) => {
-          $("#selecaoMovimentacao").html(response);
-        },
-        fail: (response) => { },
+      $.get("{% url 'carregarmovimentacao' %}", (response) => {
+        $("#selecaoMovimentacao").html(response);
       });
     }
-
-    function buscarMatricula(matricula) {
-      $.get({
-        url: "{% url 'buscarmatricula' %}",
-        data: {
-          matricula: matricula,
-        },
-        success: (response) => {
-          $("#simDeletar").off("click");
-          $("#simMovimentar").off("click");
-
-          $("#rmAluno").val(response.rm_aluno);
-          $("#nomeAluno").val(response.nome_aluno);
-          $("#dataMovimentacao").val(response.data_movimentacao);
-          $("#matricula").val(response.id_matricula);
-
-          $("#simMovimentar").click(function () {
-            sendMovimentar(matricula);
-          });
-
-        },
-        fail: (response) => { },
-      });
-    }
-
-    carregarMovimentacao();
-
-    carregarClasses(localStorage.getItem("idAno"));
-
-
-    /*bug as classes do ano anterior que são carregadas*/
-    $("#configuracoesModal").on("hidden.bs.modal", function (e) {
-
-      carregarClasses(localStorage.getItem("idAno"));
-    });
-
-    $("#classes").change(() => {
-      carregarMatriculas($("#classes").val());
-      localStorage.setItem('ultimaClasse', $("#classes").val());
-
-    });
-
-
-    $("#alfabetica").click(() => {
-      ordemAlfabetica($("#classes").val());
-    });
 
     $("#selecaoMovimentacao").change(function () {
       if ($(this).val() === "REMA") {
         $("#selecaoClasse").show();
+        const ano = localStorage.getItem("idAno");
+        const serie = $("#classes").val();
+        $.get("{% url 'carregarclassesremanejamento' %}", { ano, serie })
+          .done((res) => $("#classesRemanejamento").html(res));
       } else {
         $("#selecaoClasse").hide();
       }
     });
 
-    $("#movimentarModal").on("hidden.bs.modal", function (e) {
-      $("#selecaoClasse").hide();
-      $("#selecaoMovimentacao").val(0);
+    function sendMovimentar(matricula) {
+      $.get("{% url 'movimentar' %}", {
+        matricula: matricula,
+        data_movimentacao: $("#dataMovimentacao").val(),
+        movimentacao: $("#selecaoMovimentacao").val(),
+        classe_remanejamento: $("#classesRemanejamento").val(),
+        ano: localStorage.getItem("idAno"),
+      }).done((response) => {
+        notificar(response);
 
-    });
+        // Esconde o campo de remanejamento para a próxima vez
+        $("#selecaoClasse").hide();
 
-    $("#dataMatriculaIndividual").val(retornarData());
+        // Recarrega a tabela
+        carregarMatriculas($("#classes").val());
 
-    const inputArquivo = document.getElementById("arquivoCSV");
-    const uploadButton = $("#uploadMatriculas");
-    const dataMatricula = $("#dataMatricula");
-
-    inputArquivo.addEventListener("change", function (evento) {
-      // Mostrar botão e campo de data
-      uploadButton.prop("hidden", false);
-      dataMatricula.prop("hidden", false);
-      dataMatricula.val(new Date().toISOString().slice(0, 10)); // preenche data de hoje
-    });
-
-    uploadButton.click(function (e) {
-      e.preventDefault(); // evita submit normal
-
-      const arquivo = inputArquivo.files[0];
-      const classe = $("#classes").val();
-      const ano = localStorage.getItem("idAno");
-      const data = dataMatricula.val();
-      const csrftoken = document.querySelector("[name=csrfmiddlewaretoken]").value;
-
-      if (!arquivo) {
-        alert("Selecione um arquivo PDF!");
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append("arquivo", arquivo);
-      formData.append("classe", classe);
-      formData.append("ano", ano);
-      formData.append("data_matricula", data);
-
-      $.ajax({
-        url: "{% url 'uploadmatriculas' %}",
-        type: "POST",
-        data: formData,
-        processData: false, // importante para FormData
-        contentType: false, // importante para FormData
-        headers: { "X-CSRFToken": csrftoken },
-        success: function (response) {
-          // Aqui você pode atualizar a tabela ou mostrar resultado
-          $("#corpoTabela").html(response.html);
-          $("#mensagens")
-            .html(response.mensagem)
-            .stop(true, true)
-            .show();
-
-          setTimeout(function () {
-            $("#mensagens").fadeOut();
-          }, 3000);
-
-
-          inputArquivo.value = "";
-          uploadButton.prop("hidden", true);
-          dataMatricula.prop("hidden", true);
-
-        },
-        error: function (xhr) {
-          $("#mensagens")
-            .html(xhr.responseJSON?.mensagem || "Erro ao importar PDF")
-            .stop(true, true)
-            .show();
-
-          setTimeout(function () {
-            $("#mensagens").fadeOut();
-          }, 3000);
-        }
+        // CHAMA A DECLARAÇÃO: Pega o RM que foi preenchido no buscarMatricula
+        const rm = $("#rmAluno").val();
+        sendBaixarDeclaracao(rm);
       });
-    });
-
-
-    if (localStorage.getItem("ultimaClasse")) {
-      carregarMatriculas(localStorage.getItem("ultimaClasse"));
     }
 
     function sendBaixarDeclaracao(rm) {
+      if (!rm) return;
+
       $.post({
         url: "{% url 'baixar_declaracao_matricula' %}",
-        // datatype: 'pdf',
         data: {
           rm: rm,
           nome_op: localStorage.getItem("nomeOperador"),
           cargo_op: localStorage.getItem("cargoOperador"),
           rg_op: localStorage.getItem("rgOperador"),
         },
-        headers: {
-          "X-CSRFToken": csrftoken,
+        xhrFields: {
+          responseType: 'blob' // Essencial para lidar com arquivos binários (PDF)
         },
         success: (response) => {
+          const blob = new Blob([response], { type: "application/pdf" });
+          const fileURL = URL.createObjectURL(blob);
 
-          var blob = new Blob([response], { type: "application/pdf" });
-
-          if (window.navigator && window.navigator.msSaveOrOpenBlob) {
-            window.navigator.msSaveOrOpenBlob(blob); // for IE
-          } else {
-            var fileURL = URL.createObjectURL(blob);
-            var newWin = window.open(fileURL);
-            newWin.focus();
+          // Abre em uma nova aba
+          const newWin = window.open(fileURL);
+          if (!newWin) {
+            alert("Por favor, permita pop-ups para visualizar a declaração.");
           }
         },
+        error: () => alert("Erro ao gerar a declaração em PDF.")
       });
     }
 
-    $("#corpoTabela")
-      .off("click", ".excluir")
-      .on("click", ".excluir", function () {
-        excluirMatricula($(this).val());
-      });
+    function buscarMatricula(matricula) {
+      $.get("{% url 'buscarmatricula' %}", { matricula: matricula })
+        .done((response) => {
+          $("#rmAluno").val(response.rm_aluno);
+          $("#nomeAluno").val(response.nome_aluno);
+          $("#dataMovimentacao").val(response.data_movimentacao);
+          $("#matricula").val(response.id_matricula);
 
-    $("#corpoTabela")
-      .off("click", ".movimentar")
-      .on("click", ".movimentar", function () {
-        buscarMatricula($(this).val());
-      });
+          $("#simMovimentar").off("click").on("click", () => sendMovimentar(matricula));
+        });
+    }
 
+    // --- 6. UPLOAD DE PDF ---
+
+    $("#arquivoCSV").on("change", function () {
+      $("#uploadMatriculas, #dataMatricula").prop("hidden", false).val(retornarDataHoje());
+    });
+
+    $("#uploadMatriculas").click(function (e) {
+      e.preventDefault();
+      const formData = new FormData();
+      formData.append("arquivo", $("#arquivoCSV")[0].files[0]);
+      formData.append("classe", $("#classes").val());
+      formData.append("ano", localStorage.getItem("idAno"));
+      formData.append("data_matricula", $("#dataMatricula").val());
+
+      $.ajax({
+        url: "{% url 'uploadmatriculas' %}",
+        type: "POST",
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: (response) => {
+          $("#corpoTabela").html(response.html);
+          notificar(response.mensagem);
+          $("#arquivoCSV").val("");
+
+          // 3. Oculta os botões novamente
+          $("#uploadMatriculas").prop("hidden", true);
+          $("#dataMatricula").prop("hidden", true);
+        }
+      });
+    });
+
+    // --- 7. INICIALIZAÇÃO FINAL ---
+    $("#dataMatriculaIndividual").val(retornarDataHoje());
+    carregarMovimentacao();
+    carregarClasses(localStorage.getItem("idAno"));
+
+    $("#classes").change(function () {
+      const val = $(this).val();
+      localStorage.setItem('ultimaClasse', val);
+      carregarMatriculas(val);
+    });
+
+    $("#alfabetica").click(() => ordemAlfabetica($("#classes").val()));
+
+    if (localStorage.getItem("ultimaClasse")) {
+      carregarMatriculas(localStorage.getItem("ultimaClasse"));
+    }
   });
 </script>
 
