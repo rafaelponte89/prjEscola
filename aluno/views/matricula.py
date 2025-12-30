@@ -1,21 +1,24 @@
 from datetime import datetime
+import os
+import tempfile
 
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
+from django.template.loader import render_to_string
 
 from aluno.models.aluno import Aluno
 from aluno.models.ano import Ano
 from aluno.models.classe import Classe
-from utilitarios.utilitarios import (converter_data_formato_br_str,
-                                     criarMensagem, criarMensagemModal)
+from aluno.forms.matricula import ImportarMatriculasForm
+from utilitarios.utilitarios import (criarMensagem, criarMensagemModal)
+from aluno.services.mensagem import criarMensagemJson
 
 from aluno.models.matricula import Matricula
 
 from aluno.services.predicao import prever_idade_serie
-from aluno.services.matricula import verificar_matricula_ativa, verificar_matricula_ativa_no_ano, deletar_todas_matriculas_da_classe
 from aluno.services.matricula import matricular_aluno, movimentar_transferencia, movimentar_remanejamento
 from aluno.services.matricula import reordenar_matriculas_alfabetica, listar_por_classe
-
+from aluno.services.matricula_importar import importar_matriculas_pdf
 # Create your views here.
 
 def matricula(request):
@@ -45,7 +48,6 @@ def matricular_aluno_ia(request):
     ano = Ano.objects.get(pk=request.POST.get('ano'))
     previsao = prever_idade_serie(aluno)[0]
     classes = Classe.objects.filter(ano=ano).filter(serie=previsao)
-    print(classes)
     menor = 99
     classe_sel=''
     
@@ -86,8 +88,7 @@ def adicionarNaClasse(request):
                               request.GET.get('data_matricula'))
         return resposta
     
-    except Exception as error:    
-        print(error)
+    except Exception:    
         return criarMensagemModal(f"Erro ao efetuar a Matrícula", "danger")
 
 def movimentar(request):
@@ -163,7 +164,6 @@ def carregar_classes_remanejamento(request):
         
     return HttpResponse(opcoes) 
 
-
 def excluir_matricula(request):
   
         matricula = request.GET.get('matricula')
@@ -178,7 +178,7 @@ def excluir_matricula(request):
 def buscar_matricula(request):
     matricula = request.GET.get('matricula')
     matricula = Matricula.objects.get(pk=matricula)
-    print(matricula.__dict__)
+   
     matricula = {"id_matricula": matricula.id, "rm_aluno": matricula.aluno.rm, "nome_aluno": matricula.aluno.nome, 
                  "data_movimentacao": matricula.data_movimentacao if matricula.data_movimentacao else datetime.now().date() }
   
@@ -195,58 +195,50 @@ def carregar_matriculas(request):
     else:
         return criarMensagem("Sem alunos matriculados", "info")
 
-    
-# EM DESENVOLVIMENTO 26/02/2024
-# modulo que efetuará todas as matrículas através de uma arquivo csv do próprio SED
+        
 def upload_matriculas(request):
-    try:
-        matriculas = request.GET.get('matriculas')
-        linhas = ((matriculas.encode('utf-8')).decode('utf-8')).split('\n')
-        linhas_array = []
-        classe = int(request.GET.get('classe'))
-        classe = Classe.objects.get(pk=classe)
-        ano = request.GET.get('ano')
-        ano = Ano.objects.get(pk=ano)
-       
-        data_matricula = request.GET.get('data_matricula')
-        
-        deletar_todas_matriculas_da_classe(classe)
-        
-        for linha in range(3, len(linhas)):
-            linhas_array.append(linhas[linha].split(';'))
+    if request.method == "POST":
+        form = ImportarMatriculasForm(request.POST, request.FILES)
+        classe = request.POST.get('classe')
     
-        for linha in range(len(linhas_array)-1):  
-            ra = int(linhas_array[linha][4])  
-            situacao = ('C' if (len(linhas_array[linha][9]) == 0)
-                        else linhas_array[linha][9])
-            
-            data_movimentacao = (None if(len(linhas_array[linha][10]) == 0) else 
-                                 datetime.strptime(linhas_array[linha][10],"%d/%m/%Y"))
-            print(data_movimentacao)
-   
-            rm = Aluno.objects.filter(ra=ra).values('rm').first()
+        ano = request.POST.get('ano')
+        data_matricula = request.POST.get('data_matricula')
 
-            for cod in rm:
-                aluno = Aluno.objects.get(pk=cod['rm'])
-                
-                if (verificar_matricula_ativa(aluno.rm) or data_movimentacao):
-                   
-                    aluno.status = 2
-                    numero = Classe.retornarProximoNumeroClasse(Matricula, classe)
-                    print("Situação",situacao)
-                    print("Data Movimentacao",data_movimentacao)
-                    print("data Matricula", data_matricula)
-                    matricula = Matricula(ano=ano, classe=classe, aluno=aluno, 
-                                    situacao=situacao, 
-                                    data_matricula=data_matricula, numero=numero, data_movimentacao=data_movimentacao)
+        if form.is_valid():
+            arquivo = form.cleaned_data["arquivo"]
+
+            if arquivo.content_type != "application/pdf":
+                return JsonResponse(
+                                    {"mensagem": criarMensagemJson("Somente arquivos PDF são permitidos", "danger")},
+                    status=400
+                )
+
+            sufixo = os.path.splitext(arquivo.name)[1]
+
+            try:
+                with tempfile.NamedTemporaryFile(delete=False, suffix=sufixo) as tmp:
+                    for chunk in arquivo.chunks():
+                        tmp.write(chunk)
+                    caminho_pdf = tmp.name
+                resultado = importar_matriculas_pdf(caminho_pdf, classe, ano, data_matricula)
+            finally:
+                if os.path.exists(caminho_pdf):
+                    os.remove(caminho_pdf)
+                    
             
-                    matricula.save()
-                    aluno.save()                
-                
-        return HttpResponse(carregar_linhas(classe))
+            html = render_to_string(
+                "aluno/matricula/partials/tabela_matriculas.html",
+                {"matriculas": listar_por_classe(classe)},
+                request=request
+            )
+
+            return JsonResponse({
+                "html": html,
+                "mensagem": criarMensagemJson(f"Importação concluída com sucesso!!", 
+                                              "success")
+            })
+
     
-    except Exception as e:
-        return HttpResponse(carregar_linhas(0))
-        
-        
-    #Visualizar alunos da classe
+
+    
+    

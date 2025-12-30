@@ -19,18 +19,9 @@
     </button>
   </div>
 
-  <div class="col-sm-4 p-3">
-    <input class="form-control m-1" type="file" id="arquivoCSV" title="Entrada formatada para arquivo CSV do SED" />
-  </div>
-  <div class="col-sm-1 p-3">
-    <button type="button" id="uploadMatriculas" class="btn btn-outline-dark btn-lg" hidden="true">
-      <i class="bi bi-person-up"></i>
-    </button>
-  </div>
-  <div class="col-sm-2 p-3">
-    <input class="form-control m-1" type="date" id="dataMatricula" hidden="true" />
-  </div>
-  <div class='col-sm-2 p-3'> <button type="button" class="btn btn-outline-dark btn-lg matricular" data-bs-toggle="modal"
+  {% include "aluno/matricula/partials/form_importar_matriculas.html" %}
+
+  <div class='col-sm-1 p-3'> <button type="button" class="btn btn-outline-dark btn-lg matricular" data-bs-toggle="modal"
       data-bs-target="#matricularModal" title="Adicionar Matrícula">
       <i class="bi bi-journal-plus"></i>
   </div>
@@ -169,7 +160,7 @@
           ano: ano,
         },
         success: (response) => {
-        
+
 
           $("#classes").html(response);
           if (localStorage.getItem("ultimaClasse")) {
@@ -188,9 +179,15 @@
         },
         success: (response) => {
           $("#mensagens").html(response);
+          $("#mensagens")
+            .html(response.mensagem)
+            .stop(true, true)
+            .show();
+
           setTimeout(function () {
-            $("#mensagem").css("display", "none");
+            $("#mensagens").fadeOut();
           }, 3000);
+
           carregarMatriculas($("#classes").val());
         },
         fail: (response) => { },
@@ -219,8 +216,6 @@
         exibirTelaMatricula(classe);
 
       });
-
-
 
     }
 
@@ -328,14 +323,10 @@
 
     carregarClasses(localStorage.getItem("idAno"));
 
-    /*$("#salvarConfig").click(() => {
-     
-      carregarClasses(localStorage.getItem("idAno"));
-    });*/
 
     /*bug as classes do ano anterior que são carregadas*/
     $("#configuracoesModal").on("hidden.bs.modal", function (e) {
-     
+
       carregarClasses(localStorage.getItem("idAno"));
     });
 
@@ -361,64 +352,83 @@
     $("#movimentarModal").on("hidden.bs.modal", function (e) {
       $("#selecaoClasse").hide();
       $("#selecaoMovimentacao").val(0);
-  
+
     });
 
     $("#dataMatriculaIndividual").val(retornarData());
 
-    function lerArquivoCSV(arquivo, callback) {
-      const leitor = new FileReader();
-
-      leitor.onload = function (evento) {
-        const conteudo = evento.target.result;
-        callback(conteudo);
-      };
-
-      leitor.readAsText(arquivo);
-    }
-
     const inputArquivo = document.getElementById("arquivoCSV");
-    let texto;
+    const uploadButton = $("#uploadMatriculas");
+    const dataMatricula = $("#dataMatricula");
 
     inputArquivo.addEventListener("change", function (evento) {
-      const arquivo = evento.target.files[0];
+      // Mostrar botão e campo de data
+      uploadButton.prop("hidden", false);
+      dataMatricula.prop("hidden", false);
+      dataMatricula.val(new Date().toISOString().slice(0, 10)); // preenche data de hoje
+    });
 
-      lerArquivoCSV(arquivo, function (conteudo) {
-        // Aqui você pode prosseguir para o próximo passo
-        $("#uploadMatriculas").prop("hidden", false);
-        $("#dataMatricula").prop("hidden", false);
-        texto = conteudo;
+    uploadButton.click(function (e) {
+      e.preventDefault(); // evita submit normal
+
+      const arquivo = inputArquivo.files[0];
+      const classe = $("#classes").val();
+      const ano = localStorage.getItem("idAno");
+      const data = dataMatricula.val();
+      const csrftoken = document.querySelector("[name=csrfmiddlewaretoken]").value;
+
+      if (!arquivo) {
+        alert("Selecione um arquivo PDF!");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("arquivo", arquivo);
+      formData.append("classe", classe);
+      formData.append("ano", ano);
+      formData.append("data_matricula", data);
+
+      $.ajax({
+        url: "{% url 'uploadmatriculas' %}",
+        type: "POST",
+        data: formData,
+        processData: false, // importante para FormData
+        contentType: false, // importante para FormData
+        headers: { "X-CSRFToken": csrftoken },
+        success: function (response) {
+          // Aqui você pode atualizar a tabela ou mostrar resultado
+          $("#corpoTabela").html(response.html);
+          $("#mensagens")
+            .html(response.mensagem)
+            .stop(true, true)
+            .show();
+
+          setTimeout(function () {
+            $("#mensagens").fadeOut();
+          }, 3000);
+
+
+          inputArquivo.value = "";
+          uploadButton.prop("hidden", true);
+          dataMatricula.prop("hidden", true);
+
+        },
+        error: function (xhr) {
+          $("#mensagens")
+            .html(xhr.responseJSON?.mensagem || "Erro ao importar PDF")
+            .stop(true, true)
+            .show();
+
+          setTimeout(function () {
+            $("#mensagens").fadeOut();
+          }, 3000);
+        }
       });
     });
 
-    $("#uploadMatriculas").click(() => {
-      sendMatriculas(texto);
-    });
 
     if (localStorage.getItem("ultimaClasse")) {
       carregarMatriculas(localStorage.getItem("ultimaClasse"));
-    }
-
-
-    function sendMatriculas(matriculas) {
-      console.log(texto);
-
-      $.get({
-        url: "{% url 'uploadmatriculas' %}",
-        data: {
-          matriculas: texto,
-          classe: $("#classes").val(),
-          ano: localStorage.getItem("idAno"),
-          data_matricula: $("#dataMatricula").val(),
-        },
-        success: (response) => {
-          recarregarContexto(response);
-          $("#uploadMatriculas").prop("hidden", true);
-          $("#dataMatricula").prop("hidden", true);
-          $("#arquivoCSV").val("");
-        },
-        fail: (response) => { },
-      });
     }
 
     function sendBaixarDeclaracao(rm) {
@@ -448,6 +458,19 @@
         },
       });
     }
+
+    $("#corpoTabela")
+      .off("click", ".excluir")
+      .on("click", ".excluir", function () {
+        excluirMatricula($(this).val());
+      });
+
+    $("#corpoTabela")
+      .off("click", ".movimentar")
+      .on("click", ".movimentar", function () {
+        buscarMatricula($(this).val());
+      });
+
   });
 </script>
 

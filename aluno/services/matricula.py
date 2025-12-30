@@ -4,7 +4,7 @@ from aluno.models.aluno import Aluno
 from aluno.models.classe import Classe
 from aluno.utils.mensagem_http import criarMensagemModal
 from django.db import transaction
-
+from django.db import transaction
 
 # Verificar se existe matrícula ativa no ano, se não possuir pode matricular
 # Se possuir não pode
@@ -24,18 +24,14 @@ def verificar_matricula_na_mesma_serie_ano_corrente(matricula,serie):
         print(m.classe.serie)
     return False if matricula else True
 
-# Veriricar se aluno já foi matriculado na mesma série qualquer ano 09/10/2024       
-#def verificar_matricula_na_mesma_serie_mesmo_ano(rm, serie):
-#    matriculas = Matricula.objects.filter(Q(aluno_id=rm) & Q(serie=serie))
-#    return False if matriculas else True
-
 def deletar_todas_matriculas_da_classe(classe):
-    matriculas = Matricula.objects.filter(classe=classe)
-    matriculas.delete()
-    for matricula in matriculas:
-        aluno = Aluno.objects.filter(rm=matricula.aluno.rm)
-        aluno.status = 0
-        aluno.save()
+    matriculas = Matricula.objects.select_related("aluno").filter(classe=classe)
+
+    alunos_ids = matriculas.values_list("aluno_id", flat=True)
+
+    with transaction.atomic():
+        Aluno.objects.filter(rm__in=alunos_ids).update(status=Aluno.STATUS_ARQUIVADO)
+        matriculas.delete()
         
 def matricular_aluno(ano, classe, aluno, numero, data_matricula, data_movimentacao=None, situacao='C', m_sucesso='Matriculado com Sucesso!!!', m_tipo='M'):
    
@@ -60,7 +56,7 @@ def matricular_aluno(ano, classe, aluno, numero, data_matricula, data_movimentac
                                     )
 
             matricula_nova.save()
-            aluno.status = 2
+            aluno.status = Aluno.STATUS_ATIVO
             aluno.save()
             if m_tipo != 'M':
                 return criarMensagemModal(m_sucesso,'success')

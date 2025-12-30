@@ -1,0 +1,21 @@
+<form id="formImportacao" enctype="multipart/form-data" class="col-sm-8 p-3 d-flex align-items-around gap-2">
+
+    {% csrf_token %}
+
+    <div>
+        <input class="form-control m-1" type="file" name="arquivo" id="arquivoCSV" accept=".pdf" title="Arquivo do SED">
+    </div>
+
+    <div>
+        <input class="form-control m-1" type="date" name="data_matricula" id="dataMatricula" hidden>
+    </div>
+
+    <input type="hidden" name="classe" id="classeHidden">
+    <input type="hidden" name="ano" id="anoHidden">
+
+    <div >
+        <button type="submit" class="btn btn-outline-dark btn-lg" id="uploadMatriculas" hidden>
+            <i class="bi bi-person-up"></i>
+        </button>
+    </div>
+</form>
