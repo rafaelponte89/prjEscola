@@ -88,15 +88,13 @@ def atualizar(request):
  
 #Listar classes em HTML   
 def listar_classe(request):
-    print(request.POST)
-    print(request.GET)
 
     ano = request.GET.get("ano")
     ano = Ano.objects.get(pk=ano)
     classes = Classe.objects.filter(ano=ano).order_by("periodo","serie","turma")
    
     html = renderizarTabela(classes, request)
-    print(html)
+    
     return JsonResponse({
         'success': True,
         'html': html
@@ -156,9 +154,9 @@ def gerarTurmas(request):
     turma = 65
     
     for s in range(1, 10):
-        serie_manha = int(request.GET.get('m'+str(s)))
-        serie_tarde = int(request.GET.get('t'+str(s)))
-        serie_integral = int(request.GET.get('i'+str(s)))
+        serie_manha = int(request.POST.get('m'+str(s)))
+        serie_tarde = int(request.POST.get('t'+str(s)))
+        serie_integral = int(request.POST.get('i'+str(s)))
 
         if (serie_manha) > 0:
             turma = gerarTurma(serie_manha, ano, s,"M",turma )
