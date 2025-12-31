@@ -3,7 +3,7 @@ function inicializarMatriculas(urls) {
   $(document).ready(() => {
     // --- 1. CONFIGURAÇÕES E TOKENS ---
 
-    3
+
     // Função utilitária para mensagens
     function notificar(msg) {
       $("#mensagens").html(msg).stop(true, true).show();

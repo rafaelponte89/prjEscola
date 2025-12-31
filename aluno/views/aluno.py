@@ -19,7 +19,7 @@ from django.http import HttpResponse, JsonResponse
 REF_TAMANHO_NOME = 2
 REF_TAMANHO_RA = 7
 
-from aluno.services.aluno import buscar_duplicados, renderizarTabela
+from aluno.services.aluno import buscar_duplicados, renderizarTabela, pesquisar_alunos_por_nome
 from aluno.services.mensagem import criarMensagemJson
 
 
@@ -104,12 +104,7 @@ def pesquisar_aluno(request):
         html = renderizarTabela(alunos, nomes_duplicados, request)
         return JsonResponse({'html': html, 'mensagem': ''})  # sem mensagem
 
-    # Filtragem normal
-    qs = Aluno.objects.filter(nome__icontains=nome)
-    if filtro == 'a':
-        qs = qs.filter(status=Aluno.STATUS_ATIVO)
-    alunos = qs[:10]
-
+    alunos = pesquisar_alunos_por_nome(nome, filtro)
     nomes_duplicados = buscar_duplicados(alunos)
     html = renderizarTabela(alunos, nomes_duplicados, request)
 
@@ -138,8 +133,6 @@ def recarregarTabela(request):
     html = renderizarTabela(alunos, nomes_duplicados, request)
   
     return JsonResponse({'html': html, 'mensagem': ''})  # sem mensagem
-
-
 
 def buscar_dados_aluno(request):
     aluno = get_object_or_404(Aluno, rm=request.POST.get("rm"))

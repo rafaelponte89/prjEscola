@@ -51,9 +51,16 @@ def retornar_telefones(aluno):
         
 def gerarIntervalo(rm_inicial, rm_final):
     
-    alunos = Aluno.objects.filter(Q(rm__gte=rm_inicial) & Q(rm__lte=rm_final))
+    alunos = Aluno.objects.filter(Q(rm__gte=rm_inicial) & Q(rm__lte=rm_final)).values('nome', 'rm', 'status').order_by('rm')
     return alunos
-        
+
+def pesquisar_alunos_por_nome(nome, filtro):
+    # Filtragem normal
+    qs = Aluno.objects.filter(nome__icontains=nome)
+    if filtro == 'a':
+        qs = qs.filter(status=Aluno.STATUS_ATIVO)
+    alunos = qs[:10]
+    return alunos
 
 def calcular_idade(data_nascimento, data_referencia):
     # Calcule a diferença de anos

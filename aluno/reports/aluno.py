@@ -180,6 +180,7 @@ def emitir_lista_rm(rmi, rmf, buffer):
         maior = rmi
         rmi = rmf
         rmf = maior
+        
     
     alunos = gerarIntervalo(rmi, rmf)
     elements = []
@@ -192,11 +193,11 @@ def emitir_lista_rm(rmi, rmf, buffer):
     stylesheet = getSampleStyleSheet()
     normalStyle = stylesheet['BodyText']
     
-    for i in range(len(alunos)):
-        if alunos[i].status == 1:
-            data_alunos.append([Paragraph(f'<para align=center size=12><strike>{alunos[i].rm}</strike></para>',normalStyle), Paragraph(f'<para size=12><strike>{alunos[i].nome}</strike></para>')])
+    for a in alunos:
+        if a['status'] == Aluno.STATUS_CANCELADO:
+            data_alunos.append([Paragraph(f'<para align=center size=12><strike>{a["rm"]}</strike></para>',normalStyle), Paragraph(f'<para size=12><strike>{a["nome"]}</strike></para>')])
         else:
-            data_alunos.append([Paragraph(f'<para align=center size=12>{alunos[i].rm}</para>',normalStyle), Paragraph(f'<para size=12>{alunos[i].nome}</para>')])
+            data_alunos.append([Paragraph(f'<para align=center size=12>{a["rm"]}</para>',normalStyle), Paragraph(f'<para size=12>{a["nome"]}</para>')])
         
     style_table = TableStyle(([('GRID',(0,0),(-1,-1), 0.5, colors.white),
                             ('LEFTPADDING',(0,0),(-1,-1),6),
