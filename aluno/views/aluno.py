@@ -147,9 +147,8 @@ def buscar_dados_aluno(request):
 
 def buscarRMCancelar(request):
     rm = request.POST.get('rm')
-    aluno = Aluno.objects.get(pk=rm)
-    dados = f'<div class="col-12"> <p class="text-white bg-dark" > RM: <span id="registroAluno">{aluno.rm} </span> </p> <p class="text-white bg-dark"> Nome: {aluno.nome} </p>  </div>'
-    return HttpResponse(dados)
+    aluno = Aluno.objects.values('rm', 'nome').get(pk=rm)
+    return JsonResponse({"rm": aluno['rm'], "nome": aluno['nome']})
 
 
 def carregar_classes(request):

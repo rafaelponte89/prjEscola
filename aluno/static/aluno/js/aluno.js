@@ -55,7 +55,8 @@ function buscarAlunoCancelar(rm) {
             rm: rm,
         },
         success: (response) => {
-            $("#identificador").html(response);
+            $("#registroAluno").html(response.rm);
+            $("#nomeAluno").html(response.nome);
         },
         fail: (response) => { },
     });
