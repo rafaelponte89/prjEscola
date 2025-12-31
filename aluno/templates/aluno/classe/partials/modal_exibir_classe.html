@@ -1,0 +1,21 @@
+<div class="row mt-3">
+    <div class="col-12">
+        <h5 class='bg-body-secondary d-flex rounded-5 justify-content-center p-2'><strong id="serie">{{ serie }}</strong>
+            º <strong id="turma">{{ turma }}</strong> - <strong id="periodo">{{ periodo }}</strong>
+        </h5>
+        <table id="tabelaAlunos" class="table table-hover table-responsive">
+            <thead>
+                <th>Nº</th>
+                <th>Nome do Aluno</th>
+            </thead>
+            <tbody>
+                {% for matricula in matriculas %}
+                <tr>
+                    <td>{{ matricula.numero }}</td>
+                    <td>{{ matricula.aluno__nome }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

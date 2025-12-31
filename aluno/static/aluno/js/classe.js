@@ -7,7 +7,12 @@ $(document).ready(() => {
         classe: classe,
       },
       success: (response) => {
-        $("#alunosClasse").html(response);
+        console.log(response);
+        $("#alunosClasse").html(response.html);
+        $("#serie").text(response.serie);
+        $("#turma").text(response.turma);
+        $("#periodo").text(response.periodo);
+        
       },
 
       fail: (response) => { },

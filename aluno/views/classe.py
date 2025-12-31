@@ -1,7 +1,7 @@
 from django.db.models import Q
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
-
+from django.template.loader import render_to_string
 
 from aluno.models.ano import Ano
 from aluno.models.matricula import Matricula
@@ -103,32 +103,18 @@ def listar_classe(request):
 def exibirClasse(request):
     codigo_classe = request.GET.get('classe')
     classe = Classe.objects.get(pk=codigo_classe)
-    matriculas = Matricula.objects.filter(Q(classe=classe)).order_by('numero')
-    linhas = ''
+    matriculas = Matricula.objects.filter(Q(classe=classe)).order_by('numero').values('numero', 'aluno__nome')
+   
     periodo = Classe.retornarDescricaoPeriodo(classe)
         
-    for m in matriculas:
-        linhas += f"""<tr><td>{m.numero}</td>  <td>{m.aluno.nome}</td></tr>"""
-
-    tabela = f"""<div class="row mt-3">
-      <div class="col-12">
-    <h5 class='bg-body-secondary d-flex rounded-5 justify-content-center p-2'><strong>{classe.serie}º{classe.turma} - {periodo} </strong></h5>
-
-    <table id="tabelaAlunos" class="table table-hover table-responsive">
-      <thead>
-        <th>Nº</th> 
-        <th>Nome do Aluno</th>
-      </thead>
-      <tbody>
-        {linhas}
-      </tbody>
-    </table>
-    </div>
-    </div>"""
-  
-    return HttpResponse(tabela)  
-
-   
+    html = render_to_string("aluno/classe/partials/modal_exibir_classe.html",
+                             {"serie": classe.serie,
+                              "turma": classe.turma,
+                              "periodo": periodo,
+                              "matriculas": matriculas},)
+    return JsonResponse({
+        "html": html,
+    })
 
 def contar(serie,ano,periodo):
     classes = Classe.objects.filter(ano=ano).filter(serie=serie).filter(periodo=periodo)
