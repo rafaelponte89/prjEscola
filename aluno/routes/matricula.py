@@ -19,8 +19,8 @@ urlpatterns = [
     path('excluirMatricula', excluir_matricula, name='excluirmatricula'),
     path('movimentar', movimentar, name='movimentar'),
     path('importarMatriculas', upload_matriculas, name='uploadmatriculas'),
-    path('buscarAluno', buscarAluno, name='buscarAluno'),
-    path('adicionarNaClasse', adicionarNaClasse, name='adicionarNaClasse'),
+    path('buscarAluno', buscarAluno, name='buscaraluno'),
+    path('adicionarNaClasse', adicionarNaClasse, name='adicionarnaclasse'),
     path('telamatricular', exibirTelaMatricula, name='telamatricular'),
     path('matricular_aluno_ia', matricular_aluno_ia, name='matricular_aluno_ia'),
 
