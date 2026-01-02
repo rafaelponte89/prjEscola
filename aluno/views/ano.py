@@ -5,7 +5,7 @@ from aluno.models.matricula import Matricula
 from utilitarios.utilitarios import criarMensagem
 
 from aluno.models.ano import Ano
-from aluno.services.ano import retornarStatusAno
+from aluno.services.ano import retornarStatusAno, efetuar_lancamentos_fechamento_ano
 
 
 # Create your views here.
@@ -80,27 +80,10 @@ def listar_ano(request):
 
 def fechar_abrir_ano(request):
     ano = Ano.objects.get(pk=request.GET.get('ano'))
-    matriculas = Matricula.objects.filter(ano=ano)
 
     ano.fechado = not ano.fechado
     ano.save()
-    for matricula in matriculas:
-        aluno = Aluno.objects.get(pk=matricula.aluno.rm)
-        if ano.fechado and matricula.situacao == 'C':
-            matricula.situacao = 'P'
-            aluno.status = 0
-        else:
-            if matricula.situacao == 'P':
-                matricula.situacao = 'C'
-                aluno.status = 2
-            else:
-                if matricula.situacao == 'R':
-                    matriculas_cursando = Matricula.objects.filter(aluno=aluno).filter(situacao='C')
-                    matriculas_cursando.delete()
-                    matricula.situacao = 'C'
-                    aluno.status = 2
-        aluno.save()
-        matricula.save()
+    efetuar_lancamentos_fechamento_ano(ano)
 
     return HttpResponse(ano.fechado)
     
@@ -114,7 +97,7 @@ def status_ano(request):
 
 
 def selecionar_ano(request):
-    ano = Ano.objects.filter(ano=request.GET.get('ano'))[0]
+    ano = Ano.objects.filter(ano=request.GET.get('ano')).first()
     return HttpResponse(ano.id)
    
 
