@@ -20,7 +20,6 @@ def gravar_ano(request):
     except Exception as err:
         return criarMensagem(f"Erro ao salvar ano ({err})!", "danger")
 
-
 def excluir_ano(request):
     ano = Ano.objects.filter(pk=request.GET.get('ano'))[0]
     try:
@@ -28,7 +27,6 @@ def excluir_ano(request):
         return criarMensagem("Ano deletado com sucesso", "success")
     except:
         return criarMensagem(f"Erro ao excluir ano ({ano})!","danger")
-
 
 def buscar_ano(request):
     try:
@@ -47,7 +45,6 @@ def buscar_ano(request):
         print(err)
         return criarMensagem("Algum erro aconteceu!","danger")
     
-
 def listar_ano(request):
     anos = Ano.objects.all().order_by('-ano')[:10]
     return render(request, 'aluno/ano/partials/listar_anos.html', {

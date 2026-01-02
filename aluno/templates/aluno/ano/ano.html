@@ -35,12 +35,12 @@
 <div class="row mt-3">
     <div class="col-12">
         <table class="table table-hover table-responsive table-bordered table-success">
-            <thead></thead>
-            <th class="text-center">Ano</th>
-            <th class="text-center">Situação</th>
-            <th class="text-center">Excluir</th>
-
+            <thead>
+                <th class="text-center">Ano</th>
+                <th class="text-center">Situação</th>
+                <th class="text-center">Excluir</th>
             </thead>
+
             <tbody id="corpoTabela">
                 <!-- Tabela dinâmica aparece aqui -->
             </tbody>
@@ -51,6 +51,14 @@
 <script type="text/javascript">
     $(document).ready(() => {
 
+        function notificar(response) {
+            $("#mensagens").html(response);
+            setTimeout(function () {
+                $("#mensagem").css("display", "none");
+            }, 3000);
+
+        }
+
         function sendGravar(ano) {
             $.get({
                 url: "{% url 'gravarano' %}",
@@ -58,10 +66,7 @@
                     ano: ano
                 },
                 success: (response) => {
-                    $("#mensagens").html(response);
-                    setTimeout(function () {
-                        $("#mensagem").css("display", "none");
-                    }, 3000);
+                    notificar(response);
                     sendListarAnos();
 
                 },
@@ -79,10 +84,7 @@
                     ano: ano
                 },
                 success: (response) => {
-                    $("#mensagens").html(response);
-                    setTimeout(function () {
-                        $("#mensagem").css("display", "none");
-                    }, 3000);
+                    notificar(response);
                     if ($("#descAno").val() != '') {
                         sendBuscarAno($("#descAno").val());
                     }
@@ -130,9 +132,8 @@
 
 
             });
-            $("#"+localStorage.getItem("anoConfig")).addClass("text-warning");
-            $("#"+localStorage.getItem("anoConfig")).addClass("bg-dark");
-
+           $("#" + localStorage.getItem("anoConfig")).addClass("text-warning");
+           $("#" + localStorage.getItem("anoConfig")).addClass("bg-dark");
 
         }
 
@@ -144,9 +145,6 @@
                     $("#corpoTabela").html(response);
 
                     recarregarElementos();
-                   
-
-
                 },
                 fail: (response) => {
 
@@ -202,7 +200,7 @@
                     ano: ano
                 },
                 success: (response) => {
-                    
+
                     localStorage.setItem("idAno", response);
 
                 },
@@ -212,8 +210,6 @@
             })
 
         }
-
-
 
         sendListarAnos();
 
