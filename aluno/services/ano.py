@@ -2,13 +2,6 @@ from aluno.models.ano import Ano
 from aluno.models.matricula import Matricula
 from aluno.models.aluno import Aluno    
 
-def retornarStatusAno(ano):
-    ano = Ano.objects.get(pk=ano)
-    if ano.fechado:
-        return '<i class="bi bi-lock-fill"></i>'
-    else:
-        return '<i class="bi bi-unlock-fill"></i>'
-
 def efetuar_lancamentos_fechamento_ano(ano):
     matriculas = Matricula.objects.filter(ano=ano)
     lista_alunos = []

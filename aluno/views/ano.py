@@ -5,7 +5,7 @@ from aluno.models.matricula import Matricula
 from utilitarios.utilitarios import criarMensagem
 
 from aluno.models.ano import Ano
-from aluno.services.ano import retornarStatusAno, efetuar_lancamentos_fechamento_ano
+from aluno.services.ano import efetuar_lancamentos_fechamento_ano
 
 
 # Create your views here.
@@ -49,37 +49,13 @@ def buscar_ano(request):
     
 
 def listar_ano(request):
-    anos = Ano.objects.all()[:10]
+    anos = Ano.objects.all().order_by('-ano')[:10]
     return render(request, 'aluno/ano/partials/listar_anos.html', {
         'anos': anos,
     })
 
-def listar_ano_(request):
-    anos = Ano.objects.all()[:10]
-    linhas = ''
-    for a in anos:
-        linhas += f"""<tr><td class='text-center'><button type='button' class='btn btn-outline-dark btn-lg selecionarAno'
-            id={a.ano}
-          value={a.ano} > {a.ano} </button></td>
-           <td class='text-center'><button type='button' class='btn btn-outline-dark btn-lg status'
-          value={a.id}> 
-                          {retornarStatusAno(a.id)}
-                        </button></td>
-        <td class='text-center'> <button type='button' class='btn btn-outline-dark btn-lg excluir'
-          value={a.id}> 
-                          <i class="bi bi-trash3-fill"></i>
-                        </button></td>
-       
-        </tr>"""
-    
-    print(linhas)
-    
-    return HttpResponse(linhas) 
-
-
 def fechar_abrir_ano(request):
     ano = Ano.objects.get(pk=request.GET.get('ano'))
-
     ano.fechado = not ano.fechado
     ano.save()
     efetuar_lancamentos_fechamento_ano(ano)
@@ -90,7 +66,6 @@ def fechar_abrir_ano(request):
 def status_ano(request):
     ano = Ano.objects.get(pk=request.GET.get('ano'))
     return HttpResponse(ano.fechado)
-
 
 def selecionar_ano(request):
     ano = Ano.objects.filter(ano=request.GET.get('ano')).first()
