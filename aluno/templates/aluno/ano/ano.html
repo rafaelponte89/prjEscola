@@ -1,4 +1,7 @@
-{% extends 'aluno/base.html' %} {% block content %}
+{% extends 'aluno/base.html' %} 
+
+{% load static %}
+{% block content %}
 <div class="row">
     <div class="col-12">
         <h1 class="text-center">Cadastro dos Anos Letivos</h1>
@@ -48,172 +51,24 @@
     </div>
 </div>
 
+<script src="{% static 'aluno/js/base.js' %}"></script>
+
+<script src="{% static 'aluno/js/ano.js' %}"></script>
+
 <script type="text/javascript">
-    $(document).ready(() => {
+    // Criamos um dicionário com as URLs resolvidas pelo Django
+    const urlsAno = {
+        gravar_ano: "{% url 'gravar_ano' %}",
+        excluir_ano: "{% url 'excluir_ano' %}",
+        buscar_ano: "{% url 'buscar_ano' %}",
+        listar_ano: "{% url 'listar_ano' %}",
+        fechar_abrir_ano: "{% url 'fechar_abrir_ano' %}",
+        status_ano: "{% url 'status_ano' %}",
+        selecionar_ano: "{% url 'selecionar_ano' %}"
+    };
 
-        function notificar(response) {
-            $("#mensagens").html(response);
-            setTimeout(function () {
-                $("#mensagem").css("display", "none");
-            }, 3000);
-
-        }
-
-        function sendGravar(ano) {
-            $.get({
-                url: "{% url 'gravarano' %}",
-                data: {
-                    ano: ano
-                },
-                success: (response) => {
-                    notificar(response);
-                    sendListarAnos();
-
-                },
-                fail: (response) => {
-
-                }
-            });
-
-        }
-
-        function sendExcluirAno(ano) {
-            $.get({
-                url: "{% url 'excluirano' %}",
-                data: {
-                    ano: ano
-                },
-                success: (response) => {
-                    notificar(response);
-                    if ($("#descAno").val() != '') {
-                        sendBuscarAno($("#descAno").val());
-                    }
-                    else {
-                        sendListarAnos();
-                    }
-
-                },
-                fail: (response) => {
-
-                }
-            });
-        }
-
-        function recarregarElementos() {
-            $(".excluir").off().on("click", function () {
-                sendExcluirAno($(this).val());
-            });
-
-            $(".status").off().on("click", function () {
-                sendFecharAbrirAno($(this).val());
-            });
-
-            $("#gravar").off().on("click", function () {
-                sendGravar($("#descAno").val());
-            });
-
-            $("#buscar").off().on("click", function () {
-                sendBuscarAno($("#descAno").val());
-            });
-
-            $(".selecionarAno").on('click', function () {
-                if (localStorage.getItem("anoConfig") != $(this).val()) {
-                    localStorage.setItem("ultimaClasse", 0);
-                }
-                localStorage.setItem("anoConfig", $(this).val());
-
-                $("#ano").html(localStorage.getItem("anoConfig"));
-                sendSelecionarAno(localStorage.getItem("anoConfig"));
-                $(".selecionarAno").removeClass("text-warning");
-                $(".selecionarAno").removeClass("bg-dark");
-
-                $(this).addClass("text-warning");
-                $(this).addClass("bg-dark");
-
-
-            });
-           $("#" + localStorage.getItem("anoConfig")).addClass("text-warning");
-           $("#" + localStorage.getItem("anoConfig")).addClass("bg-dark");
-
-        }
-
-        function sendListarAnos() {
-            $.get({
-                url: "{% url 'listarano' %}",
-                data: {},
-                success: (response) => {
-                    $("#corpoTabela").html(response);
-
-                    recarregarElementos();
-                },
-                fail: (response) => {
-
-                }
-
-            });
-        }
-
-        function sendBuscarAno(ano) {
-            $.get({
-                url: "{% url 'buscarano' %}",
-                data: {
-                    ano: ano
-                },
-                success: (response) => {
-
-                    $("#corpoTabela").html(response);
-                    recarregarElementos();
-
-                },
-                fail: (response) => {
-
-                }
-            });
-
-        }
-
-        function sendFecharAbrirAno(ano) {
-            $.get({
-                url: "{% url 'fecharabrirano' %}",
-                data: {
-                    ano: ano
-                },
-                success: (response) => {
-
-                    if ($("#descAno").val() != '') {
-                        sendBuscarAno($("#descAno").val());
-                    }
-                    else {
-                        sendListarAnos();
-                    }
-                },
-                fail: (response) => {
-
-                }
-            });
-        }
-
-        function sendSelecionarAno(ano) {
-            $.get({
-                url: "{% url 'selecionarano' %}",
-                data: {
-                    ano: ano
-                },
-                success: (response) => {
-
-                    localStorage.setItem("idAno", response);
-
-                },
-                fail: (response) => {
-                    alert(response);
-                }
-            })
-
-        }
-
-        sendListarAnos();
-
-    });
+    // Inicializa a lógica passando as URLs
+    inicializarAnos(urlsAno);
 </script>
 
 {% endblock content %}

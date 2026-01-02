@@ -1,12 +1,9 @@
 from django.shortcuts import HttpResponse, render
 
-from aluno.models.aluno import Aluno
-from aluno.models.matricula import Matricula
 from utilitarios.utilitarios import criarMensagem
 
 from aluno.models.ano import Ano
 from aluno.services.ano import efetuar_lancamentos_fechamento_ano
-
 
 # Create your views here.
 def inicial_ano(request):
@@ -59,7 +56,6 @@ def fechar_abrir_ano(request):
 
     return HttpResponse(ano.fechado)
     
-
 def status_ano(request):
     ano = Ano.objects.get(pk=request.GET.get('ano'))
     return HttpResponse(ano.fechado)
