@@ -59,23 +59,9 @@ def buscar_ano(request):
 
 def listar_ano(request):
     anos = Ano.objects.all()[:10]
-    linhas = ''
-    for a in anos:
-        linhas += f"""<tr><td class='text-center'><button type='button' class='btn btn-outline-dark btn-lg selecionarAno'
-            id={a.ano}
-          value={a.ano} > {a.ano} </button></td>
-           <td class='text-center'><button type='button' class='btn btn-outline-dark btn-lg status'
-          value={a.id}> 
-                          {retornarStatusAno(a.id)}
-                        </button></td>
-        <td class='text-center'> <button type='button' class='btn btn-outline-dark btn-lg excluir'
-          value={a.id}> 
-                          <i class="bi bi-trash3-fill"></i>
-                        </button></td>
-       
-        </tr>"""
-    
-    return HttpResponse(linhas) 
+    return render(request, 'aluno/ano/partials/listar_anos.html', {
+        'anos': anos,
+    })
 
 
 def fechar_abrir_ano(request):
@@ -87,9 +73,6 @@ def fechar_abrir_ano(request):
 
     return HttpResponse(ano.fechado)
     
-
-
-
 
 def status_ano(request):
     ano = Ano.objects.get(pk=request.GET.get('ano'))
