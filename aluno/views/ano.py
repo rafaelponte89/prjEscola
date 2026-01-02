@@ -35,25 +35,16 @@ def buscar_ano(request):
         ano_recebido = request.GET.get("ano")
         if ano_recebido == "":
             ano_recebido = 0
-        ano = Ano.objects.filter(ano=ano_recebido)
+        ano = Ano.objects.filter(ano=ano_recebido).filter()
         if ano:
-        
-            return HttpResponse(f"""<tr><td class='text-center'> <button type='button' class='btn btn-outline-dark btn-lg selecionarAno'
-                 value={ano[0].ano} > {ano[0].ano} </button></td>
-                  <td class='text-center'><button type='button' class='btn btn-outline-dark btn-lg status'
-                 value={ano[0].id} > 
-                          {retornarStatusAno(ano[0].id)}
-                        </button></td></td>
-                 <td class='text-center'> <button type='button' class='btn btn-outline-dark btn-lg excluir'
-                 value={ano[0].id} > 
-                          <i class="bi bi-trash3-fill"></i>
-                        </button></td>
-                
-                </tr>""")
+             return render(request, 'aluno/ano/partials/listar_anos.html', {
+                    'anos': ano,
+             })
         else:
             return criarMensagem("Nenhum resultado!","info")
 
-    except:
+    except Exception as err:
+        print(err)
         return criarMensagem("Algum erro aconteceu!","danger")
     
 
@@ -62,6 +53,28 @@ def listar_ano(request):
     return render(request, 'aluno/ano/partials/listar_anos.html', {
         'anos': anos,
     })
+
+def listar_ano_(request):
+    anos = Ano.objects.all()[:10]
+    linhas = ''
+    for a in anos:
+        linhas += f"""<tr><td class='text-center'><button type='button' class='btn btn-outline-dark btn-lg selecionarAno'
+            id={a.ano}
+          value={a.ano} > {a.ano} </button></td>
+           <td class='text-center'><button type='button' class='btn btn-outline-dark btn-lg status'
+          value={a.id}> 
+                          {retornarStatusAno(a.id)}
+                        </button></td>
+        <td class='text-center'> <button type='button' class='btn btn-outline-dark btn-lg excluir'
+          value={a.id}> 
+                          <i class="bi bi-trash3-fill"></i>
+                        </button></td>
+       
+        </tr>"""
+    
+    print(linhas)
+    
+    return HttpResponse(linhas) 
 
 
 def fechar_abrir_ano(request):
