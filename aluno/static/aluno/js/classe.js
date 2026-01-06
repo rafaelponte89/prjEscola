@@ -1,7 +1,6 @@
 window.Classes = {
   inicializarClasses(URLS) {
 
-
     $(document).ready(() => {
 
       function notificar(response) {
@@ -93,7 +92,7 @@ window.Classes = {
             periodo: $("#periodo").val(),
           },
           success: (response) => {
-           notificar(response);
+            notificar(response);
 
             sendListar();
           },
@@ -110,30 +109,6 @@ window.Classes = {
           success: (response) => {
 
             $("#corpoTabela").html(response.html);
-            $(".matricular").off("click");
-            $(".nav-link").off("click");
-
-            $(".matricular").click(function () {
-              classe = $(this).val();
-
-              exibirTelaMatricula(classe);
-            });
-
-            $(".nav-link").click(function () {
-
-              $(".nav-link").removeClass("active");
-              $(".nav-link").removeClass("show");
-              $(".tab-pane").removeClass("show");
-              $(".nav-link").prop("aria-expanded", false);
-              $(this).addClass("active");
-              $(this).addClass("show");
-              $(this).prop("aria-expanded", true);
-              //alert($(this).prop("id"));
-              $("#cont-" + $(this).prop("id")).addClass("show");
-
-
-            });
-
           },
           fail: (response) => { },
         });
