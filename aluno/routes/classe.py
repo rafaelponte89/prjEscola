@@ -5,15 +5,15 @@ from aluno.views.classe import (atualizar, buscar_classe, classe, deletar, exibi
 
 urlpatterns = [
     path('', classe, name='classe'),
-    path('gravarclasse', gravar, name='gravarclasse'),
-    path('atualizarclasse', atualizar, name='atualizarclasse'),
-    path('deletarclasse', deletar, name='deletarclasse'),
-    path('listarclasse', listar_classe, name='listarclasse'),
-    path('buscarclasse', buscar_classe, name='buscarclasse'),
-    path('exibirQuadro', exibirQuadro, name='exibirQuadro'),
-    path('gerarTurmas', gerarTurmas, name='gerarTurmas'),
-    
+    path('gravarclasse', gravar, name='gravar_classe'),
+    path('atualizarclasse', atualizar, name='atualizar_classe'),
+    path('deletarclasse', deletar, name='deletar_classe'),
+    path('listarclasse', listar_classe, name='listar_classe'),
+    path('buscarclasse', buscar_classe, name='buscar_classe'),
+    path('exibirQuadro', exibirQuadro, name='exibir_quadro'),
+    path('gerarTurmas', gerarTurmas, name='gerar_turmas'),
+
    
-    path('exibirClasse', exibirClasse, name='exibirClasse'),
+    path('exibirClasse', exibirClasse, name='exibir_classe'),
     
 ]

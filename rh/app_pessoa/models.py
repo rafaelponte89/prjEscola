@@ -29,5 +29,5 @@ class Pessoas(models.Model):
     efetivo = models.BooleanField(choices=EFETIVO, default=False)
     cargo = models.ForeignKey(Cargos, on_delete=models.CASCADE, related_name="pessoas_cargos")
     ativo = models.BooleanField(choices=ATIVO, default=True)
-    func_publico = models.BooleanField(choices=PUBLICO, default=True)
+    func_publico = models.BooleanField(choices=PUBLICO, default=True, blank=True)
    

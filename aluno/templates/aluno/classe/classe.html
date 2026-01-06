@@ -8,7 +8,7 @@
   </div>
 </div>
 
-<div id="classe" class="row mt-2 d-flex justify-content-around bg-body-secondary rounded-3">
+<div id="painelClasse" class="row mt-2 d-flex justify-content-around bg-body-secondary rounded-3">
   {% csrf_token %}
   <!--   <label class="btn btn-outline-success  m-3" for="success-outlined" title="Pesquisar"><i class="bi bi-search"></i>-->
 
@@ -69,5 +69,22 @@
 
 <script type="text/javascript" src="{% static 'aluno/js/classe.js' %}"></script>
 
+<script type="text/javascript">
+  // Criamos um dicionário com as URLs resolvidas pelo Django
+  const urlsClasse = {
+    listar_classe: "{% url 'listar_classe' %}",
+    gravar_classe: "{% url 'gravar_classe' %}",
+    atualizar_classe: "{% url 'atualizar_classe' %}",
+    deletar_classe: "{% url 'deletar_classe' %}",
+    exibir_quadro: "{% url 'exibir_quadro' %}",
+    gerar_turmas: "{% url 'gerar_turmas' %}",
+    buscar_classe: "{% url 'buscar_classe' %}",
+    exibir_classe: "{% url 'exibir_classe' %}",
+  };
+
+  // Inicializa a lógica passando as URLs
+  Classes.inicializarClasses(urlsClasse);
+
+</script>
 
 {% endblock script %}
