@@ -2,6 +2,8 @@ from django.db.models import Q
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 from django.template.loader import render_to_string
+from collections import defaultdict
+
 
 from aluno.models.ano import Ano
 from aluno.models.matricula import Matricula
@@ -88,13 +90,19 @@ def atualizar(request):
  
 #Listar classes em HTML   
 def listar_classe(request):
-
     ano = request.GET.get("ano")
     ano = Ano.objects.get(pk=ano)
-    classes = Classe.objects.filter(ano=ano).order_by("periodo","serie","turma")
-   
-    html = renderizarTabela(classes, request)
-    
+
+    classes = Classe.objects.filter(
+        ano=ano
+    ).order_by("serie", "turma", "periodo")
+
+    classes_por_serie = defaultdict(list)
+    for c in classes:
+        classes_por_serie[c.serie].append(c)
+
+    html = renderizarTabela(classes_por_serie, request)
+
     return JsonResponse({
         'success': True,
         'html': html
