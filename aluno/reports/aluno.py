@@ -48,7 +48,7 @@ def emitir_declaracao_matricula(aluno, nome_operador, cargo_operador, rg_operado
     
     matricula = (
         Matricula.objects.filter(aluno=aluno)
-        .order_by("-ano","id")
+        .order_by("ano")
         .last()
     )
 
