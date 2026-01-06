@@ -1,6 +1,15 @@
 window.Classes = {
   inicializarClasses(URLS) {
+
+
     $(document).ready(() => {
+
+      function notificar(response) {
+        $("#mensagens").html(response);
+        setTimeout(function () {
+          $("#mensagem").css("display", "none");
+        }, 3000);
+      }
 
       function exibirClasse(classe) {
         $.get({
@@ -45,11 +54,7 @@ window.Classes = {
             classe: $("#codClasse").val(),
           },
           success: (response) => {
-            $("#mensagens").html(response);
-            setTimeout(function () {
-              $("#mensagem").css("display", "none");
-            }, 3000);
-
+            notificar(response);
             sendListar();
           },
           fail: (response) => {
@@ -69,10 +74,7 @@ window.Classes = {
             periodo: $("#id_periodo").val(),
           },
           success: (response) => {
-            $("#mensagens").html(response);
-            setTimeout(function () {
-              $("#mensagem").css("display", "none");
-            }, 3000);
+            notificar(response);
             sendListar();
           },
           fail: (response) => {
@@ -91,10 +93,7 @@ window.Classes = {
             periodo: $("#periodo").val(),
           },
           success: (response) => {
-            $("#mensagens").html(response);
-            setTimeout(function () {
-              $("#mensagens").empty();
-            }, 3000);
+           notificar(response);
 
             sendListar();
           },
@@ -208,8 +207,6 @@ window.Classes = {
           },
         });
       }
-
-
 
       // Delegação fixar no elemento mais proximo que não será reconstruído assim o evento permanece
       $("#corpoTabela").on("click", ".atualizar", function () {
