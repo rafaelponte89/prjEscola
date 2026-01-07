@@ -71,194 +71,123 @@
 </div>
 
 <!-- Modal Atualizar Registro-->
-    {% include 'aluno/aluno/partials/modal_atualizar.html' %}
+{% include 'aluno/aluno/partials/modal_atualizar.html' %}
 <!-- Fim Modal Atualizar Registro-->
- 
+
 <!-- Modal Relatório -->
-    {% include 'aluno/aluno/partials/modal_relatorio.html' %}
+{% include 'aluno/aluno/partials/modal_relatorio.html' %}
 <!-- Final Modal Relatório-->
 
 <!-- Modal Resolução de Duplicidade-->
-    {% include 'aluno/aluno/partials/modal_duplicidade.html' %}
+{% include 'aluno/aluno/partials/modal_duplicidade.html' %}
 <!-- Fim Modal Resolução de Duplicidade-->
 
 
 <script type="text/javascript">
-  $(document).ready(() => {
 
-    // Rebind automático, usando elemento fixo que não muda com ajax
-    $("#corpoTabela").on("click", ".declaracao", function () {
-      sendBaixarDeclaracao($(this).val());
-    });
+  $("#cadastrarAluno").on("submit", function (e) {
+    e.preventDefault();
 
-    $("#corpoTabela").on("click", ".atualizar", function () {
-      buscarAluno($(this).val());
-    });
+    $.post({
+      url: $(this).attr("action"),
+      data: $(this).serialize(),
+      success: function (response) {
 
-    $("#corpoTabela").on("click", ".advertencia", function () {
-      buscarAlunoCancelar($(this).val());
-    });
+        // Mensagem
+        Alunos.notificar(response.mensagem)
 
-    // Chama a função ao digitar
-    $("#id_nome").keyup(() => sendBuscar());
-
-    $("#cadastrarAluno").on("submit", function (e) {
-      e.preventDefault();
-
-      $.post({
-        url: $(this).attr("action"),
-        data: $(this).serialize(),
-        success: function (response) {
-
-          // Mensagem
-          $("#mensagens")
-            .html(response.mensagem)
-            .show();
-            
-          if (response.success && response.html) {
-            $("#corpoTabela").html(response.html);
-          }
-
-          // Limpa formulário
-          if (response.success) {
-            $("#cadastrarAluno")[0].reset();
-            $("#id_nome").focus();
-          }
-
-          setTimeout(() => {
-            $("#mensagens").fadeOut();
-          }, 3000);
+        if (response.success && response.html) {
+          $("#corpoTabela").html(response.html);
         }
-      });
-    });
 
-    $(document).on("submit", "#atualizarAluno", function (e) {
-      e.preventDefault();
-
-      $.post({
-        url: $(this).attr("action"),
-        data: $(this).serialize(),
-        success: (response) => {
-          if (response.success) {
-            $(".modal").modal("hide");
-            $("#mensagens")
-              .stop(true, true)
-              .html(response.mensagem)
-              .show();
-            $("#mensagens").html(response.mensagem);
-            setTimeout(() => {
-              $("#mensagens").fadeOut(1000, function () {
-                $(this).html("").show(); // limpa e prepara para próxima mensagem
-              });
-            }, 3000);
-            recarregarTabela();
-          } else {
-            $("#dadosAluno").html(response.html);
-          }
+        // Limpa formulário
+        if (response.success) {
+          $("#cadastrarAluno")[0].reset();
+          $("#id_nome").focus();
         }
-      });
-    });
 
-    $("#simCancelar").click(() => {
-      sendCancelar($("#registroAluno").text());
-    });
-
-    $("#persorelatorio").on("change", function () {
-      if ($("#persorelatorio:checked")) {
-        $("#personalizavel").prop("hidden", false);
+        setTimeout(() => {
+          $("#mensagens").fadeOut();
+        }, 3000);
       }
     });
-
-    $("#rmrelatorio").on("change", function () {
-      if ($("#rmrelatorio:checked")) {
-        $("#personalizavel").prop("hidden", true);
-      }
-    });
-
-    $("#telrelatorio").on("change", function () {
-      if ($("#telrelatorio:checked")) {
-        $("#personalizavel").prop("hidden", true);
-      }
-    });
-
-    $("#baixarpdf").click(() => {
-      if ($("#rmrelatorio").is(":checked")) {
-        sendBaixarPdf($("#id_rmi").val(), $("#id_rmf").val());
-      } else if ($("#telrelatorio").is(":checked")) {
-        sendBaixarListaTelefonica($("#classes").val());
-      } else if ($("#persorelatorio").is(":checked")) {
-        sendBaixarListaPersonalizavel($("#classes").val());
-      }
-    });
-    $("#bkp").click(() => sendBkp());
-
-    function carregarClasses(ano) {
-      $.get({
-        url: "{% url 'carregarclasses' %}",
-        data: {
-          ano: ano,
-        },
-        success: (response) => {
-          $("#classes").html(response);
-        },
-        fail: () => { },
-      });
-    }
-
-    $("#relatorio").click(() => {
-      carregarClasses(localStorage.getItem("idAno"));
-    });
-
-    recarregarTabela();
-
   });
 
-  function configurarElementos(response) {
-    $("#mensagens").html(response);
-    setTimeout(function () {
-      $("#mensagem").css("display", "none");
-    }, 3000);
-    $("#id_nome").val("");
-    $("#id_ra").prop("value", null);
-    $("#id_nome").focus();
-    $("#success-outlined").prop("checked", true);
-    $("#id_nome").prop("value", "");
-    recarregarTabela();
-  }
-  
-  function carregarClasses(ano) {
-      $.get({
-        url: "{% url 'carregarclasses' %}",
-        data: {
-          ano: ano,
-        },
-        success: (response) => {
-          $("#classes").html(response);
-        },
-        fail: () => { },
-      });
-    }
+  $(document).on("submit", "#atualizarAluno", function (e) {
+    e.preventDefault();
+
+    $.post({
+      url: $(this).attr("action"),
+      data: $(this).serialize(),
+      success: (response) => {
+        if (response.success) {
+          $(".modal").modal("hide");
+          $("#mensagens")
+            .stop(true, true)
+            .html(response.mensagem)
+            .show();
+          $("#mensagens").html(response.mensagem);
+          setTimeout(() => {
+            $("#mensagens").fadeOut(1000, function () {
+              $(this).html("").show(); // limpa e prepara para próxima mensagem
+            });
+          }, 3000);
+          Alunos.recarregarTabela();
+        } else {
+          $("#dadosAluno").html(response.html);
+        }
+      }
+    });
+  });
+
+
+
 
 </script>
 
-<div id="urls" data-buscar-aluno="{% url 'buscarDadosAluno' %}" 
-  data-cancelar-rm="{% url 'cancelarRM' %}"
-  data-buscar-cancelar="{% url 'buscarRMCancelar' %}" 
-  data-recarregar-tabela="{% url 'recarregarTabela' %}"
-  data-pesquisar-aluno="{% url 'pesquisar_aluno' %}" 
-  data-relatorio-rm="{% url 'baixarpdf' %}"
-  data-relatorio-personalizavel="{% url 'listapersonalizavelpdf' %}"
-  data-declaracao-matricula="{% url 'baixar_declaracao_matricula' %}"
-  data-lista-telefonica="{% url 'baixar_declaracao_matricula' %}">
-
-</div>
-
-<script src="{% static 'aluno/js/base.js' %}"></script>
-
-{% block script %}
-<script src="{% static 'aluno/js/aluno.js' %}"></script>
-<script src="{% static 'aluno/js/relatorio.js' %}"></script>
-
-{% endblock script %}
 
 {% endblock content %}
+
+{% block script %}
+<script src="{% static 'aluno/js/base.js' %}"></script>
+
+<script src="{% static 'aluno/js/aluno.js' %}"></script>
+<script src="{% static 'aluno/js/relatorio.js' %}"></script>
+<script src="{% static 'aluno/js/classe.js' %}"></script>
+
+<script type="text/javascript">
+  window.urls = window.urls || {};
+
+  window.urls.classe = window.urls.classe || {
+    carregar_classe: "{% url 'carregarclasses' %}",
+  };
+
+  window.urls.aluno = window.urls.aluno || {
+    buscar_aluno: "{% url 'buscarDadosAluno' %}",
+    cancelar_rm: "{% url 'cancelarRM' %}",
+    buscar_cancelar: "{% url 'buscarRMCancelar' %}",
+    recarregar_tabela: "{% url 'recarregarTabela' %}",
+    pesquisar_aluno: "{% url 'pesquisar_aluno' %}",
+  };
+
+  window.urls.relatorio = window.urls.relatorio || {
+    relatorio_rm: "{% url 'baixarpdf' %}",
+    relatorio_personalizavel: "{% url 'listapersonalizavelpdf' %}",
+    declaracao_matricula: "{% url 'baixar_declaracao_matricula' %}",
+    lista_telefonica: "{% url 'listatelefonicapdf' %}"
+  };
+
+  Relatorios.init(window.urls.relatorio);
+  Alunos.init(window.urls.aluno);
+  Classes.init(window.urls.classe);
+  const ano = Classes.getAno();
+  if (ano) {
+    Classes.carregarClasses(ano);
+  }
+
+
+</script>
+
+
+
+{% endblock script %}

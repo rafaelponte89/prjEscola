@@ -56,30 +56,55 @@
 {% include "aluno/matricula/partials/modal_dados_matricula.html" %}
 <!-- Fim Modal Matricula -->
 
-<script type="text/javascript" src="{% static 'aluno/js/base.js' %}"></script>
-<script src="{% static 'aluno/js/matricula.js' %}"></script>
 
-<script type="text/javascript">
-    // Criamos um dicionário com as URLs resolvidas pelo Django
-    const urlsMatricula = {
-        carregar_matriculas: "{% url 'carregarmatriculas' %}",
-        excluir_matricula: "{% url 'excluirmatricula' %}",
-        carregar_classes: "{% url 'carregarclasses' %}",
-        ordem_alfabetica: "{% url 'ordemalfabetica' %}",
-        carregar_movimentacao: "{% url 'carregarmovimentacao' %}",
-        carregar_remanejamento: "{% url 'carregarclassesremanejamento' %}",
-        movimentar: "{% url 'movimentar' %}",
-        baixar_declaracao: "{% url 'baixar_declaracao_matricula' %}",
-        buscar_matricula: "{% url 'buscarmatricula' %}",
-        upload_matriculas: "{% url 'uploadmatriculas' %}",
-        // Para URLs que não possuem nome (path('buscarAluno')), use a string direta:
-        buscar_aluno: "{% url 'buscaraluno' %}", 
-        tela_matricular: "{% url 'telamatricular' %}",
-        adicionar_na_classe: "{% url 'adicionarnaclasse' %}",
-    };
-
-    // Inicializa a lógica passando as URLs
-    inicializarMatriculas(urlsMatricula);
-</script>
 
 {% endblock content %}
+
+{% block script %}
+
+<script type="text/javascript" src="{% static 'aluno/js/base.js' %}"></script>
+
+<script src="{% static 'aluno/js/classe.js' %}"></script>
+
+<script src="{% static 'aluno/js/matricula.js' %}"></script>
+
+
+<script type="text/javascript">
+  // Cria namespace global seguro
+  window.urls = window.urls || {};
+
+  window.urls.classe = window.urls.classe || {
+    carregar_classe: "{% url 'carregarclasses' %}",
+  };
+
+  window.urls.matricula = window.urls.matricula || {
+    carregar_matriculas: "{% url 'carregarmatriculas' %}",
+    excluir_matricula: "{% url 'excluirmatricula' %}",
+    carregar_classes: "{% url 'carregarclasses' %}",
+    ordem_alfabetica: "{% url 'ordemalfabetica' %}",
+    carregar_movimentacao: "{% url 'carregarmovimentacao' %}",
+    carregar_remanejamento: "{% url 'carregarclassesremanejamento' %}",
+    movimentar: "{% url 'movimentar' %}",
+    baixar_declaracao: "{% url 'baixar_declaracao_matricula' %}",
+    buscar_matricula: "{% url 'buscarmatricula' %}",
+    upload_matriculas: "{% url 'uploadmatriculas' %}",
+    buscar_aluno: "{% url 'buscaraluno' %}",
+    tela_matricular: "{% url 'telamatricular' %}",
+    adicionar_na_classe: "{% url 'adicionarnaclasse' %}",
+  };
+
+
+  // 1. Inicializa os objetos
+  Classes.init(window.urls.classe);
+  inicializarMatriculas(window.urls.matricula);
+
+  // 2. Chama o carregamento apenas UMA vez usando o objeto global
+  const ano = Classes.getAno();
+  if (ano) {
+    Classes.carregarClasses(ano);
+  }
+
+</script>
+
+
+{% endblock script %}

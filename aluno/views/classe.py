@@ -192,3 +192,15 @@ def exibirQuadro(request):
             "desabilita": desabilita,
         }
     )
+    
+def carregar_classes(request):
+    ano = request.GET.get('ano')
+    ano = Ano.objects.get(pk=ano)
+    classes = Classe.objects.filter(ano=ano)
+    opcoes = "<option value='0'>Selecione</option>"
+                                            
+    for c in classes:
+        periodo = Classe.retornarDescricaoPeriodo(c)
+        opcoes += f"<option value={c.id}>{c.serie}º {c.turma} - {periodo}</option>"
+        
+    return HttpResponse(opcoes) 

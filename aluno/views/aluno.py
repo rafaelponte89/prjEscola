@@ -18,7 +18,7 @@ from django.http import HttpResponse, JsonResponse
 
 REF_TAMANHO_NOME = 2
 REF_TAMANHO_RA = 7
-
+EMAIL = "victorianonino@educa.orlandia.sp.gov.br"
 from aluno.services.aluno import buscar_duplicados, renderizarTabela, pesquisar_alunos_por_nome
 from aluno.services.mensagem import criarMensagemJson
 
@@ -151,17 +151,7 @@ def buscarRMCancelar(request):
     return JsonResponse({"rm": aluno['rm'], "nome": aluno['nome']})
 
 
-def carregar_classes(request):
-    ano = request.GET.get('ano')
-    ano = Ano.objects.get(pk=ano)
-    classes = Classe.objects.filter(ano=ano)
-    opcoes = "<option value='0'>Selecione</option>"
-                                            
-    for c in classes:
-        periodo = Classe.retornarDescricaoPeriodo(c)
-        opcoes += f"<option value={c.id}>{c.serie}º {c.turma} - {periodo}</option>"
-        
-    return HttpResponse(opcoes)  
+ 
    
 # em desenvolvimento 10/05/2024
 def buscar_historico_matriculas(request):
@@ -236,6 +226,7 @@ def baixar_lista_alunos_personalizavel(request):
     from reportlab.platypus import PageTemplate, SimpleDocTemplate, Table, TableStyle
     from reportlab.platypus.frames import Frame
     from reportlab.platypus.paragraph import Paragraph
+    from reportlab.lib import colors
 
     
     classe = Classe.objects.get(pk=int(request.POST.get("classe")))
@@ -293,7 +284,7 @@ def baixar_lista_alunos_personalizavel(request):
         header_content =( Paragraph(f"""
                                <strong><font size="18">EMEB PROFª VICTÓRIA OLIVITO NONINO </font></strong> <br/>
                                  Rua 14, 1303 A - Conjunto Habtacional José Luís Simões - Orlândia - SP - (16)3820-8230  <br/>
-                                 <img src="aluno/appAluno/static/appAluno/jpeg/logo_prefeitura.jpg" valign="middle" height="50" width="50" />{espacos}{EMAIL}{espacos}<img src="aluno/appAluno/static/appAluno/jpeg/logo_escola.jpg" valign="middle" height="50" width="50" />""", style=style ) )
+                                 <img src="aluno/static/aluno/jpeg/logo_prefeitura.jpg" valign="middle" height="50" width="50" />{espacos}{EMAIL}{espacos}<img src="aluno/static/aluno/jpeg/logo_escola.jpg" valign="middle" height="50" width="50" />""", style=style ) )
       
     
     else:
@@ -301,7 +292,7 @@ def baixar_lista_alunos_personalizavel(request):
         header_content =( Paragraph(f"""
                                <strong><font size="18">EMEB PROFª VICTÓRIA OLIVITO NONINO </font></strong> <br/>
                                  Rua 14, 1303 A - Conjunto Habtacional José Luís Simões - Orlândia - SP - (16)3820-8230  <br/>
-                                 <img src="aluno/appAluno/static/appAluno/jpeg/logo_prefeitura.jpg" valign="middle" height="50" width="50" />{espacos}{EMAIL}{espacos}<img src="aluno/appAluno/static/appAluno/jpeg/logo_escola.jpg" valign="middle" height="50" width="50" />""", style=style ) )
+                                 <img src="aluno/static/aluno/jpeg/logo_prefeitura.jpg" valign="middle" height="50" width="50" />{espacos}{EMAIL}{espacos}<img src="aluno/static/aluno/jpeg/logo_escola.jpg" valign="middle" height="50" width="50" />""", style=style ) )
                      
     
     count = 0

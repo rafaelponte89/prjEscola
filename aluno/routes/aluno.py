@@ -5,8 +5,7 @@ from utilitarios.utilitarios import realizar_backup_v2
 from aluno.views.aluno import (atualizar_aluno,
                     baixar_lista_alunos_personalizavel, pesquisar_aluno,
                     buscar_dados_aluno, buscar_historico_matriculas,
-                    buscarRMCancelar, cancelarRM,
-                    carregar_classes, salvar_aluno,
+                    buscarRMCancelar, cancelarRM, salvar_aluno,
                     index, recarregarTabela)
 
 from aluno.views.telefone import del_telefone, descrever_contato, buscar_telefones_aluno
@@ -22,7 +21,6 @@ urlpatterns = [
     path("cancelarRM", cancelarRM, name="cancelarRM"), 
     
     path("bkp", realizar_backup_v2, name="realizarbackup"),
-    path("carregarClasses", carregar_classes, name="carregarclasses"),
     
 
     # Em desenvolvimento 10052024

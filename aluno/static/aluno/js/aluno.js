@@ -1,106 +1,142 @@
+window.Alunos = {
+    urls: {},
 
+    /* ===============================
+     * INIT
+     * =============================== */
+    init(urls) {
+        this.urls = urls;
 
-function buscarAluno(rm) {
-    const url = $("#urls").data("buscar-aluno");
-
-    $.post(url,
-        {
-            rm: rm,
-        }).done((html) => {
-            $("#dadosAluno").html(html);
-
-            // Fecha qualquer modal ativo primeiro
-            $('.modal').modal('hide');
-
-            // Remove qualquer backdrop restante
-            $('.modal-backdrop').remove();
-
-            // Abre o modal
-            const modalEl = document.getElementById("atualizarModal");
-            const modal = new bootstrap.Modal(modalEl);
-            modal.show();
+        $(document).ready(() => {
+            this.bindEvents();
+            this.recarregarTabela();
         });
-}
+    },
 
+    /* ===============================
+     * UTILIDADES
+     * =============================== */
+    notificar(html) {
+        $("#mensagens").html(html).show();
+        setTimeout(() => $("#mensagens").fadeOut(), 3000);
+    },
 
-//Cancelar RM
-function sendCancelar(rm) {
-    const url = $("#urls").data("cancelar-rm");
+    limparFormulario() {
+        $("#cadastrarAluno")[0]?.reset();
+        $("#id_nome").focus();
+    },
 
-    $.post({
-        url: url,
+    /* ===============================
+     * BUSCAR / ATUALIZAR
+     * =============================== */
+    buscarAluno(rm) {
+        $.post(this.urls.buscar_aluno, { rm })
+            .done((html) => {
+                $("#dadosAluno").html(html);
 
-        headers: {
-        },
-        data: {
-            rm: rm,
-        },
-        success: (response) => {
-            configurarElementos(response);
-        },
-        fail: (response) => { },
-    });
-}
+                $(".modal").modal("hide");
+                $(".modal-backdrop").remove();
 
-//Buscar Aluno por rm para cancelar
-function buscarAlunoCancelar(rm) {
-    const url = $("#urls").data("buscar-cancelar");
+                const modal = new bootstrap.Modal(
+                    document.getElementById("atualizarModal")
+                );
+                modal.show();
+            });
+    },
 
-    $.post({
-        url: url,
+    buscarAlunoCancelar(rm) {
+        $.post(this.urls.buscar_cancelar, { rm })
+            .done((response) => {
+                $("#registroAluno").text(response.rm);
+                $("#nomeAluno").text(response.nome);
+            });
+    },
 
-        headers: {
-        },
-        data: {
-            rm: rm,
-        },
-        success: (response) => {
-            $("#registroAluno").html(response.rm);
-            $("#nomeAluno").html(response.nome);
-        },
-        fail: (response) => { },
-    });
-}
+    /* ===============================
+     * AÇÕES
+     * =============================== */
+    sendCancelar(rm) {
+        $.post(this.urls.cancelar_rm, { rm })
+            .done((response) => {
+                this.notificar(response.mensagem);
+                this.recarregarTabela();
+            });
+    },
 
-// Recarregar Tabela Estado Inicial
-function recarregarTabela() {
-    const url = $("#urls").data("recarregar-tabela");
+    sendBuscar() {
+        const nome = $("#id_nome").val();
+        const filtro = localStorage.getItem("filtro");
 
-    $.get({
-        url: url,
-        success: (response) => {
-            $("#corpoTabela").html(response.html);
-        },
-        fail: (response) => { },
-    });
-}
+        $.post(this.urls.pesquisar_aluno, { nome, filtro })
+            .done((response) => {
+                if (response.mensagem) {
+                    $("#corpoTabela").html(response.mensagem);
+                } else {
+                    $("#corpoTabela").html(response.html);
+                }
+            });
+    },
 
-// Pesquisar por nome
-function sendBuscar() {
-    let nome = document.getElementById("id_nome").value;
-    let filtro = localStorage.getItem("filtro");
-    const url = $("#urls").data("pesquisar-aluno");
+    /* ===============================
+     * TABELA
+     * =============================== */
+    recarregarTabela() {
+        $.get(this.urls.recarregar_tabela)
+            .done((response) => {
+                $("#corpoTabela").html(response.html);
+            });
+    },
 
+    /* ===============================
+     * EVENTOS
+     * =============================== */
+    bindEvents() {
+        const self = this;
 
-    $.post({
-        url: url,
-        data: {
-            nome: nome,
-            filtro: filtro,
-        },
-        headers: {
-        },
-        success: (response) => {
-            // Atualiza o corpo da tabela
-            $("#corpoTabela").html(response.html);
+        // Delegação segura para AJAX
+        $("#corpoTabela")
+            .on("click", ".atualizar", function () {
+                self.buscarAluno($(this).val());
+            })
+            .on("click", ".advertencia", function () {
+                self.buscarAlunoCancelar($(this).val());
+            })
+            .on("click", ".declaracao", function () {
+                Relatorios.sendBaixarDeclaracao($(this).val());
+            });
 
-            // Mostra ou esconde a mensagem
-            if (response.mensagem) {
-                $("#corpoTabela").html(response.mensagem).show();
-            } else {
-                $("#mensagemTabelaAluno").hide();
+        $("#id_nome").on("keyup", () => self.sendBuscar());
+
+        $("#simCancelar").on("click", () => {
+            self.sendCancelar($("#registroAluno").text());
+        });
+
+        $("#persorelatorio").on("change", function () {
+            if ($(this).is(":checked")) {
+                $("#personalizavel").prop("hidden", false);
             }
-        },
-    });
-}
+        });
 
+        $("#rmrelatorio, #telrelatorio").on("change", function () {
+            if ($(this).is(":checked")) {
+                $("#personalizavel").prop("hidden", true);
+            }
+        });
+
+        $("#baixarpdf").on("click", () => {
+            if ($("#rmrelatorio").is(":checked")) {
+                Relatorios.sendBaixarPdf($("#id_rmi").val(), $("#id_rmf").val());
+            } else if ($("#telrelatorio").is(":checked")) {
+                Relatorios.sendBaixarListaTelefonica($("#classes").val());
+            } else if ($("#persorelatorio").is(":checked")) {
+                Relatorios.sendBaixarListaPersonalizavel($("#classes").val());
+            }
+        });
+
+        $("#relatorio").on("click", () => {
+            if (window.carregarClasses) {
+                carregarClasses(localStorage.getItem("idAno"));
+            }
+        });
+    }
+};

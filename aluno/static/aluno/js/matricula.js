@@ -95,14 +95,14 @@ function inicializarMatriculas(urls) {
         .done((response) => $("#tabelaAlunos").html(response));
     }
 
-    function carregarClasses(ano) {
+    /*function carregarClasses(ano) {
       $.get(urls.carregar_classes, { ano: ano })
         .done((response) => {
           $("#classes").html(response);
           const ultima = localStorage.getItem("ultimaClasse");
           if (ultima) $("#classes").val(ultima);
         });
-    }
+    }*/
 
     function ordemAlfabetica(classe) {
       $.get(urls.ordem_alfabetica, { classe: classe })
@@ -243,7 +243,7 @@ function inicializarMatriculas(urls) {
     // --- 7. INICIALIZAÇÃO FINAL ---
     $("#dataMatriculaIndividual").val(retornarDataHoje());
     carregarMovimentacao();
-    carregarClasses(localStorage.getItem("idAno"));
+    //carregarClasses(localStorage.getItem("idAno"));
 
     $("#classes").change(function () {
       const val = $(this).val();
