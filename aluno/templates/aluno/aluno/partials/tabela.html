@@ -5,14 +5,10 @@
     {{ aluno.rm }}
 
     {% if aluno.nome|upper in nomes_duplicados %}
-      <button type="button"
-              class="btn btn-outline-primary btn-sm m-1 advertencia"
-              value="{{ aluno.rm }}"
-              data-bs-toggle="modal"
-              data-bs-target="#resolucaoDuplicidadeModal"
-              {% if aluno.is_cancelado %}disabled{% endif %}>
-        <i class="bi bi-person-fill-exclamation"></i>
-      </button>
+    <button type="button" class="btn btn-outline-primary btn-sm m-1 advertencia" value="{{ aluno.rm }}"
+      data-bs-toggle="modal" data-bs-target="#resolucaoDuplicidadeModal" {% if aluno.is_cancelado %}disabled{% endif %}>
+      <i class="bi bi-person-fill-exclamation"></i>
+    </button>
     {% endif %}
   </td>
 
@@ -21,24 +17,51 @@
 
   <td class="align-middle text-center conteudoAtualizar">
     {% if not aluno.is_cancelado %}
-      <button type="button"
-              class="btn btn-outline-dark btn-lg atualizar"
-              value="{{ aluno.rm }}"
-              data-bs-toggle="modal"
-              data-bs-target="#atualizarModal">
-        <i class="bi bi-arrow-repeat"></i>
-      </button>
+    <button type="button" class="btn btn-outline-dark btn-lg atualizar" value="{{ aluno.rm }}" data-bs-toggle="modal"
+      data-bs-target="#atualizarModal">
+      <i class="bi bi-arrow-repeat"></i>
+    </button>
     {% endif %}
   </td>
 
   <td class="align-middle text-center">
     {% if not aluno.is_cancelado %}
-      <button type="button"
-              class="btn btn-outline-dark btn-lg declaracao"
-              value="{{ aluno.rm }}">
-        <i class="bi bi-journal"></i>
-      </button>
+    <button type="button" class="btn btn-outline-dark btn-lg declaracao" value="{{ aluno.rm }}">
+      <i class="bi bi-journal"></i>
+    </button>
     {% endif %}
+  </td>
+
+
+  <td class="align-middle text-center">
+    {% with telefones=aluno.telefones.all %}
+
+    {% for tel in telefones|slice:":2" %}
+    <span class="badge bg-dark me-1">
+      {{ tel.numero }}
+    </span>
+    {% endfor %}
+
+    {% if telefones|length > 2 %}
+    <div class="dropdown d-inline">
+      <button class="btn btn-sm btn-outline-dark dropdown-toggle" type="button" data-bs-toggle="dropdown"
+        aria-expanded="false">
+        +{{ telefones|length|add:"-2" }}
+      </button>
+
+      <ul class="dropdown-menu ">
+        {% for tel in telefones %}
+        <li>
+          <span class="dropdown-item">
+            {{ tel.numero }}
+          </span>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% endwith %}
   </td>
 
   <td class="align-middle text-center">
@@ -50,6 +73,11 @@
       {{ aluno.get_status_display }}
     </span>
   </td>
+
+  
+
+
+
 
 </tr>
 {% endfor %}

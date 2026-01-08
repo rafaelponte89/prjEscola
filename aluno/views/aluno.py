@@ -1,10 +1,8 @@
 
 from django.http import HttpResponse
 from django.shortcuts import render
-from django.views.decorators.csrf import csrf_exempt
 import io
 
-from aluno.models.ano import Ano
 from aluno.models.classe import Classe
 from aluno.models.matricula import Matricula
 from aluno.utils.texto import  padronizar_nome
@@ -15,6 +13,10 @@ from django.shortcuts import get_object_or_404
 
 from django.template.loader import render_to_string
 from django.http import HttpResponse, JsonResponse
+from aluno.forms.telefone import TelefoneFormSet
+
+from django.db import transaction
+
 
 REF_TAMANHO_NOME = 2
 REF_TAMANHO_RA = 7
@@ -76,22 +78,41 @@ def salvar_aluno(request):
         'html': html
     })
 
+
+@transaction.atomic
 def atualizar_aluno(request):
     aluno = get_object_or_404(Aluno, rm=request.POST.get("rm"))
+
     form = FrmAlunoUpdate(request.POST, instance=aluno)
+    formset = TelefoneFormSet(request.POST, instance=aluno)
     
-    if form.is_valid():
+    print(formset.errors)
+    print(formset.non_form_errors())
+
+    if form.is_valid() and formset.is_valid():
         form.save()
-        return JsonResponse({'success': True, 'mensagem': criarMensagemJson('Aluno atualizado com sucesso!!!','success')})
-    else:
+        formset.save()
+
         return JsonResponse({
-            'success': False,
-            'html': render_to_string(
-                'aluno/aluno/partials/form_update.html',
-                {'form': form, 'aluno': aluno},
-                request=request
+            'success': True,
+            'mensagem': criarMensagemJson(
+                'Aluno atualizado com sucesso!!!',
+                'success'
             )
         })
+
+    return JsonResponse({
+        'success': False,
+        'html': render_to_string(
+            'aluno/aluno/partials/form_update.html',
+            {
+                'form': form,
+                'formset': formset,
+                'aluno': aluno
+            },
+            request=request
+        )
+    })
         
 def pesquisar_aluno(request):
     nome = padronizar_nome(request.POST.get("nome", ""))
@@ -99,12 +120,12 @@ def pesquisar_aluno(request):
 
     if len(nome) <= REF_TAMANHO_NOME:
         # Últimos 5 registros
-        alunos = Aluno.retornarNUltimos()
+        alunos = Aluno.retornarNUltimos().prefetch_related('telefones')
         nomes_duplicados = buscar_duplicados(alunos)
         html = renderizarTabela(alunos, nomes_duplicados, request)
         return JsonResponse({'html': html, 'mensagem': ''})  # sem mensagem
 
-    alunos = pesquisar_alunos_por_nome(nome, filtro)
+    alunos = pesquisar_alunos_por_nome(nome, filtro).prefetch_related('telefones')
     nomes_duplicados = buscar_duplicados(alunos)
     html = renderizarTabela(alunos, nomes_duplicados, request)
 
@@ -128,7 +149,7 @@ def cancelarRM(request):
     return JsonResponse({"success": False, "mensagem":criarMensagemJson(f'Aluno {aluno.nome}, RM {aluno.rm} Cancelado com Sucesso!', 'success')})
  
 def recarregarTabela(request):
-    alunos = Aluno.retornarNUltimos()
+    alunos = Aluno.retornarNUltimos().prefetch_related('telefones')
     nomes_duplicados = buscar_duplicados(alunos)
     html = renderizarTabela(alunos, nomes_duplicados, request)
   
@@ -136,13 +157,20 @@ def recarregarTabela(request):
 
 def buscar_dados_aluno(request):
     aluno = get_object_or_404(Aluno, rm=request.POST.get("rm"))
+
     form = FrmAlunoUpdate(instance=aluno)
+    formset = TelefoneFormSet(instance=aluno)
 
     return render(
         request,
         "aluno/aluno/partials/form_update.html",
-        {"form": form, "aluno": aluno}
+        {
+            "form": form,
+            "formset": formset,
+            "aluno": aluno,
+        }
     )
+
 
 
 def buscarRMCancelar(request):
@@ -150,8 +178,6 @@ def buscarRMCancelar(request):
     aluno = Aluno.objects.values('rm', 'nome').get(pk=rm)
     return JsonResponse({"rm": aluno['rm'], "nome": aluno['nome']})
 
-
- 
    
 # em desenvolvimento 10/05/2024
 def buscar_historico_matriculas(request):

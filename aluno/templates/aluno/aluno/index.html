@@ -1,7 +1,19 @@
 {% extends 'aluno/base.html' %}
 
 {% block content %}
+<style>
+  input[type="checkbox"][name$="DELETE"] {
+    display: none;
+  }
 
+  /* Linha marcada para remoção */
+  .telefone-removido {
+    opacity: 0.5;
+    /* efeito visual de “desativado” */
+    text-decoration: line-through;
+    /* opcional */
+  }
+</style>
 {% load static %}
 
 <form id="cadastrarAluno" method="POST" action="{% url 'salvar_aluno' %}">
@@ -57,7 +69,10 @@
         <th class="text-center">RA</th>
         <th class="text-center">Atualizar</th>
         <th class="text-center">Declaração</th>
+        <th class="text-center">Telefone</th>
+
         <th class="text-center">Status</th>
+
         <!--
         <th class="text-center"> IA Matrícula</th>
         -->
@@ -84,6 +99,7 @@
 
 
 <script type="text/javascript">
+
 
   $("#cadastrarAluno").on("submit", function (e) {
     e.preventDefault();
@@ -140,9 +156,6 @@
     });
   });
 
-
-
-
 </script>
 
 
@@ -154,13 +167,22 @@
 <script src="{% static 'aluno/js/aluno.js' %}"></script>
 <script src="{% static 'aluno/js/relatorio.js' %}"></script>
 <script src="{% static 'aluno/js/classe.js' %}"></script>
+<script src="{% static 'aluno/js/telefone.js' %}"></script>
 
 <script type="text/javascript">
+
+
   window.urls = window.urls || {};
 
   window.urls.classe = window.urls.classe || {
     carregar_classe: "{% url 'carregarclasses' %}",
   };
+
+  window.urls.telefone = window.urls.telefone || {
+    listar_telefone: "{% url 'bloco_contato' %}",
+    add_telefone: "{% url 'contato' %}",
+    del_telefone: "{% url 'delTelefone' %}",
+  }
 
   window.urls.aluno = window.urls.aluno || {
     buscar_aluno: "{% url 'buscarDadosAluno' %}",
@@ -180,6 +202,8 @@
   Relatorios.init(window.urls.relatorio);
   Alunos.init(window.urls.aluno);
   Classes.init(window.urls.classe);
+  Telefones.init(window.urls.telefone);
+
   const ano = Classes.getAno();
   if (ano) {
     Classes.carregarClasses(ano);

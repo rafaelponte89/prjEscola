@@ -8,8 +8,6 @@ from aluno.views.aluno import (atualizar_aluno,
                     buscarRMCancelar, cancelarRM, salvar_aluno,
                     index, recarregarTabela)
 
-from aluno.views.telefone import del_telefone, descrever_contato, buscar_telefones_aluno
-
 urlpatterns = [
     path("", index, name="inicial"),  
     path("salvar", salvar_aluno, name="salvar_aluno"),
@@ -25,11 +23,7 @@ urlpatterns = [
 
     # Em desenvolvimento 10052024
     path("buscarHistoricoMatriculas",buscar_historico_matriculas, name="buscarHistoricoMatriculas"),
-    path("buscarTelefonesAluno", buscar_telefones_aluno, name="buscarTelefonesAluno"),
     
-    
-     path("delTelefone", del_telefone, name="delTelefone"),
-    path("contato", descrever_contato, name="contato"),
     path("listapersonalizavelpdf", baixar_lista_alunos_personalizavel, name='listapersonalizavelpdf'),
     #path("baixardeclaracao", baixar_declaracao_matricula, name="baixardeclaracao"),
 ]

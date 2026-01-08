@@ -10,7 +10,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Table, TableStyle
 
 from aluno.models.matricula import Matricula
-from aluno.models.aluno import Telefone
+from aluno.models.telefone import Telefone
 from aluno.models.classe import Classe
 from aluno.models.aluno import Aluno
 from utilitarios.utilitarios import retornarNomeMes

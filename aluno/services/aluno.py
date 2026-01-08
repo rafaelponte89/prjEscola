@@ -1,5 +1,5 @@
 from aluno.models.matricula import Matricula
-from aluno.models.aluno import Telefone
+from aluno.models.telefone import Telefone
 from aluno.models.aluno import Aluno
 from django.db.models import Q
 from django.template.loader import render_to_string

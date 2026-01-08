@@ -11,7 +11,8 @@ window.Alunos = {
             this.bindEvents();
             this.recarregarTabela();
         });
-    },
+    }
+    ,
 
     /* ===============================
      * UTILIDADES

@@ -52,34 +52,7 @@ class Aluno (models.Model):
     class Meta:
         app_label = 'aluno'
     
-#Telefones do aluno
-class Telefone(models.Model):
-    TEL_CHOICES = (
-        ('M','MÃE'),
-        ('P','PAI'),
-        ('T','TIA/TIO'),
-        ('I','IRMÃ/IRMÃO'),
-        ('A','AVÓ/AVÔ'),
-        ('R','RESPONSÁVEL'),
-        ('O','OUTRO')
-    )
-    aluno = models.ForeignKey(Aluno, on_delete=models.RESTRICT)
-    contato = models.CharField(max_length=1, choices=TEL_CHOICES, blank=False, null=False)
-    numero = models.CharField(max_length=10, default='')
-    
-    def __str__(self):   
-        return f'{self.numero}'
-    
-    def retornarListaTelefones():
-        return Telefone.TEL_CHOICES
-    
-    def retornarDescricaoContato(self):
-        for i in range(len(self.TEL_CHOICES)):
-            if self.contato == self.TEL_CHOICES[i][0]:
-                return self.TEL_CHOICES[i][1]
 
-    class Meta:
-        app_label = 'aluno'
 
 
 #Documentos do aluno (NÃO IMPLEMENTADO)

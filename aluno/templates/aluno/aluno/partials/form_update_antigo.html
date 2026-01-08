@@ -1,13 +1,11 @@
 <form id="atualizarAluno" method="POST" action="{% url 'atualizar' %}">
   {% csrf_token %}
-  {{ formset.management_form }}
-
 
   <div class="row">
     <div class="col-3">
       <label>RM</label>
       <input class="form-control" value="{{ aluno.rm }}" disabled>
-      <input type="hidden" name="rm" value="{{ aluno.rm }}">
+      <input  type="hidden" name="rm" value="{{ aluno.rm }}">
     </div>
 
     <div class="col-9">
@@ -36,28 +34,7 @@
     </div>
   </div>
 
-  <div id="dados" class="mb-2">
-    <div class="row">
-      <div class="col-1 form-group d-flex">
-        <button id="addTelefone" type="button" class="btn btn-primary mt-3">
-          <i class="bi bi-telephone-plus"></i>
-        </button>
-      </div>
-      <div id="listaTelefone">
-
-
-        {% for telefone_form in formset %}
-        {% include 'aluno/aluno/partials/dados_contato.html' with telefone_form=telefone_form %}
-        {% endfor %}
-      </div>
-
-      <div id="empty-form" style="display:none">
-        {% include 'aluno/aluno/partials/dados_contato.html' with telefone_form=formset.empty_form %}
-      </div>
-    </div>
-  </div>
-
-
+  
   <div class="mt-3 text-end">
     <button type="submit" class="btn btn-primary">
       Atualizar
