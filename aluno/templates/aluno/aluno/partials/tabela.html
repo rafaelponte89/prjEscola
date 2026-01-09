@@ -1,3 +1,6 @@
+{% load telefone_filters %}
+
+
 {% for aluno in alunos %}
 <tr class="{% if aluno.is_cancelado %}table-secondary text-muted{% endif %}">
 
@@ -38,7 +41,7 @@
 
     {% for tel in telefones|slice:":2" %}
     <span class="badge bg-dark me-1">
-      {{ tel.numero }}
+      {{ tel.numero|formatar_telefone}}
     </span>
     {% endfor %}
 
@@ -53,7 +56,7 @@
         {% for tel in telefones %}
         <li>
           <span class="dropdown-item">
-            {{ tel.numero }}
+            {{ tel.numero|formatar_telefone}}
           </span>
         </li>
         {% endfor %}
