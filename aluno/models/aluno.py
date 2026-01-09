@@ -45,15 +45,13 @@ class Aluno (models.Model):
         return aluno
     
     @classmethod
-    def retornarNUltimos(cls, n=10):
+    def retornarNUltimos(cls, n=6):
         alunos = cls.objects.order_by('-rm')[:n]
         return alunos
     
     class Meta:
         app_label = 'aluno'
     
-
-
 
 #Documentos do aluno (NÃO IMPLEMENTADO)
 class Prontuario(models.Model):

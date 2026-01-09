@@ -85,9 +85,6 @@ def atualizar_aluno(request):
 
     form = FrmAlunoUpdate(request.POST, instance=aluno)
     formset = TelefoneFormSet(request.POST, instance=aluno)
-    
-    print(formset.errors)
-    print(formset.non_form_errors())
 
     if form.is_valid() and formset.is_valid():
         form.save()

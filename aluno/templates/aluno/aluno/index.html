@@ -178,11 +178,7 @@
     carregar_classe: "{% url 'carregarclasses' %}",
   };
 
-  window.urls.telefone = window.urls.telefone || {
-    listar_telefone: "{% url 'bloco_contato' %}",
-    add_telefone: "{% url 'contato' %}",
-    del_telefone: "{% url 'delTelefone' %}",
-  }
+ 
 
   window.urls.aluno = window.urls.aluno || {
     buscar_aluno: "{% url 'buscarDadosAluno' %}",
@@ -202,7 +198,7 @@
   Relatorios.init(window.urls.relatorio);
   Alunos.init(window.urls.aluno);
   Classes.init(window.urls.classe);
-  Telefones.init(window.urls.telefone);
+  Telefones.init();
 
   const ano = Classes.getAno();
   if (ano) {

@@ -1,38 +1,13 @@
-
 window.Telefones = {
     urls: {},
 
-    init(urls) {
-        this.urls = urls;
+    init() {
 
         $(document).ready(() => {
             this.bindEvents();
-            this.listarTelefones();
-            console.log($('#id_telefone_set-TOTAL_FORMS').length)
-
         });
     },
-
-    listarTelefones() {
-        $.get(this.urls.listar_telefone, { rm: $("#rm").val() })
-            .done(function (response) {
-                $("#listaTelefone").append(response.html);
-            });
-    },
-
-    delTelefone() {
-        var close = document.getElementsByClassName("removerTelefone");
-        var i;
-        for (i = 0; i < close.length; i++) {
-            close[i].onclick = function () {
-                var div = this.parentElement;
-                sendDelTelefone(this.value);
-                div.remove();
-            };
-        }
-    },
     bindEvents() {
-
 
         $(document).on('click', '.removerTelefone', function () {
             const row = $(this).closest('.telefone');      // Linha do formset

@@ -18,7 +18,7 @@
 
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
 
-  
+
 
   <style>
     .menusup {
@@ -36,8 +36,6 @@
       text-decoration: none;
       font-weight: 600;
       text-decoration-color: aliceblue;
-
-
     }
   </style>
 
@@ -45,35 +43,43 @@
 </head>
 
 <body id="Conteudo">
-  <div id="mensagens" class="col-12 fixed-top"></div>
-  <button class="btn btn-large waves-effect waves-light black" id="aumentarLetra">
-    A+
-  </button>
-  <button class="btn btn-large waves-effect waves-light red" id="diminuirLetra">
-    A-
-  </button>
-  <button id="botaoconfiguracoes" class="btn btn-outline-success m-3" title="Configurações" data-bs-toggle="modal"
-    data-bs-target="#configuracoesModal">
-    <i class="bi bi-gear-fill"></i>
-  </button>
-
-
-  <div id="topo" class="row">
-
-    <div class="col-12 text-center">
-
-      <button type="button" class="btn btn-outline-dark m-2 btn-lg" id="anoAnterior">
-        <i class="bi bi-caret-left-square-fill"></i>
+  <div class="row">
+    <div id="mensagens" class="col-12 fixed-top"></div>
+  </div>
+  <div class="row">
+    <div class="col-6">
+      <button class="btn btn-large waves-effect waves-light black " id="aumentarLetra">
+        A+
       </button>
-
-      <strong class="bg-dark p-2 mt-2 rounded-3">
-        <i id="ano" class="bi bi-calendar text-warning m-lg-5" style="font-size: 27px"></i>
-      </strong>
-
-      <button type="button" class="btn btn-outline-dark m-2 btn-lg" id="anoPosterior">
-        <i class="bi bi-caret-right-square-fill"></i>
+      <button class="btn btn-large waves-effect waves-light red " id="diminuirLetra">
+        A-
       </button>
+      <button id="botaoconfiguracoes" class="btn btn-outline-success m-3 " title="Configurações" data-bs-toggle="modal"
+        data-bs-target="#configuracoesModal">
+        <i class="bi bi-gear-fill"></i>
+      </button>
+    </div>
 
+  </div>
+
+  <div class="container-fluid">
+    <div id="topo" class="row">
+
+      <div class="col-12 text-center">
+
+        <button type="button" class="btn btn-outline-dark m-2 btn-lg" id="anoAnterior">
+          <i class="bi bi-caret-left-square-fill"></i>
+        </button>
+
+        <strong class="bg-dark p-2 mt-2 rounded-3">
+          <i id="ano" class="bi bi-calendar text-warning m-lg-5" style="font-size: 27px"></i>
+        </strong>
+
+        <button type="button" class="btn btn-outline-dark m-2 btn-lg" id="anoPosterior">
+          <i class="bi bi-caret-right-square-fill"></i>
+        </button>
+
+      </div>
     </div>
   </div>
 
@@ -104,14 +110,7 @@
             Dashboard
           </a>
         </li>
-        <!--
-        <li class="m-2">
-          <a class="p-2 {% if request.resolver_match.url_name == 'dashboard' %} menusup {% endif %}" 
-          href="#" id="instituicao">
-            Instituições
-          </a>
-        </li>
-      -->
+        
       </ul>
     </div>
     <div class="row" id="conteudo">
