@@ -34,7 +34,7 @@ def extrair_ra(linha):
     padrao = re.search(r"\b(?P<ra>\d{10,13})\s+(?P<digito>[0-9X])\s+(?P<uf>[A-Z]{2})\b",linha)
 
     if padrao:
-        return padrao.group(1)
+        return padrao.group(1).lstrip("0")
     return None
 
 def extrair_situacao(linha):
