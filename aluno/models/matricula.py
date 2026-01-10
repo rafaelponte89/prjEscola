@@ -1,12 +1,9 @@
 from django.db import models
-
 from aluno.models.aluno import Aluno
 from aluno.models.ano import Ano
 from aluno.models.classe import Classe
 
 
-# Create your models here.
-#Matrícula do aluno (NÃO IMPLEMENTADO)
 class Matricula(models.Model):
     SITUACAO = (
         ('C', 'CURSANDO'),
@@ -16,27 +13,53 @@ class Matricula(models.Model):
         ('P', 'PROMOVIDO'),
         ('R', 'REPROVADO'),
     )
-    ano = models.ForeignKey(Ano, on_delete=models.RESTRICT, blank=False, null=False, default=0)
-    classe = models.ForeignKey(Classe, on_delete=models.RESTRICT, default='')
-    aluno = models.ForeignKey(Aluno, on_delete=models.RESTRICT, default='')
-    numero = models.IntegerField(blank=False, null=False, default=0)
-    situacao = models.CharField(max_length=4, choices=SITUACAO, default='A')
-    data_matricula = models.DateField(null=True)
-    data_movimentacao = models.DateField(null=True)
-    
+
+    ano = models.ForeignKey(
+        Ano,
+        on_delete=models.RESTRICT
+    )
+
+    classe = models.ForeignKey(
+        Classe,
+        on_delete=models.RESTRICT,
+        related_name='matriculas'
+    )
+
+    aluno = models.ForeignKey(
+        Aluno,
+        on_delete=models.RESTRICT,
+        related_name='matriculas'
+    )
+
+    numero = models.IntegerField(default=0)
+
+    situacao = models.CharField(
+        max_length=4,
+        choices=SITUACAO,
+        default='C'
+    )
+
+    data_matricula = models.DateField(null=True, blank=True)
+    data_movimentacao = models.DateField(null=True, blank=True)
+
     def __str__(self):
-        return f'{self.aluno} - {self.classe}' 
-    
+        return f'{self.aluno} - {self.classe}'
+
     class Meta:
-        unique_together = ['ano', 'aluno', 'situacao', 'data_matricula','data_movimentacao']   
-    
+        unique_together = (
+            'ano',
+            'aluno',
+            'situacao',
+            'data_matricula',
+            'data_movimentacao',
+        )
+        indexes = [
+            models.Index(fields=['aluno', '-ano']),
+        ]
+
+    @staticmethod
     def retornarSituacao():
         return Matricula.SITUACAO
 
     def retornarDescricaoSituacao(self):
-        for i in range(len(self.SITUACAO)):
-            if self.situacao == self.SITUACAO[i][0]:
-                return self.SITUACAO[i][1]
-
-    class Meta:
-        app_label = 'aluno'
+        return dict(self.SITUACAO).get(self.situacao)

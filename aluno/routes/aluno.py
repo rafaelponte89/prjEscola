@@ -3,7 +3,7 @@ from django.urls import path
 from utilitarios.utilitarios import realizar_backup_v2
 
 from aluno.views.aluno import (atualizar_aluno,
-                    baixar_lista_alunos_personalizavel, pesquisar_aluno,
+                    pesquisar_aluno,
                     buscar_dados_aluno, buscar_historico_matriculas,
                     buscarRMCancelar, cancelarRM, salvar_aluno,
                     index, recarregarTabela)
@@ -24,6 +24,5 @@ urlpatterns = [
     # Em desenvolvimento 10052024
     path("buscarHistoricoMatriculas",buscar_historico_matriculas, name="buscarHistoricoMatriculas"),
     
-    path("listapersonalizavelpdf", baixar_lista_alunos_personalizavel, name='listapersonalizavelpdf'),
     #path("baixardeclaracao", baixar_declaracao_matricula, name="baixardeclaracao"),
 ]

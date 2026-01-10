@@ -9,14 +9,16 @@ def header_com_imagem(
     caminho_imagem,
     largura=500,
     altura=120,
-    margem_y=150,
+    margem_topo=20,  # distância do topo da página
 ):
-    """
-    Cabeçalho padrão com imagem.
-    """
     canvas.saveState()
 
+    largura_pagina, altura_pagina = doc.pagesize
+
+    x = (largura_pagina - largura) / 2
+    y = altura_pagina - altura - margem_topo
+
     img = Image(caminho_imagem, width=largura, height=altura)
-    img.drawOn(canvas, doc.leftMargin, A4[1] - margem_y)
+    img.drawOn(canvas, x, y)
 
     canvas.restoreState()

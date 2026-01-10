@@ -1,7 +1,8 @@
 from aluno.models.aluno import Aluno
 from aluno.models.classe import Classe
 from django.http import HttpResponse
-from aluno.reports.aluno import emitir_declaracao_matricula, emitir_lista_rm, emitir_lista_telefonica
+from aluno.reports.aluno import (emitir_declaracao_matricula, emitir_lista_rm, 
+                                 emitir_lista_telefonica, emitir_lista_personalizada)
 from io import BytesIO
 from datetime import datetime
 
@@ -60,3 +61,29 @@ def baixar_lista_telefonica(request):
     buffer.close()
     
     return response
+
+
+def baixar_lista_alunos_personalizada(request):
+    
+    titulo_lista = request.POST.get('titulo')
+    tamanho_fonte = float(request.POST.get('tamanho_fonte'))
+    colunas = (request.POST.get('colunas')).split(',')
+    tamanho_colunas = (request.POST.get('tam_colunas')).split(',')
+    orientacao = request.POST.get('pagina')
+    repeticao = int(request.POST.get('repeticao'))
+    classe = Classe.objects.get(pk=int(request.POST.get("classe")))
+    buffer = BytesIO()
+
+    
+    buffer = emitir_lista_personalizada(classe, titulo_lista, tamanho_fonte, colunas, 
+                                        tamanho_colunas, orientacao, repeticao, buffer)
+
+
+
+    response = HttpResponse(content_type='application/pdf')
+    
+    response.write(buffer.getvalue())
+    buffer.close()
+    
+    return response
+

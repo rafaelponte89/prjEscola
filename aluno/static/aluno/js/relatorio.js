@@ -41,6 +41,7 @@ window.Relatorios = {
 
   sendBaixarListaPersonalizavel(classe) {
     const url = this.urls.relatorio_personalizavel;
+   
     $.post({
       url: url,
       // datatype: 'pdf',

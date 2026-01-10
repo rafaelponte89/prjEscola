@@ -1,5 +1,5 @@
 from functools import partial
-
+from django.http import HttpResponse
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import cm
@@ -18,38 +18,37 @@ from datetime import datetime
 from aluno.services.aluno import gerarIntervalo
 from .header import header_com_imagem
 
-EMAIL = 'victorianonino@educa.orlandia.sp.gov.br'
-
-def criar_base_pdf(buffer):
-     # -----------------------------------------------------
-    # DOCUMENTO BASE
-    # -----------------------------------------------------
+IMG_CABECALHO = "aluno/static/aluno/jpeg/cabecalho_600dpi.png"
+def criar_base_pdf(buffer, tamanho_pagina=A4):
     pdf = SimpleDocTemplate(
         buffer,
-        pagesize=A4,
+        pagesize=tamanho_pagina,
         leftMargin=1.5 * cm,
         rightMargin=1.5 * cm,
         topMargin=1.5 * cm,
         bottomMargin=0.5 * cm,
     )
 
+    ALTURA_HEADER = 2.0 * cm  # ajuste conforme sua imagem
+
     frame = Frame(
         pdf.leftMargin,
         pdf.bottomMargin,
         pdf.width,
-        pdf.height,
+        pdf.height - ALTURA_HEADER,
         id="normal",
+        topPadding=12
     )
-    
+
     return pdf, frame
+
 
     
 def emitir_declaracao_matricula(aluno, nome_operador, cargo_operador, rg_operador, buffer):
     
+  
     matricula = (
-        Matricula.objects.filter(aluno=aluno)
-        .order_by("ano")
-        .last()
+       Matricula.objects.filter(aluno=aluno).order_by('-ano').first()
     )
 
     # -----------------------------------------------------
@@ -94,10 +93,9 @@ def emitir_declaracao_matricula(aluno, nome_operador, cargo_operador, rg_operado
     frames=frame,
     onPage=partial(
         header_com_imagem,
-        caminho_imagem="aluno/static/aluno/jpeg/cabecalho_600dpi.png",
+        caminho_imagem=IMG_CABECALHO,
         largura=500,
         altura=120,
-        margem_y=150,
     ),
     )
 
@@ -118,8 +116,9 @@ def emitir_declaracao_matricula(aluno, nome_operador, cargo_operador, rg_operado
     )
     story.append(data_emissao)
 
+    print("Matricula",matricula)
     if matricula is not None:
-        descritivo_situacao = Matricula.retornarDescricaoSituacao(matricula)
+        descritivo_situacao = matricula.retornarDescricaoSituacao()
       
 
         # Título
@@ -137,7 +136,7 @@ def emitir_declaracao_matricula(aluno, nome_operador, cargo_operador, rg_operado
             )
 
         elif matricula.situacao == "BXTR":
-            dt_n = aluno.data_nascimento if aluno.data_nascimento else ''
+            dt_n = datetime.strftime(aluno.data_nascimento,"%d/%m/%Y") if aluno.data_nascimento else ''
             story.append(Paragraph("<b><u>Declaração de Transferência</u></b>", titulo))
             story.append(
                 Paragraph(
@@ -224,7 +223,6 @@ def emitir_lista_telefonica(classe, buffer):
     telefones = ''
     elements = []
     
-    
     doc = SimpleDocTemplate(buffer, rightMargin=30, leftMargin=30, topMargin=30, bottomMargin=20, pagesize=(A4[1], A4[0]))
     
     titulo = "Lista Telefônica " + str(classe)
@@ -262,4 +260,88 @@ def emitir_lista_telefonica(classe, buffer):
     elements.append(t_aluno)
     
     doc.build(elements, )
+    return buffer
+
+
+def emitir_lista_personalizada(classe, titulo_lista, 
+                               tamanho_fonte, colunas, 
+                                tamanho_colunas, orientacao,
+                               repeticao, buffer):    
+    
+    print('Orientação', orientacao)
+    matriculas = (classe.matriculas.
+                  filter(situacao='C').
+                  order_by('aluno__nome').
+                  values('aluno__nome'))
+    
+    largura, altura =  0, 0
+    if orientacao == 'r':
+        orientacao = (A4[0], A4[1])  # retrato
+        largura = 500
+        altura = 80
+       
+    else:
+        orientacao = (A4[1], A4[0])  # paisagem 
+        largura = 500
+        altura = 80
+       
+    
+    
+
+    titulo = str(titulo_lista) + " - " + str(classe)
+    print(titulo)
+    primeira_linha = ['Nº','Nome']
+    primeira_linha.extend(colunas)
+    data_alunos = []
+    data_alunos.append([titulo])
+    data_alunos.append(primeira_linha)
+
+    pdf, frame = criar_base_pdf(buffer, tamanho_pagina = orientacao)
+    
+    linha = ''
+    count = 0
+
+    for m in matriculas:
+        for i in range(1, repeticao + 1):
+            count += 1
+            linha = [count, m['aluno__nome']]
+            for col in range(len(colunas)):
+                linha.append(' ' * int(tamanho_colunas[col]) )
+            
+            data_alunos.append(linha)
+    colunas_totais = len(colunas) + 1               
+    style_table = TableStyle([('GRID',(0,1),(-1,-1), 0.5, colors.gray),
+                               ('SPAN', (0,0), (colunas_totais, 0)),
+                            ('LEFTPADDING',(0,0),(-1,-1),6),
+                            ('TOPPADDING',(0,0),(-1,-1),4),
+                            ('BOTTOMPADDING',(0,0),(-1,-1),3),
+                            ('RIGHTPADDING',(0,0),(-1,-1),6),
+                            ('ALIGN',(0,0),(-1,-1),'LEFT'),
+                             ('ALIGN',(0,0),(0,-1),'CENTER'),
+                            ('BACKGROUND',(0,1),(colunas_totais,1), colors.lavender),
+                            ('FONTSIZE',(0,0), (-1,-1), 13),
+                            ('BOTTOMPADDING',(0,0),(0,0),20),
+                            ('FONTSIZE',(0,0),(0,0),18),
+                            ('FONTSIZE',(0,2),(-1,-1), tamanho_fonte),
+                            ])
+    
+   
+    
+    t_aluno = Table(data_alunos, style=style_table, hAlign='CENTER', 
+                    repeatRows=2)
+
+    template = PageTemplate(
+    id="template",
+    frames=frame,
+    onPage=partial(
+        header_com_imagem,
+        caminho_imagem=IMG_CABECALHO,
+        largura=largura,
+        altura=altura,
+    ),
+    )
+    pdf.addPageTemplates([template])
+
+    # conteudo
+    pdf.build([t_aluno])
     return buffer
