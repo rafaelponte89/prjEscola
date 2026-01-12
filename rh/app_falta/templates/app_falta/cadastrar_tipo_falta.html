@@ -25,7 +25,8 @@
         <tr>
             <td>{{falta.tipo}}</td>
             <td>{{falta.descricao}}</td>
-            <td class="text-center"><a class="btn btn-info" href="{% url 'atualizarfaltas' falta.id %}"><span class="material-icons">
+            <td class="text-center"><a class="btn btn-info"
+                    href="{% url 'atualizarfaltas' falta.id %}?page={{ faltas.number }}"><span class="material-icons">
                         autorenew
                     </span></a></td>
         </tr>
@@ -33,6 +34,27 @@
         </tr>
     </tbody>
 </table>
+<nav aria-label="Paginação do tipo de falta">
+
+    <ul class="pagination justify-content-center">
+        {% if faltas.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ faltas.previous_page_number }}">Anterior</a>
+        </li>
+        {% endif %}
+
+        <li class="page-item ative">
+            <span class="page-link">
+                {{ faltas.number }} / {{ faltas.paginator.num_pages}}
+            </span>
+        </li>
+
+        {% if faltas.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ faltas.next_page_number }}">Próximo</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+
 {% endblock content %}
-
-
