@@ -4,10 +4,15 @@ from django.shortcuts import redirect, render
 from .forms import formularioCargo
 from .models import Cargos
 
+from django.core.paginator import Paginator
 # Create your views here.
 
 def cargos(request):
-    cargos = Cargos.objects.all()
+    cargos_queryset = Cargos.objects.all().order_by('cargo')
+    paginator = Paginator(cargos_queryset, 5)
+    page_number =request.GET.get('page')
+    cargos = paginator.get_page(page_number)
+    
     if request.method == 'POST':
         form = formularioCargo(request.POST)
         if form.is_valid():
