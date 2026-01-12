@@ -27,7 +27,7 @@ from datetime import datetime
     # CABEÇALHO COM IMAGEM (FORMA CORRETA)
     # -----------------------------------------------------
 HEADER_IMG = Image(
-        "appAluno/static/appAluno/jpeg/cabecalho_600dpi.png",
+        "aluno/appAluno/static/appAluno/jpeg/cabecalho_600dpi.png",
         width=500,
         height=120,
     )
