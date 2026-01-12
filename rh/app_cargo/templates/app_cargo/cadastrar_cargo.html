@@ -14,7 +14,7 @@
 <table class="table table-hover">
     <thead>
         <tr>
-        
+
             <th scope="col">Cargo</th>
             <th scope="col" class="text-center">Atualizar</th>
         </tr>
@@ -23,16 +23,41 @@
         {% for cargo in cargos %}
         <tr>
             <td>{{cargo.cargo}}</td>
-            <td class="text-center"><a class="btn btn-info" href="{% url 'atualizarcargos' cargo.id %}"><span class="material-icons">
-                autorenew
-            </span></a></td>
+            <td class="text-center"><a class="btn btn-info"
+                    href="{% url 'atualizarcargos' cargo.id %}?page={{ cargos.number }}"><span class="material-icons">
+                        autorenew
+                    </span></a></td>
         </tr>
-        
+
         {% endfor %}
-        
     </tbody>
 </table>
 
+<nav aria-label="Paginação de faltas">
+    <ul class="pagination justify-content-center">
+
+        {% if cargos.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ cargos.previous_page_number }}">Anterior</a>
+        </li>
+        {% endif %}
+
+        <li class="page-item active">
+            <span class="page-link">
+                {{ cargos.number }} / {{ cargos.paginator.num_pages }}
+            </span>
+        </li>
+
+        {% if cargos.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ cargos.next_page_number }}">Próxima</a>
+        </li>
+        {% endif %}
+
+
+
+    </ul>
+</nav>
+
 
 {% endblock content %}
-

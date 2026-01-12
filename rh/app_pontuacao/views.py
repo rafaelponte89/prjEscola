@@ -6,6 +6,8 @@ from django.contrib import messages
 
 from .pontuacoes import criar_salvar_pontuacao, deletar_pontuacao_ano
 
+from django.core.paginator import Paginator
+
 def verificar_ano_saida(pessoa_id):
     pessoa = Pessoas.objects.get(pk=pessoa_id)
    
@@ -62,7 +64,11 @@ def excluir_pontuacoes(request, pessoa_id, pontuacao_id):
 def lancar_pontuacoes(request, pessoa_id):
 
     pessoa = Pessoas.objects.get(pk=pessoa_id)
-    pontuacoes = Pontuacoes.objects.filter(pessoa=pessoa_id).order_by('ano')
+    pontuacoes_queryset = Pontuacoes.objects.filter(pessoa=pessoa_id).order_by('-ano')
+    paginator = Paginator(pontuacoes_queryset, 5)
+    page_number = request.GET.get('page')
+    pontuacoes = paginator.get_page(page_number)
+    
     ativo = verificar_ano_saida(pessoa_id)
     if request.method == 'POST':
         form = formularioPontuacao(request.POST)

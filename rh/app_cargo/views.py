@@ -1,13 +1,19 @@
 from django.contrib import messages
 from django.shortcuts import redirect, render
+from django.urls import reverse
 
 from .forms import formularioCargo
 from .models import Cargos
 
+from django.core.paginator import Paginator
 # Create your views here.
 
 def cargos(request):
-    cargos = Cargos.objects.all()
+    cargos_queryset = Cargos.objects.all().order_by('cargo')
+    paginator = Paginator(cargos_queryset, 5)
+    page_number =request.GET.get('page')
+    cargos = paginator.get_page(page_number)
+    
     if request.method == 'POST':
         form = formularioCargo(request.POST)
         if form.is_valid():
@@ -18,7 +24,12 @@ def cargos(request):
     return render(request,'app_cargo/cadastrar_cargo.html',{'form':form, 'cargos':cargos})
 
 def atualizar_cargos(request, cargo_id):
-    cargos = Cargos.objects.all()
+    cargos_queryset = Cargos.objects.all().order_by('cargo')
+    paginator = Paginator(cargos_queryset, 5)
+
+    page_number =request.GET.get('page')
+    cargos = paginator.get_page(page_number)
+
     cargo = Cargos.objects.get(pk=cargo_id)
 
     if request.method == 'POST':
@@ -26,8 +37,8 @@ def atualizar_cargos(request, cargo_id):
         if form.is_valid():
             form.save()
             messages.success(request,"Cargo atualizado!")
-
-            return redirect('listarcargos')
+            
+            return redirect(f"{reverse('listarcargos')}?page={page_number}")
     else:
         form = formularioCargo(instance=cargo)
 

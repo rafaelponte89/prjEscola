@@ -40,11 +40,20 @@ from .services.faltas import lancar_falta
 
 from .services.relatorios import (requerimento_abonada, gerar_relatorio_faltas_descritivo,
                                     gerar_relatorio_faltas_descritivo_pdf, buscar_faltas_geral)
+
+
+from django.core.paginator import Paginator
+
 # fazer o lançamento de faltas para determinada pessoa
 def pessoas_faltas(request, pessoa_id):
 
     pessoa = Pessoas.objects.get(pk=pessoa_id)
-    pessoa_falta = Faltas_Pessoas.objects.filter(pessoa=pessoa).order_by('data')[:30]
+    faltas_queryset = Faltas_Pessoas.objects.filter(pessoa=pessoa).order_by('-data')
+    
+    paginator = Paginator(faltas_queryset, 5)
+    page_number = request.GET.get('page')
+    pessoa_falta = paginator.get_page(page_number)
+    
     admissao = pessoa.admissao
     saida = pessoa.saida 
     data_lancamento = 0
@@ -120,7 +129,9 @@ def pessoas_faltas(request, pessoa_id):
     else:
             
         form = formularioLF(initial={'pessoa':pessoa})
-    return render(request,'rh/lancar_falta.html', {'form':form, 'pessoa':pessoa, 'faltas':pessoa_falta})
+    return render(request,'rh/lancar_falta.html', {'form':form, 
+                                                   'pessoa':pessoa, 
+                                                   'faltas':pessoa_falta})
 
 
 def excluir_pessoas_faltas(request, pessoa_id, lancamento_id):

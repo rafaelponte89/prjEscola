@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.shortcuts import redirect, render
-
+from django.urls import reverse
+from django.core.paginator import Paginator
 from .forms import formularioTF
 from .models import Faltas
 
@@ -8,7 +9,11 @@ from .models import Faltas
 
 # listar e incluir faltas
 def faltas(request):
-    faltas = Faltas.objects.all()
+    faltas_queryset = Faltas.objects.all().order_by('descricao')
+    paginator = Paginator(faltas_queryset, 5)
+    page_number = request.GET.get('page')
+    faltas = paginator.get_page(page_number)
+    
     if request.method == 'POST':
         form = formularioTF(request.POST)
         if form.is_valid():
@@ -19,8 +24,12 @@ def faltas(request):
     return render(request,'app_falta/cadastrar_tipo_falta.html',{'form':form, 'faltas':faltas})
 
 def atualizar_faltas(request, falta_id):
-    faltas = Faltas.objects.all()
+    
     falta = Faltas.objects.get(pk=falta_id)
+    faltas_queryset = Faltas.objects.all().order_by('descricao')
+    paginator = Paginator(faltas_queryset, 5)
+    page_number = request.GET.get('page')
+    faltas = paginator.get_page(page_number)
     
     if request.method == 'POST':
         form = formularioTF(request.POST, instance=falta)
@@ -28,7 +37,7 @@ def atualizar_faltas(request, falta_id):
             form.save()
             messages.success(request,"Falta atualizada!")
 
-            return redirect('listarfaltas')
+            return redirect(f"{reverse('listarfaltas')}?page={page_number}") 
     else:
         form = formularioTF(instance=falta)
 
