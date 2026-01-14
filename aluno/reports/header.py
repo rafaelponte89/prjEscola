@@ -1,6 +1,5 @@
 
 from reportlab.platypus import Image
-from reportlab.lib.pagesizes import A4
 
 
 def header_com_imagem(

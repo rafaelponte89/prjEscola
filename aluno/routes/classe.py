@@ -13,8 +13,6 @@ urlpatterns = [
     path('buscarclasse', buscar_classe, name='buscar_classe'),
     path('exibirQuadro', exibirQuadro, name='exibir_quadro'),
     path('gerarTurmas', gerarTurmas, name='gerar_turmas'),
-
-   
     path('exibirClasse', exibirClasse, name='exibir_classe'),
     path("carregarClasses", carregar_classes, name="carregarclasses"),
 

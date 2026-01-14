@@ -12,18 +12,6 @@ def verificar_matricula_ativa_no_ano(ano, rm, situacao='C'):
     matriculas = Matricula.objects.filter(Q(ano=ano) & Q(aluno_id=rm) & Q(situacao=situacao))  
     return False if matriculas else True 
 
-# Verificar se existe matrícula ativa, se não possuir pode matricular
-def verificar_matricula_ativa(rm, situacao='C'):
-    matriculas = Matricula.objects.filter(Q(aluno_id=rm) & Q(situacao=situacao) )  
-    return False if matriculas else True 
-  
-# Veriricar se aluno já foi matriculado na mesma série  no mesmo ano 09/10/2024       
-def verificar_matricula_na_mesma_serie_ano_corrente(matricula,serie):
-
-    for m in matricula:
-        print(m.classe.serie)
-    return False if matricula else True
-
 def deletar_todas_matriculas_da_classe(classe):
     matriculas = Matricula.objects.select_related("aluno").filter(classe=classe)
 

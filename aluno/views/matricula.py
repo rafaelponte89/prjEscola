@@ -2,7 +2,7 @@ from datetime import datetime
 import os
 import tempfile
 
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse, HttpResponse
 from django.template.loader import render_to_string
 
@@ -23,12 +23,6 @@ from aluno.services.matricula_importar import importar_matriculas_pdf
 
 def matricula(request):
     return render(request, 'aluno/matricula/matricula.html')
-
-def adicionar(reqeust):
-    pass
-
-def deletar(request):
-    pass
 
 #Buscar aluno
 def buscarAluno(request):
@@ -238,6 +232,27 @@ def upload_matriculas(request):
                 "mensagem": criarMensagemJson(f"Importação concluída com sucesso!!", 
                                               "success")
             })
+
+def buscar_historico_matricula(request):
+    rm = request.POST.get('rm')
+    aluno = get_object_or_404(Aluno, pk=rm)
+    print("Rm", rm)
+
+    matriculas = Matricula.objects.filter(aluno=aluno)
+
+    for m in matriculas:
+        m.descritivo_situacao = Matricula.retornarDescricaoSituacao(m)
+
+    html = render_to_string(
+        'aluno/matricula/partials/modal_historico_matricula.html',
+        {
+            'aluno': aluno,
+            'matriculas': matriculas
+        },
+        request=request
+    )
+
+    return JsonResponse({'html': html})
 
     
 

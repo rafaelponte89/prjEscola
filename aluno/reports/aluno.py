@@ -19,6 +19,7 @@ from aluno.services.aluno import gerarIntervalo
 from .header import header_com_imagem
 
 IMG_CABECALHO = "aluno/static/aluno/jpeg/cabecalho_600dpi.png"
+
 def criar_base_pdf(buffer, tamanho_pagina=A4):
     pdf = SimpleDocTemplate(
         buffer,

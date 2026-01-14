@@ -68,9 +68,10 @@
         <th>Nome</th>
         <th class="text-center">RA</th>
         <th class="text-center">Atualizar</th>
+        <th class="text-center">Histórico</th>
+
         <th class="text-center">Declaração</th>
         <th class="text-center">Telefone</th>
-
         <th class="text-center">Status</th>
 
         <!--
@@ -84,6 +85,12 @@
     </table>
   </div>
 </div>
+
+
+<!-- Modal Histórico de Matrículas-->
+<div id="containerModalHistorico"></div>
+
+<!-- Fim Modal Histórico de Matrículas-->
 
 <!-- Modal Atualizar Registro-->
 {% include 'aluno/aluno/partials/modal_atualizar.html' %}
@@ -168,17 +175,23 @@
 <script src="{% static 'aluno/js/relatorio.js' %}"></script>
 <script src="{% static 'aluno/js/classe.js' %}"></script>
 <script src="{% static 'aluno/js/telefone.js' %}"></script>
+<script src="{% static 'aluno/js/historico_matricula.js' %}"></script>
+
 
 <script type="text/javascript">
 
-
   window.urls = window.urls || {};
+
+  window.urls.historico_matricula = window.urls.historico_matricula || {
+    buscar_historico_matricula: "{% url 'buscar_historico_matricula' %}"
+  }
+
 
   window.urls.classe = window.urls.classe || {
     carregar_classe: "{% url 'carregarclasses' %}",
   };
 
- 
+
 
   window.urls.aluno = window.urls.aluno || {
     buscar_aluno: "{% url 'buscarDadosAluno' %}",
@@ -199,6 +212,8 @@
   Alunos.init(window.urls.aluno);
   Classes.init(window.urls.classe);
   Telefones.init();
+  HistoricosMatriculas.init(window.urls.historico_matricula);
+
 
   const ano = Classes.getAno();
   if (ano) {

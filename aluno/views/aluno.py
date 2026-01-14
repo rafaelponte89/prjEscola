@@ -174,48 +174,6 @@ def buscarRMCancelar(request):
     return JsonResponse({"rm": aluno['rm'], "nome": aluno['nome']})
 
    
-# em desenvolvimento 10/05/2024
-def buscar_historico_matriculas(request):
-    rm = request.POST.get('rm')
-    aluno = Aluno.objects.get(pk=rm)
-    matriculas_aluno = Matricula.objects.filter(aluno=aluno)
-    dados_matricula=''
-    
-    for matricula in matriculas_aluno:
-        descritivo_situacao = Matricula.retornarDescricaoSituacao(matricula)
-        dados_matricula += f"""
-                   <div class="col-12 form-group d-flex align-items-center"> 
-                  <input        
-                    type="text"     
-                    class="form-control m-2" 
-                    title="Início: {(matricula.data_matricula).strftime("%d/%m/%Y")} || Fim: { (matricula.data_movimentacao).strftime("%d/%m/%Y") if matricula.data_movimentacao != None else "-" }"
-                   
-                    aria-describedby="emailHelp" 
-                    placeholder="Ano" 
-                    value="{matricula.ano}"
-                    disabled
-                  /> 
-                   <input        
-                    type="text"     
-                    class="form-control m-2" 
-                   
-                    aria-describedby="emailHelp" 
-                    placeholder="Ano" 
-                    value=" {descritivo_situacao}"
-                    disabled
-                  /> 
-                      
-                      <input        
-                    type="text"     
-                    class="form-control m-2" 
-                    
-                    aria-describedby="emailHelp" 
-                    placeholder="Ano" 
-                    value="{matricula.classe}"
-                    disabled
-                  /> 
-                </div>"""
-    
-    return HttpResponse(dados_matricula)
+
 
 

@@ -1,0 +1,72 @@
+<div class="modal fade" id="modalHistoricoMatriculas" tabindex="-1" aria-labelledby="modalHistoricoMatriculasLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalHistoricoMatriculasLabel">
+                    Histórico de Matrículas
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <!-- Dados do aluno -->
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <label class="form-label">RM</label>
+                        <input type="text" class="form-control" value="{{ aluno.pk }}" disabled>
+                    </div>
+
+                    <div class="col-md-9">
+                        <label class="form-label">Aluno</label>
+                        <input type="text" class="form-control" value="{{ aluno.nome }}" disabled>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Histórico de Matrículas -->
+                <div class="row">
+                    {% for matricula in matriculas %}
+                        <div class="col-12 form-group d-flex align-items-center">
+
+                            <input type="text"
+                                   class="form-control m-2"
+                                   title="Início: {{ matricula.data_matricula|date:'d/m/Y' }} ||
+                                          Fim: {% if matricula.data_movimentacao %}
+                                                  {{ matricula.data_movimentacao|date:'d/m/Y' }}
+                                               {% else %}-{% endif %}"
+                                   value="{{ matricula.ano }}"
+                                   disabled>
+
+                            <input type="text"
+                                   class="form-control m-2"
+                                   value="{{ matricula.descritivo_situacao }}"
+                                   disabled>
+
+                            <input type="text"
+                                   class="form-control m-2"
+                                   value="{{ matricula.classe }}"
+                                   disabled>
+                        </div>
+                    {% empty %}
+                        <p class="text-muted text-center">
+                            Nenhuma matrícula encontrada.
+                        </p>
+                    {% endfor %}
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Fechar
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+

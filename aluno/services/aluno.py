@@ -72,9 +72,3 @@ def calcular_idade(data_nascimento, data_referencia):
 
     return idade
 
-
-def header(canvas, doc, content):
-        canvas.saveState()
-        w, h = content.wrap(doc.width, doc.topMargin)
-        content.drawOn(canvas, doc.leftMargin, doc.height + doc.bottomMargin + doc.topMargin - h)
-        canvas.restoreState()

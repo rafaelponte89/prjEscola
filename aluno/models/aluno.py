@@ -18,7 +18,7 @@ class Aluno (models.Model):
     rm = models.IntegerField(primary_key=True,)
     nome = models.CharField(max_length=150)
     #status (0 - arquivado, 1 - cancelado, 2 - ativo) 
-    status = models.IntegerField(choices=STATUS_CHOICES, default=STATUS_ATIVO, db_default=0)
+    status = models.IntegerField(choices=STATUS_CHOICES, default=STATUS_ARQUIVADO)
     ra = models.CharField(max_length=100, default='')
     d_ra = models.CharField(max_length=1, default='', null=True, blank=True)
     data_nascimento = models.DateField(null=True, blank=True)
@@ -36,13 +36,7 @@ class Aluno (models.Model):
 
     @property
     def is_arquivado(self):
-        return self.status == self.STATUS_ARQUIVADO
-    
-    # Retorna o último aluno no banco de dados
-    @classmethod
-    def retornarUltimo(cls):
-        aluno = cls.objects.last()
-        return aluno
+        return self.status == self.STATUS_ARQUIVADO    
     
     @classmethod
     def retornarNUltimos(cls, n=6):

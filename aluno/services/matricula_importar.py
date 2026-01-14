@@ -6,7 +6,7 @@ from aluno.models.classe import Classe
 from aluno.models.ano import Ano
 from django.db import transaction, IntegrityError
 from datetime import datetime
-from aluno.services.matricula import deletar_todas_matriculas_da_classe, verificar_matricula_ativa_no_ano
+from aluno.services.matricula import deletar_todas_matriculas_da_classe
 from aluno.services.mensagem import criarMensagemJson
 
 def ignorar_linhas(linha):

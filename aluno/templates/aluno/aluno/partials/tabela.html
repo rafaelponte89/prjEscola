@@ -29,6 +29,16 @@
 
   <td class="align-middle text-center">
     {% if not aluno.is_cancelado %}
+    <button type="button" class="btn btn-outline-dark btn-lg historico" data-rm="{{ aluno.rm }}"
+      title="Ver histórico de matrículas">
+      <i class="bi bi-card-list"></i>
+    </button>
+    {% endif %}
+  </td>
+
+
+  <td class="align-middle text-center">
+    {% if not aluno.is_cancelado %}
     <button type="button" class="btn btn-outline-dark btn-lg declaracao" value="{{ aluno.rm }}">
       <i class="bi bi-journal"></i>
     </button>
@@ -77,7 +87,7 @@
     </span>
   </td>
 
-  
+
 
 
 
