@@ -6,6 +6,7 @@ from django.template.loader import render_to_string
 
 
 def renderizarTabela(alunos, nomes_duplicados, request):
+    
     html = render_to_string(
             'aluno/aluno/partials/tabela.html',
             {

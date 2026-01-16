@@ -285,9 +285,6 @@ def emitir_lista_personalizada(classe, titulo_lista,
         orientacao = (A4[1], A4[0])  # paisagem 
         largura = 500
         altura = 80
-       
-    
-    
 
     titulo = str(titulo_lista) + " - " + str(classe)
     print(titulo)

@@ -7,6 +7,8 @@
   <td class="align-middle">
     {{ aluno.rm }}
 
+
+
     {% if aluno.nome|upper in nomes_duplicados %}
     <button type="button" class="btn btn-outline-primary btn-sm m-1 advertencia" value="{{ aluno.rm }}"
       data-bs-toggle="modal" data-bs-target="#resolucaoDuplicidadeModal" {% if aluno.is_cancelado %}disabled{% endif %}>
@@ -15,16 +17,58 @@
     {% endif %}
   </td>
 
-  <td class="align-middle">{{ aluno.nome }}</td>
+  <td class="align-middle">
+    {% if not aluno.is_cancelado %}
+    <button type="button" class="btn btn-link p-0 atualizar" value="{{ aluno.rm }}">
+      {{ aluno.nome }}
+    </button>
+    {% else %}
+    {{ aluno.nome }}
+
+    {% endif %}
+  </td>
   <td class="align-middle text-center">{{ aluno.ra }}</td>
 
-  <td class="align-middle text-center conteudoAtualizar">
-    {% if not aluno.is_cancelado %}
-    <button type="button" class="btn btn-outline-dark btn-lg atualizar" value="{{ aluno.rm }}" data-bs-toggle="modal"
-      data-bs-target="#atualizarModal">
-      <i class="bi bi-arrow-repeat"></i>
-    </button>
+
+  <td class="align-middle text-center">
+    {% with matricula=aluno.matricula_ativa %}
+    {% if matricula %}
+    {{ matricula.classe }}
+    {% else %}
+    -
     {% endif %}
+    {% endwith %}
+  </td>
+
+  <td class="align-middle text-center">
+    {% with telefones=aluno.telefones.all %}
+
+    {% for tel in telefones|slice:":1" %}
+    <span class="badge bg-dark me-1">
+      {{ tel.numero|formatar_telefone}}
+    </span>
+    {% endfor %}
+
+    {% if telefones|length > 1 %}
+    <div class="dropdown d-inline">
+      <button class="btn btn-sm btn-outline-dark dropdown-toggle" type="button" data-bs-toggle="dropdown"
+        aria-expanded="false">
+        +{{ telefones|length|add:"-1" }}
+      </button>
+
+      <ul class="dropdown-menu ">
+        {% for tel in telefones %}
+        <li>
+          <span class="dropdown-item">
+            {{ tel.numero|formatar_telefone}}
+          </span>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% endwith %}
   </td>
 
   <td class="align-middle text-center">
@@ -46,36 +90,8 @@
   </td>
 
 
-  <td class="align-middle text-center">
-    {% with telefones=aluno.telefones.all %}
 
-    {% for tel in telefones|slice:":2" %}
-    <span class="badge bg-dark me-1">
-      {{ tel.numero|formatar_telefone}}
-    </span>
-    {% endfor %}
 
-    {% if telefones|length > 2 %}
-    <div class="dropdown d-inline">
-      <button class="btn btn-sm btn-outline-dark dropdown-toggle" type="button" data-bs-toggle="dropdown"
-        aria-expanded="false">
-        +{{ telefones|length|add:"-2" }}
-      </button>
-
-      <ul class="dropdown-menu ">
-        {% for tel in telefones %}
-        <li>
-          <span class="dropdown-item">
-            {{ tel.numero|formatar_telefone}}
-          </span>
-        </li>
-        {% endfor %}
-      </ul>
-    </div>
-    {% endif %}
-
-    {% endwith %}
-  </td>
 
   <td class="align-middle text-center">
     <span class="badge
@@ -84,10 +100,9 @@
       {% elif aluno.is_arquivado %}bg-primary
       {% else %}bg-secondary{% endif %}">
       {{ aluno.get_status_display }}
+
     </span>
   </td>
-
-
 
 
 

@@ -43,6 +43,9 @@ class Aluno (models.Model):
         alunos = cls.objects.order_by('-rm')[:n]
         return alunos
     
+    def matricula_ativa(self):
+        return self.matriculas.filter(situacao="C").select_related('classe').first()
+    
     class Meta:
         app_label = 'aluno'
     
