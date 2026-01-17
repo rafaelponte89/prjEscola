@@ -48,9 +48,15 @@
     </div>
 
     <!-- Botão Gravar -->
-    <div class="col-sm-4">
+    <div class="col-sm-2">
       <button type="submit" class="btn btn-outline-dark m-3" title="Registrar Aluno" id="gravarAluno">
         Gravar
+      </button>
+    </div>
+    <div class="col-sm-2">
+      <button type="button" class="btn btn-outline-primary m-3" title="Gerar Relatório" data-bs-toggle="modal"
+        data-bs-target="#relatorioModal">
+        Relatórios
       </button>
     </div>
 
@@ -186,7 +192,6 @@
   window.urls.classe = window.urls.classe || {
     carregar_classe: "{% url 'carregarclasses' %}",
   };
-
 
 
   window.urls.aluno = window.urls.aluno || {
