@@ -19,6 +19,9 @@ from aluno.services.predicao import prever_idade_serie
 from aluno.services.matricula import matricular_aluno, movimentar_transferencia, movimentar_remanejamento
 from aluno.services.matricula import reordenar_matriculas_alfabetica, listar_por_classe
 from aluno.services.matricula_importar import importar_matriculas_pdf
+from django.core.paginator import Paginator
+
+ELEMENTOS = 8
 # Create your views here.
 
 def matricula(request):
@@ -115,14 +118,24 @@ def movimentar(request):
                              "danger")
 
 
+
 def ordenar_em_alfabetica(request):
     classe_id = request.GET.get('classe')
+    page_number = request.GET.get('page', 1)
 
     matriculas = reordenar_matriculas_alfabetica(classe_id)
 
-    return render(request, 'aluno/matricula/partials/tabela_matriculas.html', {
-        'matriculas': matriculas,
-    })
+    paginator = Paginator(matriculas, ELEMENTOS)  # mesma qtde por página
+    page_obj = paginator.get_page(page_number)
+
+    return render(
+        request,
+        'aluno/matricula/partials/linhas_matriculas.html',
+        {
+            'page_obj': page_obj,
+            'matriculas': page_obj.object_list,
+        }
+    )
 
 
 def carregar_movimentacao(request):
@@ -181,15 +194,17 @@ def buscar_matricula(request):
 
 def carregar_matriculas(request):
     classe = request.GET.get('classe')
+    page_number = request.GET.get('page', 1)
+
     matriculas = listar_por_classe(classe)
 
-    if matriculas:
-        return render(request, 'aluno/matricula/partials/tabela_matriculas.html', {
-            'matriculas': matriculas,
-        })
-    else:
-        return criarMensagem("Sem alunos matriculados", "info")
+    paginator = Paginator(matriculas, ELEMENTOS)  
+    page_obj = paginator.get_page(page_number)
 
+    return render(request, 'aluno/matricula/partials/linhas_matriculas.html', {
+        'page_obj': page_obj,
+        'matriculas': page_obj.object_list,
+    })
         
 def upload_matriculas(request):
     if request.method == "POST":

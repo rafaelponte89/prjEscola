@@ -1,5 +1,6 @@
 window.Matriculas = {
   urls: {},
+  paginaAtual: 1,
 
   /* ===============================
    * INIT
@@ -37,25 +38,41 @@ window.Matriculas = {
   /* ===============================
    * MATRÍCULAS / TABELA
    * =============================== */
-  carregarMatriculas(classe) {
+  carregarMatriculas(classe, page = null) {
     if (!classe) return;
 
-    $.get(this.urls.carregar_matriculas, { classe })
-      .done((html) => $("#corpoTabela").html(html));
+    // se page vier, atualiza estado
+    if (page !== null) {
+      this.paginaAtual = page;
+    }
+
+    $.get(this.urls.carregar_matriculas, {
+      classe,
+      page: this.paginaAtual
+    }).done((html) => {
+      $("#corpoTabela").html(html);
+    });
   },
 
   excluirMatricula(id) {
     $.get(this.urls.excluir_matricula, { matricula: id })
       .done((response) => {
         this.notificar(response);
-        this.carregarMatriculas($("#classes").val());
+        this.carregarMatriculas($("#classes").val(), this.paginaAtual);
       });
   },
 
-  ordemAlfabetica(classe) {
-    $.get(this.urls.ordem_alfabetica, { classe })
-      .done((html) => $("#corpoTabela").html(html));
+  ordemAlfabetica(classe, page) {
+    if (!classe) return;
+
+    $.get(this.urls.ordem_alfabetica, {
+      classe,
+      page
+    }).done((html) => {
+      $("#corpoTabela").html(html);
+    });
   },
+
 
   /* ===============================
    * TELA DE MATRÍCULA
@@ -79,7 +96,7 @@ window.Matriculas = {
       data_matricula: $("#dataMatriculaIndividual").val(),
     }).done((response) => {
       this.notificarModal(response);
-      this.carregarMatriculas($("#classes").val());
+      this.carregarMatriculas($("#classes").val(), this.paginaAtual);
     });
   },
 
@@ -125,7 +142,7 @@ window.Matriculas = {
     }).done((response) => {
       this.notificar(response);
       $("#selecaoClasse").hide();
-      this.carregarMatriculas($("#classes").val());
+      this.carregarMatriculas($("#classes").val(), this.paginaAtual);
 
       const rm = $("#rmAluno").val();
       this.baixarDeclaracao(rm);
@@ -186,13 +203,29 @@ window.Matriculas = {
     const self = this;
     let timerBusca;
 
+
     $("#corpoTabela")
+      .on("click", ".pagina", function (e) {
+        e.preventDefault();
+        const page = $(this).data("page");
+        const classe = $("#classes").val();
+        Matriculas.carregarMatriculas(classe, page);
+      })
       .on("click", ".excluir", function () {
         self.excluirMatricula($(this).val());
       })
       .on("click", ".movimentar", function () {
         self.buscarMatricula($(this).val());
       });
+
+
+    /* $("#corpoTabela")
+       .on("click", ".excluir", function () {
+         self.excluirMatricula($(this).val());
+       })
+       .on("click", ".movimentar", function () {
+         self.buscarMatricula($(this).val());
+       });*/
 
     $(document)
       .on("click", ".matricular", () =>
@@ -213,12 +246,14 @@ window.Matriculas = {
 
     $("#classes").on("change", function () {
       localStorage.setItem("ultimaClasse", $(this).val());
-      self.carregarMatriculas($(this).val());
+      self.carregarMatriculas($("#classes").val(), this.paginaAtual);
     });
 
-    $("#alfabetica").on("click", () =>
-      self.ordemAlfabetica($("#classes").val())
-    );
+    $("#alfabetica").on("click", () => {
+      const classe = $("#classes").val();
+      self.ordemAlfabetica(classe, self.paginaAtual);
+    });
+
 
     $("#arquivoCSV").on("change", () => {
       $("#uploadMatriculas, #dataMatricula")
@@ -254,7 +289,7 @@ window.Matriculas = {
 
     const ultimaClasse = localStorage.getItem("ultimaClasse");
     if (ultimaClasse) {
-      this.carregarMatriculas(ultimaClasse);
+      this.carregarMatriculas(ultimaClasse, this.paginaAtual);
     }
   },
 };
