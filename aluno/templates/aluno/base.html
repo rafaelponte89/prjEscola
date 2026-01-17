@@ -16,13 +16,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
   <script src="{% static 'aluno/js/jquery.min.js' %}"></script>
 
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
-
-
-
   <style>
     .menusup {
-
       background-color: #343a40 !important;
       /* bg-dark */
       padding: 0.7rem !important;
@@ -35,28 +30,32 @@
       /* text-warning */
       text-decoration: none;
       font-weight: 600;
-      text-decoration-color: aliceblue;
     }
   </style>
 
   <title>Sistema Registro de Matrícula</title>
 </head>
 
-<body id="Conteudo">
+<body id="Corpo">
   <div class="row">
     <div id="mensagens" class="col-12 fixed-top"></div>
   </div>
+
   <div class="row">
     <div class="col-6">
-      <button class="btn btn-large waves-effect waves-light black " id="aumentarLetra">
+      <button class="btn btn-large" id="aumentarLetra">
         A+
       </button>
-      <button class="btn btn-large waves-effect waves-light red " id="diminuirLetra">
+      <button class="btn btn-large " id="diminuirLetra">
         A-
       </button>
       <button id="botaoconfiguracoes" class="btn btn-outline-success m-3 " title="Configurações" data-bs-toggle="modal"
         data-bs-target="#configuracoesModal">
         <i class="bi bi-gear-fill"></i>
+      </button>
+      <button type="button" class="btn btn-outline-primary" title="Gerar Relatório" data-bs-toggle="modal"
+        data-bs-target="#relatorioModal">
+        <i class="bi bi-file-earmark-text-fill"></i> 
       </button>
     </div>
 
@@ -110,7 +109,7 @@
             Dashboard
           </a>
         </li>
-        
+
       </ul>
     </div>
     <div class="row" id="conteudo">

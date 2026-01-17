@@ -27,6 +27,7 @@
 
   <div id="aluno" class="row mt-2 bg-body-secondary rounded-3">
 
+    <!-- Nome do Aluno (já com ícone) -->
     <div class="col-sm-6 p-3">
       <div class="input-group">
         <span class="input-group-text bg-dark text-white">
@@ -36,23 +37,20 @@
       </div>
     </div>
 
+    <!-- RA (agora com ícone) -->
     <div class="col-sm-2 p-3">
-      {{ form.ra }}
+      <div class="input-group">
+        <span class="input-group-text bg-dark text-white">
+          <i class="bi bi-card-text"></i>
+        </span>
+        {{ form.ra }}
+      </div>
     </div>
 
-    <div class="col-sm-4 d-flex justify-content-center">
+    <!-- Botão Gravar -->
+    <div class="col-sm-4">
       <button type="submit" class="btn btn-outline-dark m-3" title="Registrar Aluno" id="gravarAluno">
         Gravar
-      </button>
-
-      <button type="button" class="btn btn-outline-dark m-3" title="Gerar Relatório" data-bs-toggle="modal"
-        data-bs-target="#relatorioModal">
-        Relatório
-      </button>
-
-      <button type="button" class="btn btn-outline-primary m-3" title="Enviar Cópia para a Nuvem"
-        style="display: none;">
-        <i class="bi bi-cloud-arrow-up-fill"></i>
       </button>
     </div>
 

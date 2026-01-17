@@ -1,13 +1,11 @@
 function configuracoesAcessibilidade() {
-    document.getElementById("Conteudo").style.fontSize =
+    document.getElementById("Corpo").style.fontSize =
       atribuirTamanhoFonte("tamanhoLetra") + "%";
   }
 document.onload = configuracoesAcessibilidade();
 
   // a criação de cookies possibilita armazenar configurações do site no navegador
   
- 
-
   // simplificação do código através das Web APIS do javascript
   // localStorage.setItem("chave","valor") e localStorage.getItem("chave")
   function atribuirTamanhoFonte(nome) {
@@ -27,7 +25,7 @@ document.onload = configuracoesAcessibilidade();
       } else {
         font = parseInt(font) - 10;
       }
-      document.getElementById("Conteudo").style.fontSize = font + "%";
+      document.getElementById("Corpo").style.fontSize = font + "%";
     }
 
     localStorage.setItem("tamanhoLetra", font);
