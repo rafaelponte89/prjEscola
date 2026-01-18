@@ -10,7 +10,7 @@ from aluno.models.aluno import Aluno
 from aluno.models.ano import Ano
 from aluno.models.classe import Classe
 from aluno.forms.matricula import ImportarMatriculasForm
-from utilitarios.utilitarios import (criarMensagem, criarMensagemModal)
+from aluno.utils.mensagem_http import (criarMensagem, criarMensagemModal)
 from aluno.services.mensagem import criarMensagemJson
 
 from aluno.models.matricula import Matricula

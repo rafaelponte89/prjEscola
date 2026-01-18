@@ -1,6 +1,6 @@
 from django.shortcuts import HttpResponse, render
 
-from utilitarios.utilitarios import criarMensagem
+from aluno.utils.mensagem_http import criarMensagem
 
 from aluno.models.ano import Ano
 from aluno.services.ano import efetuar_lancamentos_fechamento_ano

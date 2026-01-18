@@ -1,6 +1,5 @@
 from django.urls import path
 
-from utilitarios.utilitarios import realizar_backup_v2
 
 from aluno.views.aluno import (atualizar_aluno,
                     pesquisar_aluno,
@@ -17,8 +16,6 @@ urlpatterns = [
     path("buscarRMCancelar", buscarRMCancelar, name="buscarRMCancelar"), 
     path("recarregarTabela", recarregarTabela, name="recarregarTabela"),
     path("cancelarRM", cancelarRM, name="cancelarRM"), 
-    
-    path("bkp", realizar_backup_v2, name="realizarbackup"),
-    
+        
     
 ]

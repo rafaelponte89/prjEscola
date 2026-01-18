@@ -7,7 +7,7 @@ from collections import defaultdict
 
 from aluno.models.ano import Ano
 from aluno.models.matricula import Matricula
-from utilitarios.utilitarios import criarMensagem
+from aluno.utils.mensagem_http import criarMensagem
 
 from aluno.models.classe import Classe
 
