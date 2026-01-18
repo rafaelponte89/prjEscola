@@ -1,10 +1,5 @@
 
-from django.http import HttpResponse
 from django.shortcuts import render
-import io
-
-from aluno.models.classe import Classe
-from aluno.models.matricula import Matricula
 from aluno.utils.texto import  padronizar_nome
 
 from aluno.forms.aluno import FrmAluno, FrmAlunoUpdate
@@ -12,7 +7,7 @@ from aluno.models.aluno import Aluno
 from django.shortcuts import get_object_or_404
 
 from django.template.loader import render_to_string
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 from aluno.forms.telefone import TelefoneFormSet
 
 from django.db import transaction

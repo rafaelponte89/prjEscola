@@ -1,4 +1,4 @@
-from django.urls import path, include
+from django.urls import path
 
 from aluno.views.matricula import (adicionarNaClasse, buscar_matricula,
                     buscarAluno, carregar_classes_remanejamento,

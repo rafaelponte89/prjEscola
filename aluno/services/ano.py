@@ -1,4 +1,4 @@
-from aluno.models.ano import Ano
+
 from aluno.models.matricula import Matricula
 from aluno.models.aluno import Aluno    
 

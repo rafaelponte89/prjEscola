@@ -22,7 +22,6 @@ def visualizar_alunos_periodo(request):
 
     ano = Ano.objects.get(pk=request.GET.get('ano'))
     manha, tarde, integral = contar_por_periodo_aggregate(ano)
-    print(manha, tarde)
     dados = {
         'Manhã': manha,
         'Tarde': tarde,

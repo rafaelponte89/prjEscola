@@ -1,5 +1,5 @@
 from functools import partial
-from django.http import HttpResponse
+
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import cm
@@ -11,7 +11,7 @@ from reportlab.platypus import Paragraph, SimpleDocTemplate, Table, TableStyle
 
 from aluno.models.matricula import Matricula
 from aluno.models.telefone import Telefone
-from aluno.models.classe import Classe
+
 from aluno.models.aluno import Aluno
 from aluno.utils.meses import retornarNomeMes
 from datetime import datetime
