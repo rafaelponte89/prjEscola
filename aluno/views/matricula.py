@@ -239,7 +239,7 @@ def upload_matriculas(request):
                     
             
             html = render_to_string(
-                "aluno/matricula/partials/tabela_matriculas.html",
+                "aluno/matricula/partials/linhas_matriculas.html",
                 {"matriculas": listar_por_classe(classe)},
                 request=request
             )
