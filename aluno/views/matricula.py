@@ -141,7 +141,7 @@ def ordenar_em_alfabetica(request):
 def carregar_movimentacao(request):
    
     movimentacoes = Matricula.retornarSituacao()
-    opcoes = "<option value='0'>Selecione</option>"
+    opcoes = "<option value="">Selecione</option>"
                                             
     for m in movimentacoes:
      
@@ -151,7 +151,8 @@ def carregar_movimentacao(request):
             situacao = "REMANEJADO"
         elif m[0] == "NCFP":
             situacao = "Ñ COMP. FORA PRAZO"
-            
+        else:
+            situacao = "Selecione"
         if m[0] not in ['C','P','R']:
             opcoes += f"<option value={m[0]}>{situacao} </option>"
         
@@ -186,9 +187,10 @@ def excluir_matricula(request):
 def buscar_matricula(request):
     matricula = request.GET.get('matricula')
     matricula = Matricula.objects.get(pk=matricula)
-   
+    print(matricula.situacao);
     matricula = {"id_matricula": matricula.id, "rm_aluno": matricula.aluno.rm, "nome_aluno": matricula.aluno.nome, 
-                 "data_movimentacao": matricula.data_movimentacao if matricula.data_movimentacao else datetime.now().date() }
+                 "data_movimentacao": matricula.data_movimentacao if matricula.data_movimentacao else datetime.now().date(),
+                 "movimentacao": matricula.situacao}
   
     return JsonResponse (matricula)
 
@@ -237,7 +239,7 @@ def upload_matriculas(request):
                     
             
             html = render_to_string(
-                "aluno/matricula/partials/tabela_matriculas.html",
+                "aluno/matricula/partials/linhas_matriculas.html",
                 {"matriculas": listar_por_classe(classe)},
                 request=request
             )

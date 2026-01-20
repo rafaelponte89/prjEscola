@@ -111,12 +111,21 @@ window.Matriculas = {
   },
 
   buscarMatricula(id) {
+
     $.get(this.urls.buscar_matricula, { matricula: id })
+
       .done((response) => {
         $("#rmAluno").val(response.rm_aluno);
         $("#nomeAluno").val(response.nome_aluno);
         $("#dataMovimentacao").val(response.data_movimentacao);
         $("#matricula").val(response.id_matricula);
+        
+        if (response.movimentacao != 'C') {
+          $("#selecaoMovimentacao").val(response.movimentacao);
+        } else {
+          $("#selecaoMovimentacao").val(""); // Seleciona "Selecione"
+        }
+
 
         $("#simMovimentar")
           .off("click")
@@ -217,6 +226,8 @@ window.Matriculas = {
       .on("click", ".movimentar", function () {
         self.buscarMatricula($(this).val());
       });
+
+
 
 
     /* $("#corpoTabela")
