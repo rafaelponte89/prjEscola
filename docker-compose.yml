@@ -1,0 +1,29 @@
+
+services:
+  django:
+    build: C:/sistema_escolar/prjEscola-main
+    container_name: escola
+    ports:
+      - "8000:8000"
+    volumes:
+      - C:/sistema_escolar/prjEscola-main:/app      # código Django
+      - C:/sistema_escolar/prjEscola-main/bd:/app/bd               # banco SQLite persistente
+    command: >
+      sh -c "python manage.py migrate --database="default" &&
+             python manage.py migrate --database="colaboradores" &&
+             python manage.py collectstatic --noinput &&
+             waitress-serve --listen=*:8000 prjEscola.wsgi:application"
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:1.28
+    container_name: nginx_escola
+    ports:
+      - "80:80"
+    volumes:
+      - C:/sistema_escolar/prjEscola-main/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - C:/sistema_escolar/prjEscola-main/static_root:/app/static_root:ro
+    depends_on:
+      - django
+
+
