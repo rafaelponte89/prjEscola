@@ -1,4 +1,5 @@
-from rh.app_ficha_cem.models import  Pessoas, Faltas_Pessoas
+from rh.models.pessoa import  Pessoas
+from rh.models.registro_falta import RegistroFalta
 from rh.models.pontuacao import Pontuacoes
 from .configuracoes import configurar_meses_v4, retornarNomeMes
 from .calculos import gerar_pontuacao_anual_v2, data_util, contar_tipos_faltas
@@ -65,7 +66,7 @@ def buscar_informacoes_ficha_v2(pessoa_id, ano):
     for dia in range(1,32):
         dias.append(dia)
    
-    faltas = Faltas_Pessoas.objects.all().order_by('data').filter(data__year=ano).filter(pessoa=pessoa_id)
+    faltas = RegistroFalta.objects.all().order_by('data').filter(data__year=ano).filter(pessoa=pessoa_id)
     admissao = pessoa.admissao
     saida = pessoa.saida
 
@@ -253,7 +254,7 @@ def buscar_informacoes_ficha_v3(pessoa_id, ano):
 
 # preencher tipos_faltas
 def retornar_preenchimento_tipos_falta(ano, pessoa_id, meses):
-    faltas = Faltas_Pessoas.objects.filter(data__year=ano).filter(pessoa=pessoa_id).order_by('data')
+    faltas = RegistroFalta.objects.filter(data__year=ano).filter(pessoa=pessoa_id).order_by('data')
     tipo_faltas=contar_tipos_faltas(faltas)
     data = ''
     for falta in faltas:
@@ -280,7 +281,7 @@ def retornar_preenchimento_tipos_falta(ano, pessoa_id, meses):
 # listar anos de uma determinada pessoa
 def listar_anos(pessoa_id):
     anos = []
-    pessoa_faltas = Faltas_Pessoas.objects.all()
+    pessoa_faltas = RegistroFalta.objects.all()
     pessoa = Pessoas.objects.get(pk=pessoa_id)
 
     for i in pessoa_faltas:

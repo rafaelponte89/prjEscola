@@ -18,9 +18,9 @@ import io
 from django.http import HttpResponse
 from datetime import datetime
 from functools import partial
-from rh.app_ficha_cem.services.configuracoes import retornarNomeMes
+from .configuracoes import retornarNomeMes
 from .calculos import calcular_data_pedido
-from rh.app_ficha_cem.models import Faltas_Pessoas
+from rh.models.registro_falta import RegistroFalta
 from datetime import datetime
 
  # -----------------------------------------------------
@@ -47,7 +47,7 @@ def gerar_relatorio_faltas_descritivo(data_inicial, data_final,
     publico = STR_TO_BOOL.get(publico, False)
    
     registros = (
-        Faltas_Pessoas.objects
+        RegistroFalta.objects
         .filter(data__range=(data_inicial, data_final))
         .select_related('pessoa', 'falta')
     )
@@ -281,7 +281,7 @@ def gerar_relatorio_faltas_descritivo_pdf(data_inicio_str, data_fim_str, efetivo
         titulo = "Outros Funcionários"
 
     if efetivo == 'ambos':
-        faltas_qs = (Faltas_Pessoas.objects
+        faltas_qs = (RegistroFalta.objects
                      .filter(data__range=(data_inicio, data_fim))
                      .select_related('pessoa', 'falta')
                      .filter(pessoa__func_publico = publico)
@@ -290,7 +290,7 @@ def gerar_relatorio_faltas_descritivo_pdf(data_inicio_str, data_fim_str, efetivo
         
     else:
         
-        faltas_qs = (Faltas_Pessoas.objects
+        faltas_qs = (RegistroFalta.objects
                      .filter(data__range=(data_inicio, data_fim))
                      .select_related('pessoa', 'falta')
                      .filter(pessoa__efetivo = efetivo)
@@ -415,7 +415,7 @@ def buscar_faltas_geral(
     ativo=None,
 ):
     qs = (
-        Faltas_Pessoas.objects
+        RegistroFalta.objects
         .select_related('pessoa', 'falta')
         .filter(data__range=(data_inicio, data_fim))
     )

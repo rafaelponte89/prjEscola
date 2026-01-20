@@ -5,9 +5,8 @@ from django.utils.timezone import now
 
 from rh.models.cargo import Cargos
 from rh.models.pessoa import Pessoas
-from rh.app_ficha_cem.models import Faltas_Pessoas
+from rh.models.registro_falta import RegistroFalta
 from rh.models.falta import Faltas
-
 
 # formulário lançamento de faltas
 class formularioLF(forms.ModelForm):
@@ -22,7 +21,7 @@ class formularioLF(forms.ModelForm):
 
 
     class Meta:
-        model = Faltas_Pessoas
+        model = RegistroFalta
         fields = ['data','falta','pessoa','qtd_dias']
         widgets = {
             'data': DatePickerInput()

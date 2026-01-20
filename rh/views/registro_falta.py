@@ -18,37 +18,41 @@ from rh.models.pessoa import Pessoas
 from rh.models.pontuacao import Pontuacoes
 from rh.services.pontuacao import criar_salvar_pontuacao, deletar_pontuacao_ano
 
-from .forms import (FaltaPesquisaForm, FaltaPesquisaFormGeral,
+from rh.forms.registro_falta import (FaltaPesquisaForm, FaltaPesquisaFormGeral,
                     FiltroRelatorioDescritivoForm, formularioLF)
-from .models import Cargos, Faltas, Faltas_Pessoas
+from rh.models.cargo import Cargos
+from rh.models.falta import Faltas
+from rh.models.pessoa import Pessoas
 
 # importação de afastamentos
 from django.shortcuts import render
-from .forms import ImportarAfastamentosForm
+from rh.forms.registro_falta import ImportarAfastamentosForm
 
 from django.db.models import Sum
 import tempfile
 
-from .services.calculos import gerar_lancamento_em_memoria, gerar_pontuacao_anual_v2
-from .services.consultas import (verificar_status_ano, listar_anos, verificar_data_saida, checar_existencia_pontuacao, 
+from rh.registro_falta_services.calculos import gerar_lancamento_em_memoria, gerar_pontuacao_anual_v2
+from rh.registro_falta_services.consultas import (verificar_status_ano, listar_anos, verificar_data_saida, checar_existencia_pontuacao, 
                                 buscar_informacoes_ficha_v2, buscar_informacoes_ficha_v3, 
                                 consultar_anos_status)
 
-from .services.importacoes import importar_afastamentos_pdf
-from .services.transformacoes import inserir_chave
-from .services.faltas import lancar_falta
+from rh.registro_falta_services.importacoes import importar_afastamentos_pdf
+from rh.registro_falta_services.transformacoes import inserir_chave
+from rh.registro_falta_services.lancamento_falta import lancar_falta
+from rh.models.registro_falta import RegistroFalta
 
-from .services.relatorios import (requerimento_abonada, gerar_relatorio_faltas_descritivo,
+from rh.registro_falta_services.relatorios import (requerimento_abonada, gerar_relatorio_faltas_descritivo,
                                     gerar_relatorio_faltas_descritivo_pdf, buscar_faltas_geral)
 
 
 from django.core.paginator import Paginator
 
+
 # fazer o lançamento de faltas para determinada pessoa
 def pessoas_faltas(request, pessoa_id):
 
     pessoa = Pessoas.objects.get(pk=pessoa_id)
-    faltas_queryset = Faltas_Pessoas.objects.filter(pessoa=pessoa).order_by('-data')
+    faltas_queryset = RegistroFalta.objects.filter(pessoa=pessoa).order_by('-data')
     
     paginator = Paginator(faltas_queryset, 5)
     page_number = request.GET.get('page')
@@ -105,7 +109,7 @@ def pessoas_faltas(request, pessoa_id):
                             data_lancamento = dia_mes_ano[k][0] # pega o primeiro dia do lançamento e depois o primeiro dia do ano
 
                             # cria objeto com os novos dados
-                            novoObj = Faltas_Pessoas(pessoa=pessoa, data=data_lancamento, qtd_dias=qtd_dias, falta=falta)
+                            novoObj = RegistroFalta(pessoa=pessoa, data=data_lancamento, qtd_dias=qtd_dias, falta=falta)
                              
                             # salva o objeto
                             novoObj.save()
@@ -136,9 +140,9 @@ def pessoas_faltas(request, pessoa_id):
 
 def excluir_pessoas_faltas(request, pessoa_id, lancamento_id):
 
-    lancamento = Faltas_Pessoas.objects.filter(pk=lancamento_id)
+    lancamento = RegistroFalta.objects.filter(pk=lancamento_id)
     pessoa = Pessoas.objects.get(pk=pessoa_id)
-    pessoa_falta = Faltas_Pessoas.objects.filter(pessoa=pessoa).order_by('data')[:30]
+    pessoa_falta = RegistroFalta.objects.filter(pessoa=pessoa).order_by('data')[:30]
 
     if request.method == 'GET':
         lancamento.delete()    
@@ -169,7 +173,7 @@ def listar_ficha(request, pessoa_id):
 
 def gerar_requerimento_abono_pdf(request, servidor_id, ano):
     servidor = get_object_or_404(Pessoas, pk=servidor_id)
-    faltas = Faltas_Pessoas.objects.filter(pessoa=servidor, data__year=ano)
+    faltas = RegistroFalta.objects.filter(pessoa=servidor, data__year=ano)
 
     faltas_justificadas = []
     faltas_injustificadas = []
@@ -372,7 +376,7 @@ def relatorio_faltas(request, pessoa_id):
         if faltas_selecionadas:
             filtros_comuns['falta__in'] = faltas_selecionadas
 
-        faltas_queryset = Faltas_Pessoas.objects.filter(**filtros_comuns)
+        faltas_queryset = RegistroFalta.objects.filter(**filtros_comuns)
 
         resultados = faltas_queryset.select_related('pessoa', 'falta').order_by('data')
 
@@ -654,7 +658,7 @@ def emitir_abonada(request, lancamento_id):
     Gera um PDF de Requerimento de Falta Abonada baseado no template anexo.
     Os dados do servidor e da falta devem ser passados via POST.
     """
-    pessoas_faltas = Faltas_Pessoas.objects.get(id=lancamento_id)
+    pessoas_faltas = RegistroFalta.objects.get(id=lancamento_id)
     pessoa = pessoas_faltas.pessoa
     
     servidor_nome = request.POST.get("nome_servidor", pessoa.nome)
@@ -798,13 +802,13 @@ def lancar_evento_coletivo(request):
                 qtd_dias = len(datas) # quantos dias existem dentro da chave ano
                 data_lancamento = datas[0] # pega o primeiro dia do lançamento e depois o primeiro dia do ano seguinte
                 # cria objeto com os novos dados
-                novoLancamento= Faltas_Pessoas(pessoa=pessoa,data=data_lancamento,qtd_dias=qtd_dias,falta=falta)
+                novoLancamento= RegistroFalta(pessoa=pessoa,data=data_lancamento,qtd_dias=qtd_dias,falta=falta)
                 # adiciona os objetos a uma lista
                 lancamento_a_criar.append(novoLancamento)
                 
                
         # Salva objetos de uma só vez no banco
-        Faltas_Pessoas.objects.bulk_create(lancamento_a_criar)
+        RegistroFalta.objects.bulk_create(lancamento_a_criar)
 
         messages.success(request, f"Lançamentos efetuados com sucesso: {len(lancamento_a_criar)}","success")
         messages.error(request, f"Lançamentos com conflitos de datas: {conflitos}","danger")

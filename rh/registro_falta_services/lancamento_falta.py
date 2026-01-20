@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from rh.app_ficha_cem.models import Faltas_Pessoas
+from rh.models.registro_falta import RegistroFalta
 
 # faz a pesquisa e incremento para verificar se existe falta lançada naquela data, impedindo lançamento em data
 # que já exista falta computada
@@ -11,7 +11,7 @@ def lancar_falta(data_lanc, qtd_dias, pessoa_id):
     datas_lanc = {data_lanc + timedelta(days=i) for i in range(qtd_dias)}
 
     # Consulta apenas as faltas da pessoa no mesmo ano da data de lançamento
-    faltas = Faltas_Pessoas.objects.filter(
+    faltas = RegistroFalta.objects.filter(
         pessoa_id=pessoa_id,
         data__year=data_lanc.year
     )

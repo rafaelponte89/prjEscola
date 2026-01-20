@@ -1,4 +1,4 @@
-from rh.app_ficha_cem.models import Pontuacoes
+from rh.models.pontuacao import Pontuacoes
 
 def deletar_pontuacao_ano(pessoa, ano):
     if not ano:

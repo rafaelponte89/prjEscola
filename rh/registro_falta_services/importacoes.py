@@ -1,7 +1,7 @@
 import re
 import pdfplumber
 from datetime import datetime
-from rh.app_ficha_cem.models import Faltas_Pessoas
+from rh.models.registro_falta import RegistroFalta
 from rh.models.falta import Faltas
 from rh.models.pessoa import Pessoas
 from django.db import transaction, IntegrityError
@@ -108,7 +108,7 @@ def importar_afastamentos_pdf(caminho_pdf):
             falta = Faltas.objects.filter(tipo= r["tipo_falta"]).first()
             print('Falta:', falta.descricao)
             objetos.append(
-                Faltas_Pessoas(
+                RegistroFalta(
                     pessoa=pessoa,
                     data=r["data_inicial"],
                     falta=falta,
@@ -124,7 +124,7 @@ def importar_afastamentos_pdf(caminho_pdf):
     try:
       
         with transaction.atomic():
-            Faltas_Pessoas.objects.bulk_create(objetos)
+            RegistroFalta.objects.bulk_create(objetos)
     except IntegrityError:
         return {
             "status": "erro",

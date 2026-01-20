@@ -1,6 +1,7 @@
 from django.db import models
 
 from rh.models.cargo import Cargos
+from django.contrib.auth.models import User
 
 
 # Create your models here.
@@ -20,6 +21,7 @@ class Pessoas(models.Model):
         (False, 'Não')
     )
     
+    user = models.OneToOneField(User, on_delete=models.CASCADE, blank=True, null=True)
     id = models.CharField(max_length=6, primary_key=True)
     nome = models.CharField(max_length=150)
     dt_nasc = models.DateField(default='1991-01-01')

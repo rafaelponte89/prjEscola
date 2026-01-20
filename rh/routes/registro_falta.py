@@ -1,6 +1,6 @@
-from django.urls.conf import include, path
+from django.urls.conf import path
 
-from .views import (abrir_ano, coletivo, encerrar_ano_v2,
+from rh.views.registro_falta import (abrir_ano, coletivo, encerrar_ano_v2,
                     excluir_pessoas_faltas, gerar_ficha,
                     emitir_abonada, gerar_requerimento_abono_pdf,
                     lancar_evento_coletivo, listar_ficha,

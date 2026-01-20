@@ -1,8 +1,8 @@
 from django.urls.conf import include, path
 
-from rh.app_ficha_cem.views import index
+from rh.views.registro_falta import index
 
-from .routes import falta, cargo, pessoa, pontuacao
+from .routes import falta, cargo, pessoa, pontuacao, registro_falta
 
 urlpatterns = [
     path('',index, name='index'),
@@ -10,8 +10,7 @@ urlpatterns = [
     path('cargo/',include(cargo.urlpatterns)),
     path('pontuacao/', include(pontuacao.urlpatterns)),
     path('pessoa/',include(pessoa.urlpatterns)),
-    
-    path('fichacem/', include('rh.app_ficha_cem.urls')),
+    path('fichacem/', include(registro_falta.urlpatterns))
 
  
 ]

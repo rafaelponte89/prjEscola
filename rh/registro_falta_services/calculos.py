@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from rh.app_ficha_cem.models import Faltas_Pessoas
+from rh.models.registro_falta import RegistroFalta
 from rh.models.pontuacao import Pontuacoes
 
 from .configuracoes import configurar_meses_v4
@@ -15,9 +15,9 @@ def faltas_a_descontar(ano,pessoa, tolerancia=6):
     # atribuição 
     data_inicial = datetime(ano-1,11,1)
     data_final = datetime(ano,10,31)
-    maior = Faltas_Pessoas.objects.all().filter(data__gte=f'{ano-1}-11-01')
+    maior = RegistroFalta.objects.all().filter(data__gte=f'{ano-1}-11-01')
     maior = maior.filter(pessoa=pessoa)
-    menor = Faltas_Pessoas.objects.all().filter(data__lte=f'{ano}-10-31')
+    menor = RegistroFalta.objects.all().filter(data__lte=f'{ano}-10-31')
     menor = menor.filter(pessoa=pessoa)
     atrib = maior.intersection(menor)
     datas = []

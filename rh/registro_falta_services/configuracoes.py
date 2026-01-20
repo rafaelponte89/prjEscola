@@ -1,5 +1,5 @@
 from datetime import date
-from rh.app_ficha_cem.models import Pessoas
+from rh.models.pessoa import Pessoas
 
 
 def retornarNomeMes(chave):
