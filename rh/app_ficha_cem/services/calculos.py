@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from rh.app_ficha_cem.models import Faltas_Pessoas
-from rh.app_pontuacao.models import Pontuacoes
+from rh.models.pontuacao import Pontuacoes
 
 from .configuracoes import configurar_meses_v4
 

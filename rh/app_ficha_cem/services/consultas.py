@@ -1,5 +1,5 @@
 from rh.app_ficha_cem.models import  Pessoas, Faltas_Pessoas
-from rh.app_pontuacao.models import Pontuacoes
+from rh.models.pontuacao import Pontuacoes
 from .configuracoes import configurar_meses_v4, retornarNomeMes
 from .calculos import gerar_pontuacao_anual_v2, data_util, contar_tipos_faltas
 from .transformacoes import transformar_em_um_dicionario, formatar_cargo_disciplina

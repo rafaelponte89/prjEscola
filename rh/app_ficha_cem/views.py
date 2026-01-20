@@ -14,9 +14,9 @@ from reportlab.lib.units import cm
 from reportlab.platypus import (Paragraph, SimpleDocTemplate, Spacer,
                                 Table, TableStyle)
 
-from rh.app_pessoa.models import Pessoas
-from rh.app_pontuacao.models import Pontuacoes
-from rh.app_pontuacao.pontuacoes import criar_salvar_pontuacao, deletar_pontuacao_ano
+from rh.models.pessoa import Pessoas
+from rh.models.pontuacao import Pontuacoes
+from rh.services.pontuacao import criar_salvar_pontuacao, deletar_pontuacao_ano
 
 from .forms import (FaltaPesquisaForm, FaltaPesquisaFormGeral,
                     FiltroRelatorioDescritivoForm, formularioLF)
@@ -163,7 +163,7 @@ def listar_ficha(request, pessoa_id):
     # ordem decrescente de ano
     anos_status = dict(sorted(anos_status.items(), key=lambda item: item[0], reverse=True))
   
-    return render(request,'app_ficha_cem/listar_ficha_v2.html',{'anos':anos_status, 'pessoa':pessoa})
+    return render(request,'listar_ficha_v2.html',{'anos':anos_status, 'pessoa':pessoa})
 
 ############################# Filtros #########################
 
@@ -432,7 +432,7 @@ def relatorio_faltas_descritivo_pdf(request):
 def gerar_ficha(request, pessoa_id, ano):
     
     contexto = buscar_informacoes_ficha_v3(pessoa_id, ano)
-    return render(request,'app_ficha_cem/ficha_cem_v2.html', {'contexto':contexto})
+    return render(request,'ficha_cem_v2.html', {'contexto':contexto})
 
 def index(request):
     

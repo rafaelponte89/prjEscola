@@ -3,10 +3,10 @@ from django import forms
 from django.forms import SelectMultiple
 from django.utils.timezone import now
 
-from rh.app_cargo.models import Cargos
-from rh.app_pessoa.models import Pessoas
+from rh.models.cargo import Cargos
+from rh.models.pessoa import Pessoas
 from rh.app_ficha_cem.models import Faltas_Pessoas
-from rh.app_falta.models import Faltas
+from rh.models.falta import Faltas
 
 
 # formulário lançamento de faltas

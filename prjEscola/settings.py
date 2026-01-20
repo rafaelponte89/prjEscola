@@ -43,13 +43,8 @@ INSTALLED_APPS = [
     # modulo aluno
     'aluno',
    
-    
     # modulo pessoas
-    'rh.app_ficha_cem',
-    'rh.app_cargo',
-    'rh.app_falta',
-    'rh.app_pessoa',
-    'rh.app_pontuacao',
+    'rh',
 
     'app_central',
 

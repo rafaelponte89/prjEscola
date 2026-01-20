@@ -2,8 +2,8 @@ import re
 import pdfplumber
 from datetime import datetime
 from rh.app_ficha_cem.models import Faltas_Pessoas
-from rh.app_falta.models import Faltas
-from rh.app_pessoa.models import Pessoas
+from rh.models.falta import Faltas
+from rh.models.pessoa import Pessoas
 from django.db import transaction, IntegrityError
 
 def ignorar_linhas(linha):
