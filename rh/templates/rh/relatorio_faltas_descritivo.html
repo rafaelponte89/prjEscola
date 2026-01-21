@@ -1,8 +1,5 @@
 {% extends 'rh/menu.html'%}
 {% load static %}
-{% load crispy_forms_tags %}
-{% load bootstrap4 %}
-{% bootstrap_css %}
 
 {% block css %}
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -10,7 +7,6 @@
 {% endblock css %}
 {% block content %}
 
-{{form.media}}
 <!DOCTYPE html>
 <html>
 
@@ -36,14 +32,18 @@
                 <!-- Campo data inicial -->
                 <div class="col-md-4 mb-1">
                     <div class="form-group">
-                        {{ form.data_inicial|as_crispy_field }}
+                        {{ form.data_inicial.label_tag}}
+
+                        {{ form.data_inicial}}
                     </div>
                 </div>
 
                 <!-- Campo data final -->
                 <div class="col-md-4 mb-1">
                     <div class="form-group">
-                        {{ form.data_final|as_crispy_field }}
+                        {{ form.data_final.label_tag}}
+
+                        {{ form.data_final}}
                     </div>
                 </div>
 
@@ -51,15 +51,19 @@
 
             </div>
             <div class="row justify-content-center">
-                
+
                 <div class="col-md-4 mb-1">
                     <div class="form-group">
-                        {{ form.efetivo|as_crispy_field }}
+                        {{ form.efetivo.label_tag}}
+
+                        {{ form.efetivo}}
                     </div>
                 </div>
-                 <div class="col-md-4 mb-1">
+                <div class="col-md-4 mb-1">
                     <div class="form-group">
-                        {{ form.func_publico|as_crispy_field }}
+                        {{ form.func_publico.label_tag}}
+
+                        {{ form.func_publico}}
                     </div>
                 </div>
 

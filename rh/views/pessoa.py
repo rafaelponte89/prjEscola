@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.shortcuts import HttpResponse, redirect, render
 
-from rh.forms.pessoa import formularioPessoa
+from rh.forms.pessoa import FormularioPessoa
 from rh.models.pessoa import Pessoas
 
 
@@ -11,7 +11,7 @@ def atualizar_pessoa(request, pessoa_id):
     pessoa = Pessoas.objects.get(pk=pessoa_id)
     
     if request.method == 'POST':
-        form = formularioPessoa(request.POST, instance=pessoa)
+        form = FormularioPessoa(request.POST, instance=pessoa)
         
         if form.is_valid():
             
@@ -19,7 +19,7 @@ def atualizar_pessoa(request, pessoa_id):
             messages.success(request,"Pessoa atualizada!")
             return redirect('atualizarpessoa', form.cleaned_data['id'])
     else:
-        form = formularioPessoa(instance=pessoa)
+        form = FormularioPessoa(instance=pessoa)
     return render(request,'rh/pessoa/cadastrar_pessoas.html',{'form':form,'pessoa':pessoa})
 
 # listar e incluir pessoas
@@ -28,7 +28,7 @@ def cadastrar_pessoas(request):
     
     
     if request.method == 'POST':
-        form = formularioPessoa(request.POST)
+        form = FormularioPessoa(request.POST)
     
         if form.is_valid():
             form.save()
@@ -36,7 +36,7 @@ def cadastrar_pessoas(request):
             return redirect('cadastrarpessoas')
     else:
 
-        form = formularioPessoa()
+        form = FormularioPessoa()
     return render(request,'rh/pessoa/cadastrar_pessoas.html',{'form':form, 'pessoas':pessoas})
 
 

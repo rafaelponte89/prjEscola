@@ -38,50 +38,47 @@ STR_TO_BOOL = {
         'nao': False
 }
 
-def gerar_relatorio_faltas_descritivo(data_inicial, data_final, 
-                                      efetivo, publico, dados_agrupados,
-                                      total_funcionarios):
-    
-    
-    efetivo = STR_TO_BOOL.get(efetivo)
-    publico = STR_TO_BOOL.get(publico, False)
-   
+def gerar_relatorio_faltas_descritivo(
+    data_inicial,
+    data_final,
+    efetivo,
+    publico
+):
     registros = (
         RegistroFalta.objects
         .filter(data__range=(data_inicial, data_final))
         .select_related('pessoa', 'falta')
+        .order_by('pessoa__nome', 'falta__descricao', 'data')
     )
+
+    if efetivo in ('sim', 'nao'):
+        registros = registros.filter(pessoa__efetivo=(efetivo == 'sim'))
+
+    if publico in ('sim', 'nao'):
+        registros = registros.filter(pessoa__func_publico=(publico == 'sim'))
     
-    if efetivo is not None:
-        registros = registros.filter(pessoa__efetivo=efetivo)
 
-    registros = registros.filter(pessoa__func_publico=publico)
-
-    registros = registros.order_by(
-        'pessoa__nome',
-        'falta__descricao',
-        'data'
-    )
-        
     dados_agrupados = {}
-    
+
     for registro in registros:
         pessoa = registro.pessoa
-        
-        dados_agrupados.setdefault(pessoa.id,{
+
+        dados_agrupados.setdefault(pessoa.id, {
             'matricula': pessoa.id,
             'nome': pessoa.nome,
             'faltas': []
         })
-        
+
         dados_agrupados[pessoa.id]['faltas'].append({
             'data': registro.data,
             'tipo': registro.falta.descricao,
             'qtd_dias': registro.qtd_dias
         })
+
     total_funcionarios = len(dados_agrupados)
-    
+
     return dados_agrupados, total_funcionarios
+
        
     
 def requerimento_abonada(servidor_nome, servidor_matricula, setor_lotacao, data_formatada, data_falta):

@@ -19,7 +19,7 @@ from rh.models.pontuacao import Pontuacoes
 from rh.services.pontuacao import criar_salvar_pontuacao, deletar_pontuacao_ano
 
 from rh.forms.registro_falta import (FaltaPesquisaForm, FaltaPesquisaFormGeral,
-                    FiltroRelatorioDescritivoForm, formularioLF)
+                    FiltroRelatorioDescritivoForm, FormularioLF)
 from rh.models.cargo import Cargos
 from rh.models.falta import Faltas
 from rh.models.pessoa import Pessoas
@@ -77,7 +77,7 @@ def pessoas_faltas(request, pessoa_id):
     
     if request.method == 'POST':
         # instância do formulário para pegar dados
-        form = formularioLF(request.POST)
+        form = FormularioLF(request.POST)
 
         # pegar valores do formulário
         qtd_dias = int(form.data['qtd_dias'])
@@ -132,7 +132,7 @@ def pessoas_faltas(request, pessoa_id):
 
     else:
             
-        form = formularioLF(initial={'pessoa':pessoa})
+        form = FormularioLF(initial={'pessoa':pessoa})
     return render(request,'rh/lancar_falta.html', {'form':form, 
                                                    'pessoa':pessoa, 
                                                    'faltas':pessoa_falta})
@@ -400,22 +400,30 @@ def relatorio_faltas(request, pessoa_id):
 
 def relatorio_faltas_descritivo(request):
     form = FiltroRelatorioDescritivoForm(request.GET or None)
-   
+
     dados_agrupados = {}
     total_funcionarios = 0
-    
+
     if form.is_valid():
         data_inicial = form.cleaned_data['data_inicial']
         data_final = form.cleaned_data['data_final']
         efetivo = form.cleaned_data['efetivo']
+       
         publico = form.cleaned_data['func_publico']
-        dados_agrupados, total_funcionarios = gerar_relatorio_faltas_descritivo(data_inicial, data_final, efetivo, publico, 
-                                                                                dados_agrupados, total_funcionarios)
+
+        dados_agrupados, total_funcionarios = gerar_relatorio_faltas_descritivo(
+            data_inicial,
+            data_final,
+            efetivo,
+            publico
+        )
+
     return render(request, 'rh/relatorio_faltas_descritivo.html', {
         'form': form,
         'dados': dados_agrupados,
         'total_funcionarios': total_funcionarios
     })
+
 
 
 def relatorio_faltas_descritivo_pdf(request):
@@ -758,66 +766,103 @@ def coletivo(request):
     return render(request,'rh/coletivo.html')
 
 # Verificar 26/12/2022
+from datetime import datetime
+from django.contrib import messages
+
 def lancar_evento_coletivo(request):
-    cargos = Cargos.objects.all()
-    
+    cargos = Cargos.objects.all().order_by('cargo')
+
+    # separa cargos
+    cargos_peb = Cargos.objects.filter(cargo__icontains='PEB')
+    cargos_outros = cargos.exclude(id__in=cargos_peb)
+
     if request.method == 'POST':
-        #Captura os valores do formulário
-        cargos_selecionados = request.POST.getlist('cargos')
-        pessoas = Pessoas.objects.filter(cargo__id__in=cargos_selecionados)
+
+        cargos_ids = request.POST.getlist('cargos')
+        aplicar_professores = request.POST.get('grupo_professores')
+
+        pessoas = Pessoas.objects.none()
+
+        # adiciona cargos normais
+        if cargos_ids:
+            pessoas = Pessoas.objects.filter(cargo__id__in=cargos_ids)
+
+        # adiciona professores (PEB)
+        if aplicar_professores:
+            pessoas_peb = Pessoas.objects.filter(cargo__in=cargos_peb)
+            pessoas = pessoas | pessoas_peb  # UNION
+
+        pessoas = pessoas.distinct()
+
         lancamento_a_criar = []
         conflitos, fechamentos = 0, 0
-        
 
-        # instância do formulário para pegar dados
-        form = formularioLF(request.POST)
-        
-        # pegar valores do formulário
-        qtd_dias = int(form.data['qtd_dias'])
-        data_lancamento = datetime.strptime(form['data'].value(), '%Y-%m-%d').date()
-        falta = Faltas.objects.get(pk=form['falta'].value())
+        form = FormularioLF(request.POST)
 
-        # criar intervalos de lançamentos na memória e dividir por ano (ano é chave)
-        dia_mes_ano = gerar_lancamento_em_memoria(data_lancamento,qtd_dias)
+        if form.is_valid():
 
-        # verifica se os dados preenchidos são válidos
-        # verifica se existe faltas naquele intervalo
-        for pessoa in pessoas:
-            if data_lancamento <= pessoa.admissao:
-                continue
+            qtd_dias = form.cleaned_data['qtd_dias']
+            data_lancamento = form.cleaned_data['data']
+            falta = form.cleaned_data['falta']
 
-            conflito= lancar_falta(data_lancamento, qtd_dias ,pessoa.id)
-            ano_fechado = verificar_status_ano(data_lancamento.year, pessoa.id)
-            
-            if ano_fechado:
-                fechamentos += 1
-                continue 
+            dia_mes_ano = gerar_lancamento_em_memoria(data_lancamento, qtd_dias)
 
-            if not conflito:
-                conflitos += 1
-                continue
+            for pessoa in pessoas:
 
-            # navega entre os valores de cada chave que é ano
-            for datas in dia_mes_ano.values():
-                qtd_dias = len(datas) # quantos dias existem dentro da chave ano
-                data_lancamento = datas[0] # pega o primeiro dia do lançamento e depois o primeiro dia do ano seguinte
-                # cria objeto com os novos dados
-                novoLancamento= RegistroFalta(pessoa=pessoa,data=data_lancamento,qtd_dias=qtd_dias,falta=falta)
-                # adiciona os objetos a uma lista
-                lancamento_a_criar.append(novoLancamento)
-                
-               
-        # Salva objetos de uma só vez no banco
-        RegistroFalta.objects.bulk_create(lancamento_a_criar)
+                if data_lancamento <= pessoa.admissao:
+                    continue
 
-        messages.success(request, f"Lançamentos efetuados com sucesso: {len(lancamento_a_criar)}","success")
-        messages.error(request, f"Lançamentos com conflitos de datas: {conflitos}","danger")
-        messages.warning(request, f"Lançamentos com o ano fechado: {fechamentos}","warning")
-              
-    else:          
-        form = formularioLF()
+                conflito = lancar_falta(data_lancamento, qtd_dias, pessoa.id)
+                ano_fechado = verificar_status_ano(data_lancamento.year, pessoa.id)
 
-    return render(request,'rh/lancar_evento_coletivo.html', {'form':form, 'cargos': cargos})
+                if ano_fechado:
+                    fechamentos += 1
+                    continue
+
+                if not conflito:
+                    conflitos += 1
+                    continue
+
+                for datas in dia_mes_ano.values():
+                    qtd_dias_ano = len(datas)
+                    data_ini = datas[0]
+
+                    lancamento_a_criar.append(
+                        RegistroFalta(
+                            pessoa=pessoa,
+                            data=data_ini,
+                            qtd_dias=qtd_dias_ano,
+                            falta=falta
+                        )
+                    )
+
+            RegistroFalta.objects.bulk_create(lancamento_a_criar)
+
+            messages.success(
+                request,
+                f"Lançamentos efetuados com sucesso: {len(lancamento_a_criar)}"
+            )
+            messages.error(
+                request,
+                f"Lançamentos com conflitos de datas: {conflitos}"
+            )
+            messages.warning(
+                request,
+                f"Lançamentos com o ano fechado: {fechamentos}"
+            )
+
+    else:
+        form = FormularioLF()
+
+    return render(
+        request,
+        'rh/lancar_evento_coletivo.html',
+        {
+            'form': form,
+            'cargos': cargos_outros,
+            'professores': cargos_peb
+        }
+    )
 
 
 def importar_afastamentos(request):

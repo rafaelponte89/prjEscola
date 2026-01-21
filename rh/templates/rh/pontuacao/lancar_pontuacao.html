@@ -1,5 +1,4 @@
 {% extends 'rh/menu.html'%}
-{% load crispy_forms_tags %}
 {% block content %}
 <div class="container">
     <div class="row">
@@ -22,22 +21,30 @@
 
                         <div class="row">
                             <div class="col-md-2">
-                                {{ form.ano|as_crispy_field }}
+                                {{ form.ano.label_tag}}
+
+                                {{ form.ano}}
                             </div>
                             <div class="col-md-3">
-                                {{ form.funcao|as_crispy_field }}
+                                {{ form.funcao.label_tag}}
+
+                                {{ form.funcao}}
                             </div>
                             <div class="col-md-3">
-                                {{ form.cargo|as_crispy_field }}
+                                {{ form.cargo.label_tag}}
+
+                                {{ form.cargo}}
                             </div>
                             <div class="col-md-3">
-                                {{ form.ue|as_crispy_field }}
+                                {{ form.ue.label_tag }}
+
+                                {{ form.ue }}
                             </div>
                         </div>
 
                         <div class="row">
                             <div class="col-md-6">
-                                {{ form.pessoa|as_crispy_field }}
+                                {{ form.pessoa}}
                             </div>
                         </div>
 

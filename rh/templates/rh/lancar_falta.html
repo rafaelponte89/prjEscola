@@ -1,16 +1,12 @@
 {% extends 'rh/menu.html'%}
-{% load crispy_forms_tags %}
-{% load bootstrap4 %}
-{% bootstrap_css %}
 
 {% block content %}
 
-{{form.media}}
 <div class="container mt-2 d-flex justify-content-center mb-2">
     <div class="col-md-10 bg-light p-4 rounded shadow">
         <form method="POST" class="was-validated mb-2" style="background-color: #f8f9fa;">
             {% csrf_token %}
-            {{ form.pessoa|as_crispy_field }}
+            {{ form.pessoa }}
             <div class="container mt-2">
                 <div class="row justify-content-center ">
                     <!-- Título do Formulário -->
@@ -23,20 +19,26 @@
                 <div class="row align-items-end">
 
                     <div class="col-3">
-                        {{ form.data|as_crispy_field }}
+                        {{ form.data.label_tag }}
+
+                        {{ form.data }}
                     </div>
 
                     <div class="col-5">
-                        {{ form.falta|as_crispy_field }}
+                        {{ form.falta.label_tag }}
+
+                        {{ form.falta }}
                     </div>
 
                     <div class="col-2">
-                        {{ form.qtd_dias|as_crispy_field }}
+                        {{ form.qtd_dias.label_tag }}
+
+                        {{ form.qtd_dias }}
                     </div>
 
                     <div class="col-2">
                         <label class="form-label invisible">Ação</label>
-                        <button type="submit" class="btn btn-outline-dark w-100 mb-3">
+                        <button type="submit" class="btn btn-outline-dark">
                             Gravar
                         </button>
                     </div>

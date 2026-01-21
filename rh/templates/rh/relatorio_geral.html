@@ -1,7 +1,4 @@
 {% extends 'rh/menu.html'%}
-{% load crispy_forms_tags %}
-{% load bootstrap4 %}
-{% bootstrap_css %}
 
 {% block css %}
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -9,11 +6,7 @@
 {% endblock css %}
 {% block content %}
 
-{{form.media}}
-<!--<form method="get">
-    {{ form.as_p }}
-    <button type="submit">Pesquisar</button>
-</form>-->
+
 
 {{form.media}}
 <div class="container mt-2 d-flex justify-content-center">
@@ -34,14 +27,18 @@
                     <!-- Campo data inicial -->
                     <div class="col-md-4 mb-1">
                         <div class="form-group">
-                            {{ form.data_inicio|as_crispy_field }}
+                            {{ form.data_inicio.label_tag}}
+
+                            {{ form.data_inicio}}
                         </div>
                     </div>
 
                     <!-- Campo data final -->
                     <div class="col-md-4 mb-1">
                         <div class="form-group">
-                            {{ form.data_fim|as_crispy_field }}
+                            {{ form.data_fim.label_tag }}
+
+                            {{ form.data_fim }}
                         </div>
                     </div>
 
@@ -50,12 +47,16 @@
                 <div class="row justify-content-center">
                     <div class="col-md-6 mb-1">
                         <div class="form-group">
-                            {{ form.ativo|as_crispy_field }}
+                            {{ form.ativo.label_tag}}
+
+                            {{ form.ativo}}
                         </div>
                     </div>
                     <div class="col-md-6 mb-1">
                         <div class="form-group">
-                            {{ form.efetivo|as_crispy_field }}
+                            {{ form.efetivo.label_tag}}
+
+                            {{ form.efetivo}}
                         </div>
                     </div>
                 </div>
@@ -63,7 +64,9 @@
                 <div class="row justify-content-center">
                     <div class="col-md-12 mb-1">
                         <div class="form-group">
-                            {{ form.cargo|as_crispy_field }}
+                            {{ form.cargo.label_tag}}
+
+                            {{ form.cargo}}
                         </div>
                     </div>
                 </div>
@@ -71,7 +74,9 @@
                 <div class="row justify-content-center">
                     <div class="col-md-12 mb-1">
                         <div class="form-group">
-                            {{ form.falta|as_crispy_field }}
+                            {{ form.falta.label_tag}}
+
+                            {{ form.falta}}
                         </div>
                     </div>
                 </div>

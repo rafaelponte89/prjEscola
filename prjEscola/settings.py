@@ -46,13 +46,8 @@ INSTALLED_APPS = [
     # modulo pessoas
     'rh',
 
+    # modulo central
     'app_central',
-
-    # 3rd
-    'crispy_forms',
-    'bootstrap_datepicker_plus',
-    'bootstrap4',
-    'crispy_bootstrap4'
 
 ]
 

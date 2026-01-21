@@ -1,39 +1,89 @@
 {% extends 'rh/menu.html'%}
-{% load crispy_forms_tags %}
-{% load bootstrap4 %}
-{% bootstrap_css %}
+
 
 {% block content %}
 
-{{form.media}}
-
 <label>{{ nome }}</label>
-<form method="POST" class="was-validated">
-    {% csrf_token %}
-    {{ form|crispy }}
 
-    <div id="selecao_cargos">
-        {% for cargo in cargos %}
 
-        <div class="custom-control custom-checkbox mb-3">
-            <input type="checkbox" name="cargos" class="custom-control-input" value="{{cargo.id}}"
-                id="customControlValidation{{cargo.id}}">
-            <label class="custom-control-label" for="customControlValidation{{cargo.id}}">{{cargo.cargo}}</label>
-        </div>
+<div class="container mt-2 d-flex justify-content-center mb-2">
+    <div class="col-md-10 bg-light p-4 rounded shadow">
+        <form method="POST" class="was-validated mb-2" style="background-color: #f8f9fa;">
+            {% csrf_token %}
+            {{ form.pessoa }}
+            <div class="container mt-2">
+                <div class="row justify-content-center ">
+                    <!-- Título do Formulário -->
+                    <div class="col-md-8 text-center mb-4">
+                        <h3>Lançamento de Falta Coletivo</h3>
+                        <p>Preencha os campos abaixo para registrar a falta.</p>
+                    </div>
+                </div>
 
-        {% endfor %}
+                <div class="row align-items-end">
 
+                    <div class="col-3">
+                        {{ form.data.label_tag }}
+
+                        {{ form.data }}
+                    </div>
+
+                    <div class="col-5">
+                        {{ form.falta.label_tag }}
+
+                        {{ form.falta }}
+                    </div>
+
+                    <div class="col-2">
+                        {{ form.qtd_dias.label_tag }}
+
+                        {{ form.qtd_dias }}
+                    </div>
+
+                    <div class="col-2">
+                        <label class="form-label invisible">Ação</label>
+                        <button type="submit" class="btn btn-outline-dark">
+                            Gravar
+                        </button>
+                    </div>
+
+                </div>
+
+
+            </div>
+            <div id="selecao_cargos">
+
+                <!-- PROFESSORES -->
+                <div class="custom-control custom-checkbox mb-3 mt-3">
+                    <input type="checkbox" name="grupo_professores" class="custom-control-input" id="grupo_professores">
+                    <label class="custom-control-label" for="grupo_professores">
+                        PROFESSORES
+                    </label>
+                </div>
+
+                <hr>
+
+                <!-- OUTROS CARGOS -->
+                {% for cargo in cargos %}
+                <div class="custom-control custom-checkbox mb-3">
+                    <input type="checkbox" name="cargos" class="custom-control-input" value="{{ cargo.id }}"
+                        id="cargo_{{ cargo.id }}">
+                    <label class="custom-control-label" for="cargo_{{ cargo.id }}">
+                        {{ cargo.cargo }}
+                    </label>
+                </div>
+                {% endfor %}
+
+            </div>
+
+
+        </form>
     </div>
-    <div class="form-group">
-        <button type="submit" class="btn btn-outline-dark">Gravar</button>
-    </div>
-</form>
-
-
+</div>
 
 
 <script>
-    $(document).ready(function () {
+    
 
         let falta = document.getElementById("id_falta");
         let texto = "";
@@ -62,7 +112,7 @@
             }
         });
 
-    });
+  
 
 
 </script>

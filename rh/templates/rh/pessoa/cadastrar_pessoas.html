@@ -1,33 +1,35 @@
 {% extends 'rh/menu.html' %}
-{% load crispy_forms_tags %}
-{% load bootstrap4 %}
-{% bootstrap_css %}
+
+
 
 {% block content %}
 
-
-{{ form.media }}
 <div class="container mt-5 d-flex justify-content-center">
     <div class="col-md-8 bg-light p-4 rounded shadow">
         <h2 class="text-center mb-4">Cadastro de Funcionário</h2>
-        
+
         <form method="POST" class="was-validated">
             {% csrf_token %}
 
             <div class="row">
                 <div class="col-md-3">
                     <div class="mb-3 {% if request.resolver_match.url_name == 'atualizarpessoa' %} {% endif %}">
-                        {{ form.id|as_crispy_field }}
+                        {{ form.id.label_tag}}
+                        {{ form.id}}
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="mb-3">
-                        {{ form.nome|as_crispy_field }}
+                        {{ form.nome.label_tag}}
+
+                        {{ form.nome}}
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="mb-3">
-                        {{ form.cpf|as_crispy_field }}
+                        {{ form.cpf.label_tag}}
+
+                        {{ form.cpf}}
                     </div>
                 </div>
             </div>
@@ -35,17 +37,23 @@
             <div class="row">
                 <div class="col-md-4">
                     <div class="mb-3">
-                        {{ form.dt_nasc|as_crispy_field }}
+                        {{ form.dt_nasc.label_tag}}
+
+                        {{ form.dt_nasc}}
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="mb-3">
-                        {{ form.admissao|as_crispy_field }}
+                        {{ form.admissao.label_tag}}
+
+                        {{ form.admissao}}
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="mb-3">
-                        {{ form.saida|as_crispy_field }}
+                        {{ form.saida.label_tag}}
+
+                        {{ form.saida}}
                     </div>
                 </div>
             </div>
@@ -53,22 +61,29 @@
             <div class="row">
                 <div class="col-md-6">
                     <div class="mb-3">
-                        {{ form.cargo|as_crispy_field }}
+                        {{form.cargo.label_tag}}
+                        {{ form.cargo}}
                     </div>
                 </div>
                 <div class="col-md-2">
                     <div class="mb-3">
-                        {{ form.efetivo|as_crispy_field }}
+                        {{ form.efetivo.label_tag}}
+
+                        {{ form.efetivo}}
                     </div>
                 </div>
                 <div class="col-md-2">
                     <div class="mb-3">
-                        {{ form.ativo|as_crispy_field }}
+                        {{ form.ativo.label_tag}}
+
+                        {{ form.ativo}}
                     </div>
                 </div>
-                 <div class="col-md-2">
+                <div class="col-md-2">
                     <div class="mb-3">
-                        {{ form.func_publico|as_crispy_field }}
+                        {{ form.func_publico.label_tag }}
+
+                        {{ form.func_publico }}
                     </div>
                 </div>
             </div>
@@ -87,20 +102,17 @@
 {% block script %}
 
 <script>
-        $(document).ready(function () {
-           // alert($("#id_nome").val());
-           // alert($("#id_id").val());
-            //localStorage.setItem("nome",);
-            //localStorage.setItem("matricula",);
-            
+    $(document).ready(function () {
+        // alert($("#id_nome").val());
+        // alert($("#id_id").val());
+        //localStorage.setItem("nome",);
+        //localStorage.setItem("matricula",);
 
-        });
-    
+
+    });
+
 
 </script>
 
 
 {% endblock script %}
-
-
-

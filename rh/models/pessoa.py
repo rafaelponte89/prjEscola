@@ -1,5 +1,5 @@
 from django.db import models
-
+from datetime import date
 from rh.models.cargo import Cargos
 from django.contrib.auth.models import User
 
@@ -24,10 +24,10 @@ class Pessoas(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, blank=True, null=True)
     id = models.CharField(max_length=6, primary_key=True)
     nome = models.CharField(max_length=150)
-    dt_nasc = models.DateField(default='1991-01-01')
+    dt_nasc = models.DateField(default=date(1991,1,1))
     cpf = models.CharField(max_length=11, default='11111111111')
-    admissao = models.DateField(default='1991-01-01')
-    saida = models.DateField(null=True)
+    admissao = models.DateField(default=date(1991,1,1))
+    saida = models.DateField(null=True, blank=True)
     efetivo = models.BooleanField(choices=EFETIVO, default=False)
     cargo = models.ForeignKey(Cargos, on_delete=models.CASCADE, related_name="pessoas_cargos")
     ativo = models.BooleanField(choices=ATIVO, default=True)
