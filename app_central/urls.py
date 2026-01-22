@@ -1,7 +1,8 @@
-from django.urls.conf import path
-
-from .views import central
+from django.urls import path
+from . import views
 
 urlpatterns = [
-     path('', central, name='central'),
+    path('login/', views.login_view, name='login'),
+    path('logout/', views.logout_view, name='logout'),
+    path('', views.home_view, name='central'),  # Página inicial após login
 ]

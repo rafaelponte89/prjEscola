@@ -1,8 +1,7 @@
 from django.db import models
 from datetime import date
 from rh.models.cargo import Cargos
-from django.contrib.auth.models import User
-
+from django.conf import settings
 
 # Create your models here.
 class Pessoas(models.Model):
@@ -20,8 +19,7 @@ class Pessoas(models.Model):
         (True, 'Sim'),
         (False, 'Não')
     )
-    
-    user = models.OneToOneField(User, on_delete=models.CASCADE, blank=True, null=True)
+
     id = models.CharField(max_length=6, primary_key=True)
     nome = models.CharField(max_length=150)
     dt_nasc = models.DateField(default=date(1991,1,1))
@@ -32,4 +30,6 @@ class Pessoas(models.Model):
     cargo = models.ForeignKey(Cargos, on_delete=models.CASCADE, related_name="pessoas_cargos")
     ativo = models.BooleanField(choices=ATIVO, default=True)
     func_publico = models.BooleanField(choices=PUBLICO, default=True, blank=True)
-   
+    
+
+

@@ -1,1 +1,0 @@
-from .aluno import Aluno

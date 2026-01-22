@@ -1,40 +1,97 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Central do Sistema</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
     <style>
-        .icon-g {
-            font-size: 50px;
-            color: yellow;
+        body {
+            background: #f8f9fa;
+            font-family: Arial, sans-serif;
         }
 
-        .icon-g:hover {
-            font-size: 52px;
+        h1 {
+            margin-bottom: 40px;
+            text-align: center;
+            color: #343a40;
+        }
+
+        .card-system {
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
             color: white;
+            padding: 30px;
+            border-radius: 15px;
+        }
+
+        .card-system:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
             text-decoration: none;
         }
 
-      
+        .card-aluno {
+            background: #007bff; /* azul */
+        }
+
+        .card-rh {
+            background: #28a745; /* verde */
+        }
+
+        .card-system i {
+            font-size: 50px;
+            margin-bottom: 15px;
+        }
+
+        .card-system div {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 576px) {
+            .card-system {
+                margin-bottom: 20px;
+            }
+        }
     </style>
-
-
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Central</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 </head>
 
 <body>
-    <div class="container">
-        <div class="row d-flex ">
-            <div class="col bg-dark m-2 rounded text-center"><a href="{% url 'inicial' %}" id="sistemaAlunos" class="icon-g p-1"><i
-                        class="bi bi-mortarboard-fill "></i>Alunos</a> </div>
-            <div class="col bg-dark m-2 rounded text-center"><a href="{% url 'index' %}" id="sistemaColaboradores" class="icon-g p-1"><i
-                        class="bi bi-person-square"></i>Colaboradores</a> </div>
+    <div class="container mt-5">
+        <h1>Central do Sistema</h1>
+        <div class="row justify-content-center">
+
+            {% if pode_acessar_aluno %}
+            <div class="col-md-4 col-sm-6 mb-3">
+                <a href="{% url 'inicial' %}" class="card-system card-aluno d-flex flex-column align-items-center text-center">
+                    <i class="bi bi-mortarboard-fill"></i>
+                    <div>Alunos</div>
+                </a>
+            </div>
+            {% endif %}
+
+            {% if pode_acessar_rh %}
+            <div class="col-md-4 col-sm-6 mb-3">
+                <a href="{% url 'index_rh' %}" class="card-system card-rh d-flex flex-column align-items-center text-center">
+                    <i class="bi bi-person-square"></i>
+                    <div>Colaboradores</div>
+                </a>
+            </div>
+            {% endif %}
+
         </div>
     </div>
+
+    <!-- JS Bootstrap -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.
-  
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

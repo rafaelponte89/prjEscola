@@ -15,13 +15,6 @@ from pathlib import Path
 
 from django.core.management.utils import get_random_secret_key
 
-from dotenv import load_dotenv
-
-
-
-BASE_DIR = Path(__file__).resolve().parent.parent
-load_dotenv(BASE_DIR / '.env')
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -50,11 +43,21 @@ INSTALLED_APPS = [
     # modulo aluno
     'aluno',
    
+    
     # modulo pessoas
-    'rh',
+    'rh.app_ficha_cem',
+    'rh.app_cargo',
+    'rh.app_falta',
+    'rh.app_pessoa',
+    'rh.app_pontuacao',
 
-    # modulo central
     'app_central',
+
+    # 3rd
+    'crispy_forms',
+    'bootstrap_datepicker_plus',
+    'bootstrap4',
+    'crispy_bootstrap4'
 
 ]
 
@@ -66,9 +69,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-        'rh.middleware.RHAccessMiddleware',
-        'aluno.middleware.AlunoAccessMiddleware',
-
 ]
 
 ROOT_URLCONF = 'prjEscola.urls'
@@ -78,7 +78,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-           
+            BASE_DIR / 'rh' / 'templates'
             
             ],
         'APP_DIRS': True,
@@ -102,19 +102,13 @@ WSGI_APPLICATION = 'prjEscola.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'bd/central.sqlite3',  # banco central
+        'NAME': BASE_DIR / 'bd/db_teste.sqlite3',
     },
-    'rh': {
+    'colaboradores': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'bd/rh.sqlite3',
-    },
-    'aluno': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'bd/aluno.sqlite3',
-    },
+        'NAME': BASE_DIR / 'bd/db_colaboradores.sqlite3',
+    }
 }
-DATABASE_ROUTERS = ['app_central.router.DatabaseAppsRouter']
-
 
 
 # Password validation
@@ -168,15 +162,22 @@ MEDIA_ROOT = path.join(BASE_DIR, 'media/')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+CRISPY_TEMPLATE_PACK='bootstrap4'
 
-# indica que o modelo de usuário é customizado
-AUTH_USER_MODEL = 'app_central.User'
+DATABASE_ROUTERS = ['prjEscola.db_router.DB2Router']
 
-# urls de login/logout
-LOGIN_URL = '/login/'
 
-LOGIN_REDIRECT_URL = '/'
 
+BOOTSTRAP_DATEPICKER_PLUS = {
+    "options": {
+        "locale": "pt",
+    },
+    "variant_options": {
+        "date": {
+            "format": "DD/MM/YYYY",
+        },
+    }
+}
 
 
 

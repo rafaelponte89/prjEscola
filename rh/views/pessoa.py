@@ -22,7 +22,9 @@ def atualizar_pessoa(request, pessoa_id):
         form = FormularioPessoa(instance=pessoa)
     return render(request,'rh/pessoa/cadastrar_pessoas.html',{'form':form,'pessoa':pessoa})
 
-# listar e incluir pessoas
+from django.contrib.auth.decorators import login_required, permission_required
+
+
 def cadastrar_pessoas(request):
     pessoas = Pessoas.objects.all()
     

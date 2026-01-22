@@ -446,7 +446,7 @@ def gerar_ficha(request, pessoa_id, ano):
     contexto = buscar_informacoes_ficha_v3(pessoa_id, ano)
     return render(request,'ficha_cem_v2.html', {'contexto':contexto})
 
-def index(request):
+def index_rh(request):
     
     return render(request,'rh/index.html')
         
