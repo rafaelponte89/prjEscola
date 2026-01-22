@@ -20,13 +20,13 @@ Mais do que um simples cadastro, o Projeto Escola visa proporcionar **integraç�
 
 - ✅ Cadastro de Alunos
 - ✅ Cadastro de Turmas
-- **Geração Automática das Turmas por ano e período**
+- ✅ Geração Automática das Turmas por ano e período
 - ✅ Matrículas de Alunos
-- **Possibilidade de fazer upload de um arquivo da Secretaria Escolar Digital para efetuar todas de uma vez**
+- ✅ Possibilidade de fazer upload de um arquivo da Secretaria Escolar Digital para efetuar todas de uma vez
 - ✅ Baixas de Alunos
 - ✅ Remanejamento entre Turmas
 - ✅ Relatório de Listas Telefônicas
-- ✅ Relatório de Registro de Matrículas
+- ✅ Registro de Matrículas por Turma
 - ✅ Geração de Declaração de Matrícula
 - ✅ Lista Personalizada de Assinatura
 
@@ -36,7 +36,7 @@ Mais do que um simples cadastro, o Projeto Escola visa proporcionar **integraç�
 - ✅ Cadastro de Funcionários
 - ✅ Lançamento de Faltas
 - ✅ Relatórios de Faltas
-- **Ficha de Frequência e Requerimento de Abono Anual Único**
+- ✅ Ficha de Frequência e Requerimento de Abono Anual Único
 - ✅ Filtros de Faltas
 - ✅ Requerimento de Falta Abonada
 - ✅ Importação de afastamentos de relatório pdf
