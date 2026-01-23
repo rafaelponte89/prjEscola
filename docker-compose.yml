@@ -5,13 +5,18 @@ services:
     container_name: escola
     ports:
       - "8000:8000"
+    env_file:
+      - .env
     volumes:
       - C:/sistema_escolar/prjEscola-main:/app      # código Django
       - C:/sistema_escolar/prjEscola-main/bd:/app/bd               # banco SQLite persistente
     command: >
-      sh -c "python manage.py migrate --database="default" &&
-             python manage.py migrate --database="colaboradores" &&
+      sh -c "python manage.py migrate --database=aluno &&
+             python manage.py migrate --database=rh &&
+             python manage.py migrate --database=default &&
+             python manage.py migrate &&
              python manage.py collectstatic --noinput &&
+             python manage.py create_super_central &&
              waitress-serve --listen=*:8000 prjEscola.wsgi:application"
     restart: unless-stopped
 
