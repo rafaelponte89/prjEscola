@@ -45,7 +45,9 @@ class FormularioPessoa(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        # desabilita o campo id
-        self.fields['id'].disabled = True
+        super(FormularioPessoa, self).__init__(*args, **kwargs)
+        
+        # Verifica se o formulário está sendo carregado com uma instância (ex: para atualização)
+        if 'instance' in kwargs and kwargs['instance'] is not None:
+            self.fields['id'].widget.attrs['readonly'] = True  # Torna o campo 'id' somente leitura
+            self.fields['id'].required = False  # Torna o campo não obrigatório
