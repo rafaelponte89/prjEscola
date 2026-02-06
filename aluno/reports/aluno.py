@@ -14,11 +14,14 @@ from aluno.models.telefone import Telefone
 
 from aluno.models.aluno import Aluno
 from aluno.utils.meses import retornarNomeMes
+from aluno.utils.obter_cabecalho import obter_caminho_imagem_cabecalho
 from datetime import datetime
 from aluno.services.aluno import gerarIntervalo
 from .header import header_com_imagem
 
-IMG_CABECALHO = "aluno/static/aluno/jpeg/cabecalho_600dpi.png"
+
+
+IMG_CABECALHO = obter_caminho_imagem_cabecalho()
 
 def criar_base_pdf(buffer, tamanho_pagina=A4):
     pdf = SimpleDocTemplate(

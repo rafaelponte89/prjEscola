@@ -6,7 +6,7 @@ from .routes import falta, cargo, pessoa, pontuacao, registro_falta
 
 from django.urls import path, include
 from rh.views.registro_falta import index_rh
-from .routes import falta, cargo, pessoa, pontuacao, registro_falta
+from .routes import falta, cargo, pessoa, pontuacao, registro_falta, report
 
 urlpatterns = [
     path('', index_rh, name='index_rh'),  # Página inicial do RH
@@ -15,4 +15,5 @@ urlpatterns = [
     path('pontuacao/', include(pontuacao.urlpatterns)),
     path('pessoa/', include(pessoa.urlpatterns)),
     path('fichacem/', include(registro_falta.urlpatterns)),
+    path('relatorios/', include(report.urlpatterns)),
 ]

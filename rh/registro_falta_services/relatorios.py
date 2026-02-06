@@ -22,13 +22,14 @@ from .configuracoes import retornarNomeMes
 from .calculos import calcular_data_pedido
 from rh.models.registro_falta import RegistroFalta
 from datetime import datetime
-
+from aluno.utils.obter_cabecalho import obter_caminho_imagem_cabecalho
  # -----------------------------------------------------
     # CABEÇALHO COM IMAGEM (FORMA CORRETA)
     # -----------------------------------------------------
 
+
 HEADER_IMG = Image(
-        "aluno/static/aluno/jpeg/cabecalho_600dpi.png",
+        obter_caminho_imagem_cabecalho(),
         width=500,
         height=120,
     )

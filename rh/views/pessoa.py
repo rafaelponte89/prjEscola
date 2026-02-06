@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.shortcuts import HttpResponse, redirect, render
+from django.template.loader import render_to_string
 
 from rh.forms.pessoa import FormularioPessoa
 from rh.models.pessoa import Pessoas
@@ -53,34 +54,23 @@ def selecionar_pessoa(request):
     return HttpResponse(f'<button class="btn btn-dark mr-1" id="matpes" value="{matricula}"> {matricula} </button> | ' + pessoa.nome + ' | ')
 
 def pesquisar_pessoas(request):
+    nome = request.GET.get('nome', '').strip()
 
-    nome = request.GET.get('nome')
-    pessoas = ''
-    #<!-- <td><a class='btn btn-info' href="{% url 'listarficha' pessoa.id %}"><span class="material-icons">
-    #            visibility
-    #            </span></a></td>
-    #        <td><a class='btn btn-info' href="{% url 'lancarfalta' pessoa.id %}"><span class="material-icons">
-    #            add
-    #            </span></a> </td> -->
-    
-    pessoas = Pessoas.objects.filter(nome__contains=nome).order_by('nome')[:10]
-    corpo = ""
+    if not nome or len(nome) < 2:
+        return HttpResponse("")
+
+    pessoas = (
+        Pessoas.objects
+        .filter(nome__icontains=nome)
+        .order_by('nome')[:10]
+    )
+
+    html = ""
     for pessoa in pessoas:
-        corpo += f"""
-       
-        <tr>
-        <td class="text-center align-middle">{pessoa.id}</td>
+        html += render_to_string(
+            "rh/pessoa/partials/linha_pessoa.html",
+            {"pessoa": pessoa},
+            request=request
+        )
 
-         <td class="text-left align-middle">{pessoa.nome}</td>
-         <td class="text-center align-middle">{pessoa.cargo}</td>
-
-            <td>
-                <button class='btn btn-info selpes' value="{pessoa.id}"><span class="material-icons">
-                        check_circle
-                    </span></button>
-
-            </td>
-           
-        </tr>"""
-
-    return HttpResponse(corpo)
+    return HttpResponse(html)
