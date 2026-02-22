@@ -58,7 +58,6 @@ def gerar_relatorio_faltas_descritivo(
     if publico in ('sim', 'nao'):
         registros = registros.filter(pessoa__func_publico=(publico == 'sim'))
     
-
     dados_agrupados = {}
 
     for registro in registros:

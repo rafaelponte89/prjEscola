@@ -62,7 +62,7 @@ Mais do que um simples cadastro, o Projeto Escola visa proporcionar **integraç�
 - Python 3.12.
 - Git instalado
 
-### 🔹 Passos
+### 🔹 Passos Execução na Máquina (Baremetal)
 
 ```bash
 # Clonar o repositório
@@ -79,14 +79,57 @@ env\Scripts\activate     # Windows
 # Instalar dependências
 pip install -r requirements.txt --no-cache-dir
 
-
 # Criar pasta onde serão armazenados os bancos de dados
 mkdir bd 
 
 # Criar os bancos de dados
-python manage.py migrate --database default
-python manage.py migrate --database colaboradores
-
+python manage.py migrate --database=aluno 
+python manage.py migrate --database=rh 
+python manage.py migrate --database=default 
+python manage.py migrate 
+python manage.py collectstatic --noinput 
+python manage.py create_super_central 
 
 # Executar o projeto
 python manage.py runserver
+
+### 🔹 Passos - Container Docker
+
+```bash
+# Instalar docker conforme sistema operacional e executar
+https://docs.docker.com/desktop/?_gl=1*18ru53h*_gcl_au*MTA4Mjc0NTAxMy4xNzcxNzg5Nzk2*_ga*MTg1NjkwNDA0OS4xNzcxNzg5Nzk3*_ga_XJWPQMJYHQ*czE3NzE3ODk3OTYkbzEkZzEkdDE3NzE3ODk3OTckajU5JGwwJGgw
+
+# Criar a pasta sistema_escolar no disco C:\ caso seja em outro o arquivo de configuração docker-compose.yml deverá ser modificado 
+mkdir sistema_escolar
+
+# Entrar na pasta sisema_escolar
+cd sistema_escolar
+
+# Clonar o repositório
+git clone https://github.com/rafaelponte89/prjEscola.git
+
+# Entrar na pasta prjEscola
+cd prjEscola
+
+# Verificar se os caminhos no arquivo de configuração do docker-compose se aplicam ao seu caminnho (
+# Se o disco for representado por outra letra o arquivo de configuração deve ser modificado
+C:/sistema_escolar/prjEscola-main
+
+# Caso fosse D teria que mudar para o caminho abaixo todo o arquivo de configuração docker-compose.yml
+D:/sistema_escolar/prjEscola-main
+
+# Usar o comando para subir os containers
+docker-compose up -d
+
+# Acesso
+No navegador colocar:
+http://localhost/
+
+# Comando para remover os containers
+docker-compose down
+
+
+
+
+
+

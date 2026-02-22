@@ -1,15 +1,15 @@
 
 services:
   django:
-    build: C:/sistema_escolar/prjEscola-main
+    build: C:/sistema_escolar/prjEscola
     container_name: escola
     ports:
       - "8000:8000"
     env_file:
       - .env
     volumes:
-      - C:/sistema_escolar/prjEscola-main:/app      # código Django
-      - C:/sistema_escolar/prjEscola-main/bd:/app/bd               # banco SQLite persistente
+      - C:/sistema_escolar/prjEscola:/app      # código Django
+      - C:/sistema_escolar/prjEscola/bd:/app/bd               # banco SQLite persistente
     command: >
       sh -c "python manage.py migrate --database=aluno &&
              python manage.py migrate --database=rh &&
@@ -26,8 +26,8 @@ services:
     ports:
       - "80:80"
     volumes:
-      - C:/sistema_escolar/prjEscola-main/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - C:/sistema_escolar/prjEscola-main/static_root:/app/static_root:ro
+      - C:/sistema_escolar/prjEscola/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - C:/sistema_escolar/prjEscola/static_root:/app/static_root:ro
     depends_on:
       - django
 
