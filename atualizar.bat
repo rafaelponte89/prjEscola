@@ -15,11 +15,15 @@ echo ===== Subindo containers atualizados =====
 docker-compose up -d
 
 
+echo ===== Aplicando migrations no aluno =====
+docker-compose exec django python manage.py migrate --database="aluno"
+
+echo ===== Aplicando migrations no rh =====
+docker-compose exec django python manage.py migrate --database="rh"
+
 echo ===== Aplicando migrations no default =====
 docker-compose exec django python manage.py migrate --database="default"
 
-echo ===== Aplicando migrations no outro banco =====
-docker-compose exec django python manage.py migrate --database="colaboradores"
 
 echo ===== Coletando arquivos estáticos =====
 docker-compose exec django python manage.py collectstatic --noinput
