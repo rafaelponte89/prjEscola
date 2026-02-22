@@ -92,6 +92,7 @@ python manage.py create_super_central
 
 # Executar o projeto
 python manage.py runserver
+```
 
 ### 🔹 Passos - Container Docker
 
@@ -127,8 +128,7 @@ http://localhost/
 
 # Comando para remover os containers
 docker-compose down
-
-
+```
 
 
 
