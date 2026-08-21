@@ -21,7 +21,7 @@ class Aluno (models.Model):
         (2, "Pardo"),
         (3, "Amarelo"),
         (4, "Indígena"),
-        (5, "Não Declarado")
+        (5, "Outros"),
     )
     
     rm = models.IntegerField(primary_key=True,)
