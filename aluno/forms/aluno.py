@@ -30,6 +30,7 @@ class FrmAlunoUpdate(forms.ModelForm):
             'ra',
             'd_ra',
             'data_nascimento',
+            'cor'
         ]
         widgets = {
             'nome': forms.TextInput(attrs={'class': 'form-control'}),
@@ -45,6 +46,7 @@ class FrmAlunoUpdate(forms.ModelForm):
                     'class': 'form-control'
                 }
             ),
+            'cor': forms.Select(attrs={'class': 'form-control'}),
         }
 
     def clean_nome(self):

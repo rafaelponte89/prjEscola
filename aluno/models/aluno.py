@@ -15,6 +15,15 @@ class Aluno (models.Model):
         (STATUS_ATIVO, "Ativo"),
     )
     
+    COR_CHOICES = (
+        (0, "Branco"),
+        (1, "Preto"),
+        (2, "Pardo"),
+        (3, "Amarelo"),
+        (4, "Indígena"),
+        (5, "Não Declarado")
+    )
+    
     rm = models.IntegerField(primary_key=True,)
     nome = models.CharField(max_length=150)
     #status (0 - arquivado, 1 - cancelado, 2 - ativo) 
@@ -22,6 +31,8 @@ class Aluno (models.Model):
     ra = models.CharField(max_length=100, default='')
     d_ra = models.CharField(max_length=1, default='', null=True, blank=True)
     data_nascimento = models.DateField(null=True, blank=True)
+    cor = models.IntegerField(choices=COR_CHOICES, default=5)
+
  
     def __str__(self):
         return f'{self.nome}'
@@ -36,8 +47,11 @@ class Aluno (models.Model):
 
     @property
     def is_arquivado(self):
-        return self.status == self.STATUS_ARQUIVADO    
+        return self.status == self.STATUS_ARQUIVADO 
     
+    def get_cor_display(self):
+        return self.COR_CHOICES[self.cor][1]
+
     @classmethod
     def retornarNUltimos(cls, n=6):
         alunos = cls.objects.order_by('-rm')[:n]
