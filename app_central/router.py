@@ -6,6 +6,7 @@ class DatabaseAppsRouter:
     route_app_labels = {
         'rh': 'rh',
         'aluno': 'aluno',
+        'monitoramento': 'monitoramento',
     }
 
     def db_for_read(self, model, **hints):

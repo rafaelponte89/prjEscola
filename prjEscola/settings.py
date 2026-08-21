@@ -55,6 +55,8 @@ INSTALLED_APPS = [
 
     # modulo central
     'app_central',
+    
+    'monitoramento'
 
 ]
 
@@ -68,6 +70,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
         'rh.middleware.RHAccessMiddleware',
         'aluno.middleware.AlunoAccessMiddleware',
+        'monitoramento.middleware.MonitoramentoMiddleware',
 
 ]
 
@@ -112,6 +115,10 @@ DATABASES = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'bd/aluno.sqlite3',
     },
+    'monitoramento': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'bd/monitoramento.sqlite3',
+    }
 }
 DATABASE_ROUTERS = ['app_central.router.DatabaseAppsRouter']
 
