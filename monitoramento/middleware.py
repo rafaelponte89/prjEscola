@@ -12,6 +12,11 @@ class MonitoramentoMiddleware:
 
     def __call__(self, request):
         print("NOVA REQUISIÇÃO:", request.method, request.path)
+        from django.utils import timezone
+
+        print("timezone.now():", timezone.now())
+        print("TIME_ZONE:", timezone.get_current_timezone())
+        
         metricas = []
 
         def criar_wrapper(alias):
@@ -72,6 +77,8 @@ class MonitoramentoMiddleware:
                         "tempo_ms": tempo_ms,
                         "sucesso": sucesso,
                         "banco": alias,
+                        "endpoint": request.path,
+                        "metodo": request.method,
                     })
 
             return wrapper
@@ -107,6 +114,8 @@ class MonitoramentoMiddleware:
                 tempo_execucao_ms=metrica["tempo_ms"],
                 banco=metrica["banco"],
                 sucesso=metrica["sucesso"],
+                endpoint=metrica["endpoint"],
+                metodo=metrica["metodo"],
             )
 
         return response

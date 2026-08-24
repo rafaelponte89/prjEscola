@@ -8,7 +8,8 @@ class ColetaMetricasBancoSQL(models.Model):
    tempo_execucao_ms = models.FloatField()
    banco = models.CharField(max_length=100, null=True, blank=True)
    tabela = models.CharField(max_length=100, null=True, blank=True)
-   
+   endpoint = models.CharField(max_length=200, null=True, blank=True)
+   metodo = models.CharField(max_length=10, null=True, blank=True)
    sucesso = models.BooleanField(default=True)
    
    class Meta:
