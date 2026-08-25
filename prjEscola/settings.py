@@ -62,6 +62,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+            'monitoramento.middleware.MonitoramentoMiddleware',
+
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -70,7 +72,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
         'rh.middleware.RHAccessMiddleware',
         'aluno.middleware.AlunoAccessMiddleware',
-        'monitoramento.middleware.MonitoramentoMiddleware',
 
 ]
 

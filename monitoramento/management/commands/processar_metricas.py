@@ -146,6 +146,9 @@ class Command(BaseCommand):
             "\nQuantidade de consultas processadas:",
             len(features)
         )
+        
+        
+        
         from sklearn.ensemble import IsolationForest
         colunas_features = [
         "qtd_execucoes",
